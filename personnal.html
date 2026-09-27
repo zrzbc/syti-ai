@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="个人视频创作者主页｜视频作品、创作经历、AI项目与社群">
+<title>这人针不错官方网站</title>
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
+<style>
+:root{
+  --blue:#4f7cff;
+  --purple:#8a5cf6;
+  --ink:#172033;
+  --muted:#6f7890;
+  --line:#e8ebf5;
+  --bg:#f7f9ff;
+  --card:rgba(255,255,255,.78);
+  --shadow:0 18px 60px rgba(67,72,120,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--ink);background:
+  radial-gradient(circle at 10% 5%,rgba(79,124,255,.14),transparent 28%),
+  radial-gradient(circle at 90% 10%,rgba(138,92,246,.13),transparent 30%),
+  var(--bg);
+  line-height:1.7;overflow-x:hidden;
+}
+a{text-decoration:none;color:inherit}
+button{font:inherit}
+.container{width:min(1160px,calc(100% - 40px));margin:auto}
+.nav{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  width:min(1120px,calc(100% - 32px));z-index:20;
+  background:rgba(255,255,255,.72);backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,.9);box-shadow:0 10px 35px rgba(55,65,110,.08);
+  border-radius:18px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
+}
+.logo{font-weight:800;letter-spacing:-.5px}
+.logo span{background:linear-gradient(90deg,var(--blue),var(--purple));-webkit-background-clip:text;color:transparent}
+.navlinks{display:flex;gap:4px}
+.navlinks a{font-size:14px;color:#59627a;padding:8px 12px;border-radius:10px}
+.navlinks a:hover{background:#f0f3ff;color:#3f63d9}
+.hero{padding:170px 0 95px;min-height:760px;display:grid;grid-template-columns:0.9fr 1.1fr;gap:40px;align-items:center}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:13px;color:#5f6a83;margin-bottom:22px}
+.dot{width:7px;height:7px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));box-shadow:0 0 0 5px rgba(79,124,255,.10)}
+h1{font-size:clamp(44px,7vw,82px);line-height:1.03;letter-spacing:-4px;margin-bottom:24px}
+.gradient{background:linear-gradient(100deg,#386df5 0%,#6b62ee 48%,#9a57e9 100%);-webkit-background-clip:text;color:transparent}
+.hero p{max-width:650px;color:var(--muted);font-size:18px}
+.cta{display:flex;gap:12px;margin-top:32px;flex-wrap:wrap}
+.btn{padding:12px 18px;border-radius:13px;border:1px solid var(--line);background:#fff;font-weight:650;font-size:14px;transition:.2s}
+.btn.primary{border:0;color:white;background:linear-gradient(110deg,var(--blue),var(--purple));box-shadow:0 12px 28px rgba(91,100,230,.25)}
+.btn:hover{transform:translateY(-2px)}
+.hero-card{position:relative}
+.profile{
+  width:100%;max-width:560px;margin-left:auto;border-radius:34px;
+  min-height:370px;
+  background:linear-gradient(145deg,#fff,rgba(237,241,255,.9));
+  border:1px solid #fff;box-shadow:var(--shadow);padding:28px;
+  display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;
+}
+.profile:before,.profile:after{content:"";position:absolute;border-radius:50%;filter:blur(2px)}
+.profile:before{width:220px;height:220px;background:rgba(79,124,255,.22);right:-70px;top:-70px}
+.profile:after{width:190px;height:190px;background:rgba(138,92,246,.18);left:-75px;bottom:-70px}
+.avatar{width:92px;height:92px;border-radius:26px;background:linear-gradient(135deg,var(--blue),var(--purple));display:grid;place-items:center;color:#fff;font-size:35px;font-weight:800;position:relative}
+.profile h3{font-size:27px;position:relative;margin-top:20px}
+.profile .role{color:var(--muted);position:relative}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;position:relative}
+.stat{background:rgba(255,255,255,.76);border:1px solid #edf0f8;border-radius:15px;padding:12px}
+.stat b{display:block;font-size:20px}
+.stat span{font-size:11px;color:var(--muted)}
+section{padding:100px 0}
+.section-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:32px}
+.kicker{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#7180a5;font-weight:750}
+h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
+.section-desc{color:var(--muted);max-width:520px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:var(--card);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.95);box-shadow:0 12px 40px rgba(60,70,120,.07);border-radius:20px;overflow:hidden}
+.video-cover{aspect-ratio:16/9;background:linear-gradient(135deg,#dbe6ff,#eee4ff);display:flex;align-items:center;justify-content:center;color:#6474aa;font-weight:800;position:relative}
+.video-cover:after{display:none}
+.card-body{padding:20px}
+.tag{display:inline-block;font-size:11px;padding:4px 8px;border-radius:7px;background:#eef2ff;color:#566cd2;margin-bottom:10px}
+.card h3{font-size:18px;line-height:1.35;margin-bottom:7px}
+.card p{font-size:13px;color:var(--muted)}
+.meta{display:flex;justify-content:space-between;color:#7a8398;font-size:12px;margin-top:14px}
+.feature{grid-column:span 2}
+.feature .video-cover{aspect-ratio:16/9}
+.grid-resources .feature{grid-column:span 3;display:grid;grid-template-columns:1.4fr 1fr;align-items:center}
+.grid-resources .feature .video-cover{aspect-ratio:16/9;height:auto;min-height:0}
+.feature .video-cover{background:linear-gradient(120deg,#4c78ff,#7a63ec,#a455e6);color:white}
+.about{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;align-items:center}
+.about-card{padding:28px}
+.about-card p{color:var(--muted);font-size:15px}
+.timeline{margin-top:22px;display:grid;gap:14px}
+.timeline-item{border-left:2px solid #dce3ff;padding-left:16px}
+.timeline-item b{font-size:14px}.timeline-item span{display:block;color:var(--muted);font-size:13px}
+.skills{display:flex;flex-wrap:wrap;gap:9px;margin-top:20px}
+.skill{padding:8px 11px;border:1px solid var(--line);background:#fff;border-radius:10px;font-size:13px}
+.numbers{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.number{padding:22px;border-radius:18px;background:#fff;border:1px solid var(--line)}
+.number b{font-size:30px;letter-spacing:-1px;background:linear-gradient(90deg,var(--blue),var(--purple));-webkit-background-clip:text;color:transparent}
+.number span{display:block;font-size:12px;color:var(--muted)}
+.community{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.qq{padding:32px;background:linear-gradient(135deg,#f2f5ff,#fbf7ff)}
+.qq-icon{width:54px;height:54px;border-radius:15px;background:linear-gradient(135deg,#4b80ff,#7d5deb);display:grid;place-items:center;color:#fff;font-size:24px;font-weight:800;margin-bottom:20px}
+.qq h3{font-size:25px}.qq p{color:var(--muted);margin:8px 0 22px}
+.qr{min-height:250px;display:grid;place-items:center;background:repeating-linear-gradient(45deg,#fafbff,#fafbff 8px,#f2f4fb 8px,#f2f4fb 16px);color:#7b849b}
+.contact{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.contact-card{padding:30px}
+.contact-list{display:grid;gap:10px;margin-top:18px}
+.contact-item{padding:13px 15px;border-radius:13px;background:#f7f8fc;border:1px solid #eceef6;font-size:14px}
+footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
+@media(max-width:850px){
+ .navlinks{display:none}.hero{grid-template-columns:1fr;padding-top:125px}.profile{margin:0;max-width:none}
+.grid,.about,.community,.contact{grid-template-columns:1fr}
+.feature{grid-column:span 1}
+.grid-resources .feature{grid-column:span 1;grid-template-columns:1fr}
+ .numbers{grid-template-columns:repeat(2,1fr)}section{padding:70px 0}h2{font-size:31px}
+}
+@media(max-width:480px){
+ .container{width:min(100% - 24px,1160px)}.hero{padding-bottom:50px}h1{letter-spacing:-2px}
+ .numbers{gap:8px}.number{padding:16px}.number b{font-size:25px}
+}
+
+/* 精选作品 / 资源卡片悬停放大 */
+#works .card,
+#resources .card {
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+#works .card:hover,
+#resources .card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 20px 50px rgba(60,70,120,.15);
+}
+
+/* 社交平台 / 与我互动按钮悬停放大 */
+.contact-item {
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.contact-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0,0,0,.12);
+}
+
+/* 各大部分之间的细分隔线（灰色、不连通两端） */
+#works,
+#about,
+#community,
+#contact,
+#resources {
+  position: relative;
+  border-top: 0;
+}
+
+#works::before,
+#about::before,
+#community::before,
+#contact::before,
+#resources::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1160px, calc(100% - 80px));
+  height: 1px;
+  background: #d9dce5;
+}
+
+/* 头像 / 数据框 悬停放大（名字不放大） */
+.avatar,
+.stat {
+  transition: transform .2s ease, box-shadow .2s ease;
+  cursor: pointer;
+}
+.avatar:hover {
+  transform: scale(1.05);
+}
+.stat:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 20px rgba(60,70,120,.12);
+}
+.profile h3 {
+  cursor: pointer;
+}
+
+/* 四叶草容器与图片 */
+.clover-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+}
+#cloverImg {
+  max-width: 62%;
+  height: auto;
+  display: block;
+  cursor: pointer;
+  transition: transform .25s ease;
+  will-change: transform;
+}
+#cloverImg:hover { transform: scale(1.05); }
+#cloverImg.pop { animation: cloverPop .4s ease; }
+@keyframes cloverPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+.clover-tip {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  background: rgba(23,32,51,.82);
+  color: #fff;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+  z-index: 2;
+}
+.clover-tip.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-6px);
+}
+
+.profile {
+  cursor: pointer;
+}
+
+/* 找我官方合作 展开子按钮 */
+.coop-item { display: grid; }
+.coop-toggle { cursor: pointer; }
+.coop-sub {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  margin-top: 0;
+  transition: max-height .3s ease, opacity .3s ease, margin-top .3s ease;
+}
+.coop-item:hover .coop-sub {
+  max-height: 120px;
+  opacity: 1;
+  margin-top: 10px;
+}
+.coop-sub .contact-item {
+  font-size: 13px;
+  text-align: center;
+  padding: 11px 8px;
+}
+
+/* QQ 群二维码悬停放大 */
+.card.qr img {
+  transition: transform .25s ease;
+  cursor: pointer;
+}
+.card.qr img:hover {
+  transform: scale(1.05);
+}
+
+/* 语言切换器 */
+.nav-right{display:flex;align-items:center;gap:8px}
+.lang-switch{position:relative}
+.lang-btn{
+  font:inherit;font-size:13px;color:#59627a;
+  padding:8px 12px;border-radius:10px;background:#fff;
+  border:1px solid var(--line);cursor:pointer;transition:.2s;white-space:nowrap;
+}
+.lang-btn:hover{background:#f0f3ff;color:#3f63d9}
+.lang-menu{
+  position:absolute;top:calc(100% + 6px);right:0;min-width:168px;
+  background:#fff;border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 12px 30px rgba(55,65,110,.14);padding:6px;display:none;z-index:30;
+}
+.lang-menu.open{display:block}
+.lang-menu button{
+  display:block;width:100%;text-align:left;padding:8px 10px;
+  font:inherit;font-size:13px;color:#59627a;background:none;
+  border:0;border-radius:8px;cursor:pointer;
+}
+.lang-menu button:hover{background:#f0f3ff;color:#3f63d9}
+.lang-menu button.active{background:#eef2ff;color:#3f63d9;font-weight:600}
+
+@media(max-width:850px){
+  .nav-right{gap:4px}
+  .lang-btn{padding:7px 9px;font-size:12px}
+}
+
+
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="logo" href="#home">&nbsp;&nbsp;这人<span>针不错</span></a>
+  <div class="nav-right">
+    <div class="navlinks">
+      <a href="#works">作品</a><a href="#about">关于</a>
+      <a href="#community">社群</a><a href="#contact">联系</a>
+      <a href="#resources">资源</a>
+    </div>
+    <div class="lang-switch">
+      <button class="lang-btn" id="langBtn" type="button">简体中文 ▾</button>
+      <div class="lang-menu" id="langMenu">
+        <button type="button" data-lang="cn" class="active">简体中文</button>
+        <button type="button" data-lang="hk">繁體中文（香港）</button>
+        <button type="button" data-lang="tw">繁體中文（台灣）</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main>
+<section class="hero container" id="home">
+  <div>
+    <h1>把&nbsp;想&nbsp;法<br>做&nbsp;成<span class="gradient">&nbsp;视&nbsp;频&nbsp;。</span></h1>
+    <p>&nbsp;&nbsp;鬼畜 · 游戏 · 动画领域UP主<br>&nbsp;</p>
+    <div class="cta">
+      <a class="btn primary" href="#works">精选作品</a>
+      <a class="btn" href="#community">加入QQ群</a>
+    </div>
+  </div>
+  <div class="hero-card">
+    <div class="profile">
+      <div>
+<div class="avatar" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/touxiang.png') center/cover no-repeat;"></div>
+
+        <h3>这人针不错</h3>
+        <div class="role">适可而止就是恰到好处。</div>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>6K+</b><span>Bilibili 粉丝</span></div>
+        <div class="stat"><b>1.44M+</b><span>累计播放</span></div>
+        <div class="stat"><b>240K+</b><span>单作最高播放</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="works">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Selected Works</div><h2>精选作品</h2></div>
+    <div class="section-desc">布集各个领域，总有您喜欢的一款。</div>
+  </div>
+
+<div class="grid">
+  <a class="card feature" href="https://www.bilibili.com/video/BV1DcVw64Eff/?spm_id_from=333.1387.homepage.video_card.click" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video1.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">最多播放</span>&nbsp;<span class="tag">游戏</span>&nbsp;<span class="tag">治愈</span>&nbsp;<span class="tag">美学</span><h3>𝑾𝒉𝒂𝒕 𝒄𝒐𝒍𝒐𝒓 𝒊𝒔 𝑴𝒊𝒏𝒆𝒄𝒓𝒂𝒇𝒕 ? 【我的世界】</h3><p>「好喜欢的风格……开始的岩浆就让人亮眼，湖水分镜本还在一片灰中找红色在哪，结果画面踩点倏然变蓝真的好惊艳。黄色开篇景就很漂亮，后面梯田一样那段更是好漂亮的设计……」</p><div class="meta"><span>播放 24万+</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV1g4KDzbEhx/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video2.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">海绵宝宝</span>&nbsp;<span class="tag">meme</span><h3>菌 子 代 餐</h3><p>「哦，我的上帝呀，这个视频给我的感觉简直就像在餐厅里点餐，点的微中辣，结果给我的是特辣，辣到无法呼吸后想要喝水，结果发现是热的一样。」</p><div class="meta"><span>播放 9万+</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV1BbYDz3Ex8/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video3.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">动画</span>&nbsp;<span class="tag">少女终末旅行</span>&nbsp;<span class="tag">二创填词</span><h3>“再见啦，这场虚无的旅行”</h3><p>「本来快忘了，总是有二创来戳我一把。但这么优质的少终挺难得的。」</p><div class="meta"><span>投币 2000+</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV1sZpnzCEvw/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video4.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">动画</span>&nbsp;<span class="tag">摇曳露营</span>&nbsp;<span class="tag">二创填词</span><h3>“有你的露营才是莫愁乡！”</h3><p>「这是没有真经历写不出来这词啊。」</p><div class="meta"><span>“再来亿遍”</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV1ui3b6hE2T/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video5.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">游戏</span>&nbsp;<span class="tag">我的世界</span>&nbsp;<span class="tag">实况</span><h3>只要能…到达…那个地方…</h3><p>「这个视频让我想起了很久以前，微机课偷玩电脑的时候，班上三四个小伙伴会带U盘玩离线版的我的世界，我那时候也会做地图给大家玩，可惜那是以前了。」</p><div class="meta"><span>地图分享</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV16AKNz7EDG/?spm_id_from=333.1387.upload.video_card.click&vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video6.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">动画</span>&nbsp;<span class="tag">少女终末旅行</span>&nbsp;<span class="tag">二创填词</span><h3>少女的旅行，该结束了吗？</h3><p>「作者我爱你，这歌词我直接泪目了。」</p><div class="meta"><span>“百万填词”</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV11d4y1e7SG/?spm_id_from=333.1387.upload.video_card.click&vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video8.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">孤独摇滚</span>&nbsp;<span class="tag">二创填词</span><h3>⚡ 只身海外，孤独摇滚！⚡</h3><p>「这是这七年来我看的最创人的二创。」</p><div class="meta"><span>播放 12万+</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV1MWKH6ZETJ/?spm_id_from=333.1387.upload.video_card.click&vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video7.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">电影剪辑</span>&nbsp;<span class="tag">二创填词</span><h3>“我叫邓小龙，是一个小角色……”</h3><p>「有些人适合当配角，能比主角演的更出色。」</p><div class="meta"><span>鬼畜RAP</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+
+</div>
+</section>
+
+<section id="about">
+<div class="container">
+ <div class="section-head"><div><div class="kicker">About</div><h2>关于我</h2></div></div>
+ <div class="about">
+  <div class="card about-card" style="background:linear-gradient(135deg,#e6ecff,#f1e7ff);">
+    <h3>我是一个想到什么就做什么的人。</h3>
+    <p style="margin-top:14px">比起热度，我更在意一个想法最后能不能真正成为作品，<br>所以他们给我贴上了很多标签：</p>
+    <div class="skills">
+      <span class="skill">鬼畜</span><span class="skill">游戏</span><span class="skill">二创</span>
+      <span class="skill">填词</span><span class="skill">动画</span><span class="skill">Vocaloid</span>
+      <span class="skill">美式鬼畜</span><span class="skill">美学</span><span class="skill">音MAD</span><span class="skill">致郁</span>
+      <span class="skill">少女终末旅行</span><span class="skill">AIGC</span><span class="skill">搞笑</span><span class="skill">海绵宝宝</span>
+      <span class="skill">剧情</span><span class="skill">构图</span><span class="skill">摇曳露营</span><span class="skill">鬼畜调教</span>
+      <span class="skill">小剧场</span><span class="skill">番剧</span><span class="skill">川普</span><span class="skill">恶搞</span>
+      <span class="skill">实况</span><span class="skill">我的世界像素风</span><span class="skill">创想</span>
+    </div>
+  </div>
+
+  <div class="clover-wrap">
+    <div class="clover-tip" id="cloverTip">你 拍了拍 四叶草</div>
+    <img id="cloverImg" src="https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/siyecao.png" alt="四叶草">
+  </div>
+ </div>
+</div>
+</section>
+
+<section id="community">
+<div class="container">
+ <div class="section-head"><div><div class="kicker">Community</div><h2>加入我的社群</h2></div><div class="section-desc">欢迎进群，一起交流作品、认识同好。</div></div>
+ <div class="community">
+<div class="card qq" style="background:linear-gradient(135deg,#e6ecff,#f1e7ff);">
+<div class="qq-icon" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/qq2.png') center/cover no-repeat;"></div>
+    <h3>四叶草属地</h3>
+    <p>「我也要成为四叶草吗？」</p>
+<div class="contact-item" id="copyQQ" style="cursor:pointer;"><b>QQ群：</b><span id="qqNum">856429636</span></div>
+<a class="btn primary" style="display:inline-block;margin-top:14px" href="https://qm.qq.com/q/SkxAYB7II" target="_blank" rel="noopener">加入 QQ 群</a>
+  </div>
+<div class="card qr">
+    <img src="https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/qq1.png" alt="QQ 群二维码" style="width:100%;max-width:260px;display:block;border-radius:16px;">
+  </div>
+ </div>
+</div>
+</section>
+
+<section id="contact">
+<div class="container">
+ <div class="section-head"><div><div class="kicker">Contact</div><h2>找到我</h2></div></div>
+ <div class="contact">
+
+  <div class="card contact-card" style="background:linear-gradient(135deg,#e6ecff,#f1e7ff);">
+    <h3>社交平台</h3>
+    <div class="contact-list">
+
+      <a class="contact-item" href="https://space.bilibili.com/488273925" target="_blank" rel="noopener"
+         style="background:linear-gradient(135deg,#ffb3c6,#fb7299);border-color:transparent;color:#fff;">
+        &nbsp;&nbsp;&nbsp;Bilibili　@这人针不错
+      </a>
+
+      <a class="contact-item" href="https://www.douyin.com/user/MS4wLjABAAAAIiJW1XWG7Wb2cMSPX9sftd_bZ6Qn5n1wd4b1Tgbgumyb76na33h9NCqJkDwZNtI8?from_tab_name=main" target="_blank" rel="noopener"
+         style="background:linear-gradient(135deg,#2c3e66,#1a2a4a);border-color:transparent;color:#fff;">
+        &nbsp;&nbsp;&nbsp;抖音　@这人针不错
+      </a>
+
+      <a class="contact-item" href="https://xhslink.cn/o/4L3igiRgfDD" target="_blank" rel="noopener"
+         style="background:linear-gradient(135deg,#ff7a8a,#ff2442);border-color:transparent;color:#fff;">
+        &nbsp;&nbsp;&nbsp;小红书　@这人针不错
+      </a>
+
+      <a class="contact-item" href="https://afdian.com/a/zrzbc123?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener"
+         style="background:linear-gradient(135deg,#b794f6,#7c3aed);border-color:transparent;color:#fff;">
+        &nbsp;&nbsp;&nbsp;爱发电　@这人针不错
+      </a>
+
+    </div>
+  </div>
+  <div class="card contact-card"style="background:linear-gradient(135deg,#e6ecff,#f1e7ff);">
+    <h3>与我互动</h3>
+    <div class="contact-list">
+      <div class="coop-item">
+        <div class="contact-item coop-toggle">&nbsp;&nbsp;&nbsp;找我官方合作（请注明来意）</div>
+        <div class="coop-sub">
+          <a class="contact-item" id="copyEmail" href="javascript:void(0)"
+             style="background:#fff;border-color:#e8ebf5;color:#172033;">
+            邮箱
+          </a>
+          <a class="contact-item" href="https://cm.bilibili.com/pickup-ph5/h5/carte/carte-detail?navhide=1&stahide=0&id=488273925#/" target="_blank" rel="noopener"
+             style="background:#fff;border-color:#e8ebf5;color:#172033;">
+            Bilibili 花火平台
+          </a>
+        </div>
+      </div>
+      <a class="contact-item" href="https://b23.tv/SMgmdNc" target="_blank" rel="noopener">&nbsp;&nbsp;&nbsp;充电赞助</a>
+      <a class="contact-item" href="https://www.wjx.cn/vm/wfI5Wtp.aspx# " target="_blank" rel="noopener">&nbsp;&nbsp;&nbsp;意见反馈</a>
+    </div>
+  </div>
+  </div>
+ </div>
+</div>
+</section>
+
+<section id="resources">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Resources</div><h2>资源分享</h2></div>
+    <div class="section-desc">冰點的资源仓库。</div>
+  </div>
+
+<div class="grid grid-resources">
+  <a class="card feature" href="https://afdian.com/p/e0a9c654946e11f19b8952540025c377?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/r1.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">游戏</span>&nbsp;<span class="tag">我的世界</span>&nbsp;<span class="tag">闯关</span>&nbsp;<span class="tag">解密</span>&nbsp;<span class="tag">联机</span><h3>【地图】只要能...到达...那个地方...</h3><p>人数  |  4人<br>
+版本  |  JAVA 1.21.1<br>
+用时  |  约25分钟<br><br>
+【游戏规则】<br>
+四位玩家分别站在不同的矿石上，待石门炸裂，开始闯关。<br>
+共五关，玩家需要根据每关开始前的提示完成对应的任务。</p><div class="meta"><span>- 免费下载</span><span>（ 跳转 爱发电 ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV1g4KDzbEhx/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video2.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">海绵宝宝</span>&nbsp;<span class="tag">meme</span><h3>菌 子 代 餐</h3><p>「哦，我的上帝呀，这个视频给我的感觉简直就像在餐厅里点餐，点的微中辣，结果给我的是特辣，辣到无法呼吸后想要喝水，结果发现是热的一样。」</p><div class="meta"><span>播放 9万+</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV1BbYDz3Ex8/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video3.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">少女终末旅行</span>&nbsp;<span class="tag">二创填词</span><h3>“再见啦，这场虚无的旅行”</h3><p>「本来快忘了，总是有二创来戳我一把。但这么优质的少终挺难得的。」</p><div class="meta"><span>投币 2000+</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV1sZpnzCEvw/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video4.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">摇曳露营</span>&nbsp;<span class="tag">二创填词</span><h3>“有你的露营才是莫愁乡！”</h3><p>「这是没有真经历写不出来这词啊。」</p><div class="meta"><span>再来一遍</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+</div>
+</section>
+</main>
+
+<footer>
+  <div>© 2026 这人针不错</div>
+  <div style="margin-top:6px">ZRZBC</div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // 导航平滑滚动
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const el = document.querySelector(a.getAttribute('href'));
+      if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+
+  // 点击整个名字卡片，滚动到“找到我”
+  const profile = document.querySelector('.profile');
+  if (profile) {
+    profile.addEventListener('click', () => {
+      document.querySelector('#contact').scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  // 四叶草点击跳动 + 字幕
+  const cloverImg = document.getElementById('cloverImg');
+  const cloverTip = document.getElementById('cloverTip');
+  if (cloverImg && cloverTip) {
+    cloverImg.addEventListener('click', () => {
+      cloverImg.classList.remove('pop');
+      void cloverImg.offsetWidth;
+      cloverImg.classList.add('pop');
+
+      cloverTip.classList.add('show');
+      clearTimeout(cloverImg._tipTimer);
+      cloverImg._tipTimer = setTimeout(() => {
+        cloverTip.classList.remove('show');
+      }, 1200);
+    });
+
+    cloverImg.addEventListener('animationend', () => {
+      cloverImg.classList.remove('pop');
+    });
+  }
+
+
+
+  // 点击复制 QQ 群号
+  const copyQQ = document.getElementById('copyQQ');
+  const qqNum = document.getElementById('qqNum');
+  if (copyQQ && qqNum) {
+    copyQQ.addEventListener('click', () => {
+      const num = '856429636';
+      const done = () => {
+        qqNum.textContent = num + '（已复制）';
+        setTimeout(() => { qqNum.textContent = num; }, 2000);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(num).then(done).catch(() => {
+          const ta = document.createElement('textarea');
+          ta.value = num; document.body.appendChild(ta); ta.select();
+          document.execCommand('copy'); document.body.removeChild(ta); done();
+        });
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = num; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta); done();
+      }
+    });
+  }
+
+  /* ---------- 语言切换：简体 / 繁体香港 / 繁体台湾 ---------- */
+  var langBtn = document.getElementById('langBtn');
+  var langMenu = document.getElementById('langMenu');
+  var langSwitch = document.querySelector('.lang-switch');
+
+  if (langBtn && langMenu && langSwitch && typeof OpenCC !== 'undefined') {
+    var converters = {
+      cn: null,
+      hk: OpenCC.Converter({ from: 'cn', to: 'hk' }),
+      tw: OpenCC.Converter({ from: 'cn', to: 'twp' })
+    };
+    var langNames = {
+      cn: '简体中文 ▾',
+      hk: '繁體中文（香港）▾',
+      tw: '繁體中文（台灣）▾'
+    };
+
+    // 缓存所有文本节点
+    var textNodes = [];
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+    var n;
+    while ((n = walker.nextNode())) {
+      if (!n.nodeValue || !n.nodeValue.trim()) continue;
+      var p = n.parentElement;
+      if (!p) continue;
+      var tag = p.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+      n.__original = n.nodeValue;
+      textNodes.push(n);
+    }
+
+    var applyLang = function (lang) {
+      var converter = converters[lang];
+      for (var i = 0; i < textNodes.length; i++) {
+        var node = textNodes[i];
+        if (!node.isConnected) continue;
+        node.nodeValue = converter ? converter(node.__original) : node.__original;
+      }
+      langBtn.textContent = langNames[lang];
+      var btns = langMenu.querySelectorAll('button');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].classList.toggle('active', btns[j].getAttribute('data-lang') === lang);
+      }
+      document.documentElement.lang = lang === 'cn' ? 'zh-CN' : (lang === 'hk' ? 'zh-HK' : 'zh-TW');
+    };
+
+    langBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      langMenu.classList.toggle('open');
+    });
+
+    var menuBtns = langMenu.querySelectorAll('button');
+    for (var k = 0; k < menuBtns.length; k++) {
+      (function (btn) {
+        btn.addEventListener('click', function () {
+          applyLang(btn.getAttribute('data-lang'));
+          langMenu.classList.remove('open');
+        });
+      })(menuBtns[k]);
+    }
+
+    document.addEventListener('click', function (e) {
+      if (!langSwitch.contains(e.target)) langMenu.classList.remove('open');
+    });
+  }
+
+  // 点击邮箱复制
+  const copyEmailBtn = document.getElementById('copyEmail');
+  if (copyEmailBtn) {
+    copyEmailBtn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const email = 'zrzbc123@163.com';
+      const done = () => {
+        copyEmailBtn.textContent = email + '（已复制）';
+        setTimeout(() => { copyEmailBtn.textContent = email; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(email).then(done).catch(() => {
+          const ta = document.createElement('textarea');
+          ta.value = email; document.body.appendChild(ta); ta.select();
+          document.execCommand('copy'); document.body.removeChild(ta); done();
+        });
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = email; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta); done();
+      }
+    });
+  }
+});
+</script>
