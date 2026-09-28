@@ -791,7 +791,7 @@ body.page-leaving {
         <!-- 上方文字：当前经验/下一级所需经验，右侧显示等级 -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
           <span>经验值：<span id="userExpText">0/200</span></span>
-          <span id="userLevelText" style="font-weight: bold; font-size: 16px; color: #4b5563;">Lv1</span>
+<span id="userLevelText">Lv1</span>
         </div>
         <!-- 进度条容器 -->
         <div style="width: 100%; height: 14px; background: #ffffff; border: 1px solid #e8ebf5; border-radius: 7px; overflow: hidden;">
@@ -829,23 +829,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let level = 1;
     let nextExp = 200;
-    let color = '#22c55e'; // Lv1 改成绿色，和升级后的绿色一致
+    // 定义每个等级的基础色、暗色（用于渐变）和文字颜色
+    let baseColor = '#4ade80'; // Lv1 浅绿色
+    let darkColor = '#22c55e';
+    let textColor = '#ffffff'; 
 
     if (expNum >= 6400) {
-      level = 7; nextExp = Infinity; color = '#a855f7'; // 紫色
+      level = 7; nextExp = Infinity;
+      baseColor = '#a855f7'; darkColor = '#7e22ce'; textColor = '#ffffff';
     } else if (expNum >= 3200) {
-      level = 6; nextExp = 6400; color = '#ef4444'; // 红色
+      level = 6; nextExp = 6400;
+      baseColor = '#ef4444'; darkColor = '#b91c1c'; textColor = '#ffffff';
     } else if (expNum >= 1600) {
-      level = 5; nextExp = 3200; color = '#f97316'; // 橙色
+      level = 5; nextExp = 3200;
+      baseColor = '#f97316'; darkColor = '#c2410c'; textColor = '#ffffff';
     } else if (expNum >= 800) {
-      level = 4; nextExp = 1600; color = '#d97706'; // 深黄色
+      level = 4; nextExp = 1600;
+      baseColor = '#facc15'; // 明亮的黄色
+      darkColor = '#eab308'; // 深黄色，用于渐变
+      textColor = '#1f2937'; // 黄色背景配黑色文字，清晰易读
     } else if (expNum >= 400) {
-      level = 3; nextExp = 800; color = '#3b82f6'; // 蓝色
+      level = 3; nextExp = 800;
+      baseColor = '#3b82f6'; darkColor = '#1d4ed8'; textColor = '#ffffff';
     } else if (expNum >= 200) {
-      level = 2; nextExp = 400; color = '#22c55e'; // 绿色
+      level = 2; nextExp = 400;
+      baseColor = '#22c55e'; darkColor = '#15803d'; textColor = '#ffffff';
     }
 
-    // 修改文字和颜色
+    // 设置经验条文字和宽度
     if (nextExp === Infinity) {
       userExpText.textContent = `${expNum}/∞`;
       expBarFill.style.width = '100%';
@@ -854,10 +865,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const percentage = Math.min((expNum / nextExp) * 100, 100);
       expBarFill.style.width = percentage + '%';
     }
-    
+
+    // 设置等级框样式（渐变背景 + 白色/黑色文字）
     userLevelText.textContent = `Lv${level}`;
-    userLevelText.style.color = color;
-    expBarFill.style.background = color;
+    userLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
+    userLevelText.style.color = textColor;
+    userLevelText.style.padding = '2px 12px';
+    userLevelText.style.borderRadius = '8px';
+    userLevelText.style.fontSize = '14px';
+    userLevelText.style.fontWeight = 'bold';
+    userLevelText.style.display = 'inline-block';
+    userLevelText.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'; // 增加立体感
+    userLevelText.style.transition = 'all 0.3s ease';
+
+    // 经验条填充颜色跟随等级颜色变化
+    expBarFill.style.background = baseColor;
   }
 
   const avatarBtn = document.getElementById('avatarBtn');
