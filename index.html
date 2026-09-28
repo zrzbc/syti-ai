@@ -729,7 +729,7 @@ body.page-leaving {
           <input type="text" id="nicknameInput" placeholder="设置一个独一无二的昵称" maxlength="20">
         </div>
 
-        <div class="form-group">
+        <div class="form-group" id="codeGroup">  <!-- 👈 就是这里，加上 id="codeGroup" -->
           <label>验证码</label>
           <div class="code-row">
             <input type="text" id="codeInput" placeholder="6位数字验证码" maxlength="6" required>
@@ -780,7 +780,11 @@ body.page-leaving {
       <div class="avatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px;">
         <span id="userAvatarLetter">U</span>
       </div>
-      <h3 id="userNickname">用户昵称</h3>
+      <!-- 修改这行：加上铅笔图标 -->
+      <h3 id="userNickname" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+        用户昵称
+        <span id="editNicknameBtn" style="cursor: pointer; font-size: 16px;" title="修改昵称">✏️</span>
+      </h3>
       <p style="color: #6f7890; margin: 10px 0 20px; font-size: 14px;">经验值：<span id="userExp">0</span>（暂未开放）</p>
       <button class="submit-btn" id="logoutBtn" style="background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
     </div>
@@ -875,6 +879,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ================== 3. 弹窗与面板切换 ==================
+  // ===== 自动登录初始化（页面一加载就判断） =====
+  const savedUser = localStorage.getItem('user');
+  if (savedUser) {
+    try {
+      const userData = JSON.parse(savedUser);
+      // 把右上角的头像图标换成用户昵称的首字母
+      const avatarBtnHTML = document.querySelector('#avatarBtn svg');
+      if (avatarBtnHTML) {
+        avatarBtnHTML.outerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
+      }
+    } catch(e) {}
+  }
+
+  // ===== 弹窗与用户面板逻辑 =====
   if (avatarBtn && authModal) {
     avatarBtn.addEventListener('click', () => {
       const user = localStorage.getItem('user');
@@ -882,7 +900,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           const userData = JSON.parse(user);
           userAvatarLetter.textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
-          userNickname.textContent = userData.nickname || '用户';
+          userNickname.childNodes[0].nodeValue = userData.nickname || '用户'; // 只改文本，保留铅笔图标
         } catch(e) {}
         userPanel.style.display = 'block';
         authFormContainer.style.display = 'none';
@@ -893,6 +911,38 @@ document.addEventListener('DOMContentLoaded', () => {
         userPanel.style.display = 'none';
       }
       authModal.classList.add('show');
+    });
+  }
+
+  // ===== 修改昵称逻辑 =====
+  const editNicknameBtn = document.getElementById('editNicknameBtn');
+  if (editNicknameBtn) {
+    editNicknameBtn.addEventListener('click', async () => {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user.email) return alert('请先登录');
+      
+      const newNickname = prompt('请输入新的昵称：', user.nickname);
+      if (!newNickname || newNickname.trim() === '' || newNickname === user.nickname) return;
+
+      try {
+        const res = await fetch('/api/auth/update-nickname', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email, newNickname: newNickname.trim() })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          alert('昵称修改成功！');
+          user.nickname = newNickname.trim();
+          localStorage.setItem('user', JSON.stringify(user));
+          location.reload(); // 刷新页面生效
+        } else {
+          alert(data.error || '修改失败');
+        }
+      } catch (err) {
+        alert('网络错误，请稍后重试');
+      }
     });
   }
 
@@ -920,6 +970,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tabLogin.classList.add('active');
       tabRegister.classList.remove('active');
       nicknameGroup.style.display = 'none';
+      if (document.getElementById('codeGroup')) document.getElementById('codeGroup').style.display = 'none'; // 登录隐藏验证码
       forgotPasswordLink.style.display = 'inline';
     });
 
@@ -927,6 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tabRegister.classList.add('active');
       tabLogin.classList.remove('active');
       nicknameGroup.style.display = 'block';
+      if (document.getElementById('codeGroup')) document.getElementById('codeGroup').style.display = 'block'; // 注册显示验证码
       forgotPasswordLink.style.display = 'none';
     });
   }
@@ -955,7 +1007,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const isRegister = tabRegister.classList.contains('active');
       const nickname = isRegister && nicknameInput ? nicknameInput.value.trim() : '';
 
-      if (!email || !code || !password) return alert('请填写所有字段');
+      // 登录：只要邮箱和密码；注册：邮箱、密码、验证码、昵称都要
+      if (!email || !password) return alert('请填写邮箱和密码');
+      if (isRegister && !code) return alert('请填写验证码');
       if (password.length < 8) return alert('密码至少8位');
       if (isRegister && !nickname) return alert('请设置您的昵称');
 
@@ -963,10 +1017,12 @@ document.addEventListener('DOMContentLoaded', () => {
       submitBtn.textContent = '处理中...';
 
       try {
+        // 登录不传 code，注册传 code
+        const payload = isRegister ? { email, code, password, nickname } : { email, password };
         const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, code, password, nickname })
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
 
