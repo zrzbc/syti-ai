@@ -521,6 +521,65 @@ body.page-leaving {
 #backToLoginLink, #forgotPasswordLink { color: #8a5cf6; font-size: 13px; }
 #userNickname { font-size: 24px; margin-top: 10px; }
 
+/* ===== 签到区 ===== */
+.signin-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+.signin-card {
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 12px 40px rgba(60,70,120,.07);
+  border-radius: 20px;
+  padding: 24px;
+}
+.signin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.signin-table th, .signin-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eef1f8;
+}
+.signin-table th {
+  background: #f7f9ff;
+  color: #6f7890;
+  font-weight: 600;
+}
+.signin-table tr:last-child td { border-bottom: none; }
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  background: #fff;
+  font-size: 13px;
+  gap: 10px;
+}
+.leaderboard-row.rank-1 { background: linear-gradient(135deg, #ffd700, #ffb800); }
+.leaderboard-row.rank-2 { background: linear-gradient(135deg, #a0c4ff, #6b9bff); }
+.leaderboard-row.rank-3 { background: linear-gradient(135deg, #d2a679, #b8864a); }
+.leaderboard-row.rank-1, .leaderboard-row.rank-2, .leaderboard-row.rank-3 { color: #fff; }
+.leaderboard-row.current-user {
+  margin-top: 16px;
+  border-top: 1px dashed #d9dce5;
+  padding-top: 12px;
+}
+.leaderboard-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #4f7cff, #8a5cf6);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold; color: #fff; font-size: 13px; overflow: hidden;
+  background-size: cover; background-position: center;
+}
+.leaderboard-name { flex: 1; }
+.leaderboard-days { margin-left: auto; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -759,8 +818,45 @@ body.page-leaving {
 </div>
 </section>
 
-<!-- ===== 登录/注册模态框 ===== -->
-<div class="modal-overlay" id="authModal">
+<!-- ===== 签到区 ===== -->
+<section id="signin">
+  <div class="container">
+    <div class="section-head">
+      <div><div class="kicker">Sign In</div><h2>每日签到</h2></div>
+      <div class="section-desc">连续签到，获得更多经验值！</div>
+    </div>
+    <div class="signin-layout">
+      <!-- 左侧：签到表格 -->
+      <div class="signin-card">
+        <h3 style="margin-bottom: 16px;">签到奖励</h3>
+        <table class="signin-table">
+          <thead>
+            <tr><th>天数</th><th>奖励</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>第 1 天</td><td>5 经验</td></tr>
+            <tr><td>第 2 天</td><td>8 经验</td></tr>
+            <tr><td>第 3 天</td><td>10 经验</td></tr>
+            <tr><td>第 4 天</td><td>随机 8~20 经验</td></tr>
+            <tr><td>第 5 天</td><td>8 经验</td></tr>
+            <tr><td>第 6 天</td><td>12 经验</td></tr>
+            <tr><td>第 7 天</td><td>随机 8~20 经验</td></tr>
+          </tbody>
+        </table>
+        <button class="submit-btn" id="signinBtn" style="margin-top: 18px;">立即签到</button>
+        <div id="signinStatus" style="text-align: center; margin-top: 10px; font-size: 13px; color: #6f7890;"></div>
+      </div>
+
+      <!-- 右侧：排行榜 -->
+      <div class="signin-card">
+        <h3 style="margin-bottom: 16px;">连续签到排行榜</h3>
+        <div id="leaderboardList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 登录/注册模态框 ===== --><div class="modal-overlay" id="authModal">
   <div class="modal-content">
     <button class="modal-close" id="closeModal">&times;</button>
 
@@ -851,6 +947,7 @@ body.page-leaving {
         </div>
       </div>
 
+      <button class="submit-btn" id="userPanelSigninBtn" style="background: #fff; color: #172033; border: 1px solid #e8ebf5;">签到</button>
       <button class="submit-btn" id="logoutBtn" style="background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
     </div>
 
@@ -1345,6 +1442,100 @@ document.addEventListener('DOMContentLoaded', () => {
     runStatsCycle();
   }
   if (statEls.length === 3) { runStatsCycle(); }
+
+  // ===== 签到功能 =====
+  const signinBtn = document.getElementById('signinBtn');
+  const signinStatus = document.getElementById('signinStatus');
+  const leaderboardList = document.getElementById('leaderboardList');
+
+  async function loadLeaderboard() {
+    if (!leaderboardList) return;
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    try {
+      const res = await fetch('/api/auth/leaderboard', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email || '' })
+      });
+      const data = await res.json();
+      if (!data.success) return;
+
+      let html = '';
+      data.top10.forEach((u, i) => {
+        const rank = i + 1;
+        const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+        const avatarStyle = u.avatar ? `background-image: url(${u.avatar});` : '';
+        const letter = (u.nickname || 'U').charAt(0).toUpperCase();
+        html += `<div class="leaderboard-row ${rankClass}">
+          <span style="width:20px;">${rank}</span>
+          <div class="leaderboard-avatar" style="${avatarStyle}">${u.avatar ? '' : letter}</div>
+          <span class="leaderboard-name">${u.nickname || '用户'}</span>
+          <span class="leaderboard-days">${u.continuous_days || 0} 天</span>
+        </div>`;
+      });
+
+      const inTop10 = data.currentUser && data.top10.some(u => u.email === data.currentUser.email);
+      if (!inTop10 && data.currentUser) {
+        const u = data.currentUser;
+        const avatarStyle = u.avatar ? `background-image: url(${u.avatar});` : '';
+        const letter = (u.nickname || 'U').charAt(0).toUpperCase();
+        html += `<div class="leaderboard-row current-user">
+          <span style="width:20px;">未上榜</span>
+          <div class="leaderboard-avatar" style="${avatarStyle}">${u.avatar ? '' : letter}</div>
+          <span class="leaderboard-name">${u.nickname || '用户'}</span>
+          <span class="leaderboard-days">${u.continuous_days || 0} 天</span>
+        </div>`;
+      }
+
+      leaderboardList.innerHTML = html;
+    } catch (err) { console.log('排行榜加载失败', err); }
+  }
+
+  if (signinBtn) {
+    signinBtn.addEventListener('click', async () => {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user.email) return alert('请先登录！');
+      signinBtn.disabled = true;
+      signinBtn.textContent = '签到中...';
+      try {
+        const res = await fetch('/api/auth/signin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email })
+        });
+        const data = await res.json();
+        if (data.success) {
+          user.exp = data.exp;
+          user.signin_days = data.signinDays;
+          user.continuous_days = data.continuousDays;
+          localStorage.setItem('user', JSON.stringify(user));
+          signinStatus.textContent = data.message;
+          signinStatus.style.color = '#22c55e';
+          renderExp(data.exp);
+          loadLeaderboard();
+        } else {
+          signinStatus.textContent = data.error;
+          signinStatus.style.color = '#ef4444';
+        }
+      } catch (err) {
+        signinStatus.textContent = '网络错误，请稍后重试';
+        signinStatus.style.color = '#ef4444';
+      } finally {
+        signinBtn.disabled = false;
+        signinBtn.textContent = '立即签到';
+      }
+    });
+  }
+
+  const userPanelSigninBtn = document.getElementById('userPanelSigninBtn');
+  if (userPanelSigninBtn) {
+    userPanelSigninBtn.addEventListener('click', () => {
+      authModal.classList.remove('show');
+      document.querySelector('#signin').scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  loadLeaderboard();
 
   const copyEmailBtn = document.getElementById('copyEmail');
   if (copyEmailBtn) {
