@@ -27,6 +27,10 @@ export async function onRequestPost(context) {
   return Response.json({
     success: true,
     message: '登录成功',
-    user: { id: user.id, email: user.email, nickname: user.nickname }
+    user: { 
+      id: user.id, 
+      email: user.email, 
+      nickname: user.nickname, 
+      exp: user.exp || 0  // 👈 加上这一行，把经验值也返回
+    }
   });
-}
