@@ -970,7 +970,10 @@ document.addEventListener('DOMContentLoaded', () => {
       tabLogin.classList.add('active');
       tabRegister.classList.remove('active');
       nicknameGroup.style.display = 'none';
-      if (document.getElementById('codeGroup')) document.getElementById('codeGroup').style.display = 'none'; // 登录隐藏验证码
+      if (document.getElementById('codeGroup')) {
+        document.getElementById('codeGroup').style.display = 'none';
+        if (codeInput) codeInput.required = false; // 👈 登录时，验证码不是必填
+      }
       forgotPasswordLink.style.display = 'inline';
     });
 
@@ -978,7 +981,10 @@ document.addEventListener('DOMContentLoaded', () => {
       tabRegister.classList.add('active');
       tabLogin.classList.remove('active');
       nicknameGroup.style.display = 'block';
-      if (document.getElementById('codeGroup')) document.getElementById('codeGroup').style.display = 'block'; // 注册显示验证码
+      if (document.getElementById('codeGroup')) {
+        document.getElementById('codeGroup').style.display = 'block';
+        if (codeInput) codeInput.required = true; // 👈 注册时，验证码恢复必填
+      }
       forgotPasswordLink.style.display = 'none';
     });
   }
