@@ -5,8 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="这人针不错官方网站">
 <title>主页 - 这人针不错</title>
-<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js">
+</script>
+
 <style>
+
+/* ===== 悬停卡片 ===== */
+.user-center { position: relative; display: flex; align-items: center; margin-left: 4px; }
+.user-popover {
+  position: absolute; top: calc(100% + 8px); right: 0; width: 220px;
+  background: #fff; border: 1px solid #e8ebf5; border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(55,65,110,0.15); display: none; z-index: 50;
+  margin-top: 5px;
+}
+.user-popover::before {
+  content: ""; position: absolute; top: -6px; right: 18px;
+  width: 12px; height: 12px; background: #fff; border-top: 1px solid #e8ebf5;
+  border-left: 1px solid #e8ebf5; transform: rotate(45deg);
+}
+.user-center:hover .user-popover { display: block; }
+
 :root{
   --blue:#4f7cff;
   --purple:#8a5cf6;
@@ -516,21 +534,48 @@ body.page-leaving {
       </div>
     </div>
     <!-- 头像按钮 -->
-    <div class="user-center">
+    <div class="user-center" id="userCenter">
       <div class="avatar-btn" id="avatarBtn" title="个人中心">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
       </div>
+      <!-- 悬停卡片 -->
+      <div class="user-popover" id="userPopover">
+        <div id="popoverNotLoggedIn" style="display:none; padding: 20px; text-align: center; color: #6f7890; font-size: 14px;">
+          请先点击头像登录或注册
+        </div>
+        <div id="popoverLoggedIn" style="display:none; padding: 16px;">
+          <div style="text-align: center; margin-bottom: 12px;">
+            <div id="popoverAvatar" style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #4f7cff, #8a5cf6); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background-size: cover; background-position: center; position: relative;">
+              <span id="popoverAvatarLetter" style="font-size: 28px; font-weight: bold; color: #fff;">U</span>
+              <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 10px; text-align: center; padding: 2px 0;">修改</div>
+            </div>
+            <input type="file" id="avatarUploadInput" style="display: none;" accept="image/*">
+          </div>
+          <div id="popoverNickname" style="text-align: center; font-size: 16px; font-weight: bold; color: #172033; cursor: pointer; margin-bottom: 4px;" title="点击修改昵称">用户昵称</div>
+          <div style="text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 16px;">点击昵称修改</div>
+
+          <div style="font-size: 12px; color: #6f7890;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span>经验值：<span id="popoverExpText">0/200</span></span>
+              <span id="popoverLevelText" style="font-weight: bold; padding: 1px 8px; border-radius: 6px; color: #fff; background: #4ade80;">Lv1</span>
+            </div>
+            <div style="width: 100%; height: 8px; background: #fff; border: 1px solid #e8ebf5; border-radius: 4px; overflow: hidden;">
+              <div id="popoverExpBarFill" style="height: 100%; width: 0%; background: #4ade80; border-radius: 4px; transition: all 0.3s;"></div>
+            </div>
+          </div>
+          <button class="submit-btn" id="popoverLogoutBtn" style="padding: 8px; font-size: 14px; margin-top: 16px; background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
+        </div>
+      </div>
     </div>
-  </div>
 </nav>
 
 <main>
 <section class="hero container" id="home">
   <div>
-    <h1>把&nbsp;想&nbsp;法<br>做&nbsp;成<span class="gradient">&nbsp;视&nbsp;频&nbsp;。</span></h1>
+    <h1>把&nbsp;想&nbsp;法<br>变&nbsp;为<span class="gradient">&nbsp;可&nbsp;能&nbsp;。</span></h1>
     <p>&nbsp;&nbsp;鬼畜 · 游戏 · 动画领域UP主<br>&nbsp;</p>
     <div class="cta">
       <a class="btn primary" href="#works">精选作品</a>
@@ -783,7 +828,6 @@ body.page-leaving {
       <!-- 修改这行：加上铅笔图标 -->
       <h3 id="userNickname" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
         用户昵称
-        <span id="editNicknameBtn" style="cursor: pointer; font-size: 16px;" title="修改昵称">✏️</span>
       </h3>
 
       <!-- 经验条区域 -->
@@ -817,79 +861,12 @@ body.page-leaving {
 document.addEventListener('DOMContentLoaded', () => {
 
   // ================== 1. 获取所有 DOM 元素 ==================
-
-  // ===== 经验条渲染逻辑 =====
-  function renderExp(exp) {
-    const expNum = parseInt(exp) || 0;
-    const expBarFill = document.getElementById('expBarFill');
-    const userExpText = document.getElementById('userExpText');
-    const userLevelText = document.getElementById('userLevelText');
-
-    if (!expBarFill || !userExpText || !userLevelText) return;
-
-    let level = 1;
-    let nextExp = 200;
-    // 定义每个等级的基础色、暗色（用于渐变）和文字颜色
-    let baseColor = '#4ade80'; // Lv1 浅绿色
-    let darkColor = '#22c55e';
-    let textColor = '#ffffff'; 
-
-    if (expNum >= 6400) {
-      level = 7; nextExp = Infinity;
-      baseColor = '#a855f7'; darkColor = '#7e22ce'; textColor = '#ffffff';
-    } else if (expNum >= 3200) {
-      level = 6; nextExp = 6400;
-      baseColor = '#ef4444'; darkColor = '#b91c1c'; textColor = '#ffffff';
-    } else if (expNum >= 1600) {
-      level = 5; nextExp = 3200;
-      baseColor = '#f97316'; darkColor = '#c2410c'; textColor = '#ffffff';
-    } else if (expNum >= 800) {
-      level = 4; nextExp = 1600;
-      baseColor = '#facc15'; // 明亮的黄色
-      darkColor = '#eab308'; // 深黄色，用于渐变
-      textColor = '#1f2937'; // 黄色背景配黑色文字，清晰易读
-    } else if (expNum >= 400) {
-      level = 3; nextExp = 800;
-      baseColor = '#3b82f6'; darkColor = '#1d4ed8'; textColor = '#ffffff';
-    } else if (expNum >= 200) {
-      level = 2; nextExp = 400;
-      baseColor = '#22c55e'; darkColor = '#15803d'; textColor = '#ffffff';
-    }
-
-    // 设置经验条文字和宽度
-    if (nextExp === Infinity) {
-      userExpText.textContent = `${expNum}/∞`;
-      expBarFill.style.width = '100%';
-    } else {
-      userExpText.textContent = `${expNum}/${nextExp}`;
-      const percentage = Math.min((expNum / nextExp) * 100, 100);
-      expBarFill.style.width = percentage + '%';
-    }
-
-    // 设置等级框样式（渐变背景 + 白色/黑色文字）
-    userLevelText.textContent = `Lv${level}`;
-    userLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
-    userLevelText.style.color = textColor;
-    userLevelText.style.padding = '2px 12px';
-    userLevelText.style.borderRadius = '8px';
-    userLevelText.style.fontSize = '14px';
-    userLevelText.style.fontWeight = 'bold';
-    userLevelText.style.display = 'inline-block';
-    userLevelText.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)'; // 增加立体感
-    userLevelText.style.transition = 'all 0.3s ease';
-
-    // 经验条填充颜色跟随等级颜色变化
-    expBarFill.style.background = baseColor;
-  }
-
   const avatarBtn = document.getElementById('avatarBtn');
   const authModal = document.getElementById('authModal');
   const closeModal = document.getElementById('closeModal');
-
   const authFormContainer = document.getElementById('authFormContainer');
   const resetFormContainer = document.getElementById('resetFormContainer');
   const userPanel = document.getElementById('userPanel');
-
   const tabLogin = document.getElementById('tabLogin');
   const tabRegister = document.getElementById('tabRegister');
   const authForm = document.getElementById('authForm');
@@ -901,7 +878,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const sendCodeBtn = document.getElementById('sendCodeBtn');
   const submitBtn = document.getElementById('submitBtn');
   const forgotPasswordLink = document.getElementById('forgotPasswordLink');
-
   const resetForm = document.getElementById('resetForm');
   const resetEmail = document.getElementById('resetEmail');
   const resetCode = document.getElementById('resetCode');
@@ -909,99 +885,100 @@ document.addEventListener('DOMContentLoaded', () => {
   const sendResetCodeBtn = document.getElementById('sendResetCodeBtn');
   const resetSubmitBtn = document.getElementById('resetSubmitBtn');
   const backToLoginLink = document.getElementById('backToLoginLink');
-
   const userAvatarLetter = document.getElementById('userAvatarLetter');
   const userNickname = document.getElementById('userNickname');
   const logoutBtn = document.getElementById('logoutBtn');
 
-  // ================== 2. 通用工具函数 ==================
+  // ================== 2. 经验条渲染 ==================
+  function renderExp(exp) {
+    const expNum = parseInt(exp) || 0;
+    const expBarFill = document.getElementById('expBarFill');
+    const userExpText = document.getElementById('userExpText');
+    const userLevelText = document.getElementById('userLevelText');
+    if (!expBarFill || !userExpText || !userLevelText) return;
+
+    let level = 1, nextExp = 200;
+    let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
+
+    if (expNum >= 6400) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
+    else if (expNum >= 3200) { level = 6; nextExp = 6400; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
+    else if (expNum >= 1600) { level = 5; nextExp = 3200; baseColor = '#f97316'; darkColor = '#c2410c'; }
+    else if (expNum >= 800) { level = 4; nextExp = 1600; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
+    else if (expNum >= 400) { level = 3; nextExp = 800; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
+    else if (expNum >= 200) { level = 2; nextExp = 400; baseColor = '#22c55e'; darkColor = '#15803d'; }
+
+    if (nextExp === Infinity) { userExpText.textContent = `${expNum}/∞`; expBarFill.style.width = '100%'; }
+    else { userExpText.textContent = `${expNum}/${nextExp}`; expBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
+
+    userLevelText.textContent = `Lv${level}`;
+    userLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
+    userLevelText.style.color = textColor;
+    userLevelText.style.padding = '2px 12px';
+    userLevelText.style.borderRadius = '8px';
+    userLevelText.style.display = 'inline-block';
+    expBarFill.style.background = baseColor;
+  }
+
+  // ================== 3. 通用工具函数 ==================
   function startCountdown(btn) {
     let countdown = 60;
-    btn.disabled = true;
-    btn.textContent = `${countdown}秒后重试`;
+    btn.disabled = true; btn.textContent = `${countdown}秒后重试`;
     const timer = setInterval(() => {
       countdown--;
-      if (countdown <= 0) {
-        clearInterval(timer);
-        btn.disabled = false;
-        btn.textContent = '获取验证码';
-      } else {
-        btn.textContent = `${countdown}秒后重试`;
-      }
+      if (countdown <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; }
+      else { btn.textContent = `${countdown}秒后重试`; }
     }, 1000);
   }
 
   async function sendCode(email, btn) {
     if (!email || !email.includes('@')) return alert('请输入有效的邮箱地址');
-    btn.disabled = true;
-    btn.textContent = '发送中...';
+    btn.disabled = true; btn.textContent = '发送中...';
     try {
-      const res = await fetch('/api/auth/send-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
+      const res = await fetch('/api/auth/send-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
       const data = await res.json();
-      if (data.success) {
-        startCountdown(btn);
-      } else {
-        alert(data.error || '发送失败');
-        btn.disabled = false;
-        btn.textContent = '获取验证码';
-      }
-    } catch (err) {
-      alert('网络错误，请稍后重试');
-      btn.disabled = false;
-      btn.textContent = '获取验证码';
-    }
+      if (data.success) { startCountdown(btn); }
+      else { alert(data.error || '发送失败'); btn.disabled = false; btn.textContent = '获取验证码'; }
+    } catch (err) { alert('网络错误'); btn.disabled = false; btn.textContent = '获取验证码'; }
   }
 
-  // ================== 3. 弹窗与面板切换 ==================
-  // ===== 自动登录初始化（页面一加载就判断） =====
+  // ================== 4. 自动登录初始化 ==================
   const savedUser = localStorage.getItem('user');
   if (savedUser) {
     try {
       const userData = JSON.parse(savedUser);
-      // 把右上角的头像图标换成用户昵称的首字母
       const avatarBtnHTML = document.querySelector('#avatarBtn svg');
       if (avatarBtnHTML) {
-        avatarBtnHTML.outerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
+        if (userData.avatar) {
+          avatarBtnHTML.outerHTML = `<img src="${userData.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        } else {
+          avatarBtnHTML.outerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
+        }
       }
     } catch(e) {}
   }
 
-  // ===== 弹窗与用户面板逻辑 =====
+  // ================== 5. 弹窗与面板切换 ==================
   if (avatarBtn && authModal) {
     avatarBtn.addEventListener('click', async () => {
       const user = localStorage.getItem('user');
       if (user) {
         const userData = JSON.parse(user);
-        
-        // ===== 关键安全步骤：从后端拉取最新数据，覆盖本地伪造的数据 =====
         try {
-          const res = await fetch('/api/auth/me', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: userData.email })
-          });
+          const res = await fetch('/api/auth/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userData.email }) });
           const data = await res.json();
           if (data.success && data.user) {
-            // 更新本地存储和当前显示
             localStorage.setItem('user', JSON.stringify(data.user));
-            userData.exp = data.user.exp; 
-            userData.nickname = data.user.nickname;
+            userData.exp = data.user.exp; userData.nickname = data.user.nickname; userData.avatar = data.user.avatar;
           }
-        } catch (err) {
-          console.error('拉取最新数据失败', err);
+        } catch (err) {}
+        
+        if (userData.avatar) {
+          userAvatarLetter.outerHTML = `<img src="${userData.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:26px;">`;
+        } else {
+          userAvatarLetter.textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
         }
-        // ==========================================================
-
-        // 渲染用户信息
-        userAvatarLetter.textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
-// 清空原来的文本，只保留铅笔图标，并插入新昵称
-userNickname.firstChild.textContent = userData.nickname || '用户';
-        renderExp(userData.exp); // 使用真实数据渲染
-
+        userNickname.childNodes[0].nodeValue = userData.nickname || '用户';
+        renderExp(userData.exp);
         userPanel.style.display = 'block';
         authFormContainer.style.display = 'none';
         resetFormContainer.style.display = 'none';
@@ -1014,93 +991,40 @@ userNickname.firstChild.textContent = userData.nickname || '用户';
     });
   }
 
-  // ===== 修改昵称逻辑 =====
-  const editNicknameBtn = document.getElementById('editNicknameBtn');
-  if (editNicknameBtn) {
-    editNicknameBtn.addEventListener('click', async () => {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (!user.email) return alert('请先登录');
-      
-      const newNickname = prompt('请输入新的昵称：', user.nickname);
-      if (!newNickname || newNickname.trim() === '' || newNickname === user.nickname) return;
-
-      try {
-        const res = await fetch('/api/auth/update-nickname', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: user.email, newNickname: newNickname.trim() })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          alert('昵称修改成功！');
-          user.nickname = newNickname.trim();
-          localStorage.setItem('user', JSON.stringify(user));
-          location.reload(); // 刷新页面生效
-        } else {
-          alert(data.error || '修改失败');
-        }
-      } catch (err) {
-        alert('网络错误，请稍后重试');
-      }
-    });
-  }
-
   if (closeModal && authModal) {
     closeModal.addEventListener('click', () => authModal.classList.remove('show'));
-    authModal.addEventListener('click', (e) => {
-      if (e.target === authModal) authModal.classList.remove('show');
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && authModal.classList.contains('show')) authModal.classList.remove('show');
-    });
+    authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('show'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && authModal.classList.contains('show')) authModal.classList.remove('show'); });
   }
 
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('user');
-      alert('已退出登录');
-      authModal.classList.remove('show');
-      location.reload();
+      localStorage.removeItem('user'); alert('已退出登录');
+      authModal.classList.remove('show'); location.reload();
     });
   }
 
   if (tabLogin && tabRegister) {
     tabLogin.addEventListener('click', () => {
-      tabLogin.classList.add('active');
-      tabRegister.classList.remove('active');
+      tabLogin.classList.add('active'); tabRegister.classList.remove('active');
       nicknameGroup.style.display = 'none';
-      if (document.getElementById('codeGroup')) {
-        document.getElementById('codeGroup').style.display = 'none';
-        if (codeInput) codeInput.required = false; // 👈 登录时，验证码不是必填
-      }
+      if (document.getElementById('codeGroup')) { document.getElementById('codeGroup').style.display = 'none'; if (codeInput) codeInput.required = false; }
       forgotPasswordLink.style.display = 'inline';
     });
-
     tabRegister.addEventListener('click', () => {
-      tabRegister.classList.add('active');
-      tabLogin.classList.remove('active');
+      tabRegister.classList.add('active'); tabLogin.classList.remove('active');
       nicknameGroup.style.display = 'block';
-      if (document.getElementById('codeGroup')) {
-        document.getElementById('codeGroup').style.display = 'block';
-        if (codeInput) codeInput.required = true; // 👈 注册时，验证码恢复必填
-      }
+      if (document.getElementById('codeGroup')) { document.getElementById('codeGroup').style.display = 'block'; if (codeInput) codeInput.required = true; }
       forgotPasswordLink.style.display = 'none';
     });
   }
 
   if (forgotPasswordLink && backToLoginLink) {
-    forgotPasswordLink.addEventListener('click', () => {
-      authFormContainer.style.display = 'none';
-      resetFormContainer.style.display = 'block';
-    });
-    backToLoginLink.addEventListener('click', () => {
-      authFormContainer.style.display = 'block';
-      resetFormContainer.style.display = 'none';
-    });
+    forgotPasswordLink.addEventListener('click', () => { authFormContainer.style.display = 'none'; resetFormContainer.style.display = 'block'; });
+    backToLoginLink.addEventListener('click', () => { authFormContainer.style.display = 'block'; resetFormContainer.style.display = 'none'; });
   }
 
-  // ================== 4. 处理表单提交 ==================
+  // ================== 6. 表单提交 ==================
   if (sendCodeBtn) sendCodeBtn.addEventListener('click', () => sendCode(emailInput.value.trim(), sendCodeBtn));
   if (sendResetCodeBtn) sendResetCodeBtn.addEventListener('click', () => sendCode(resetEmail.value.trim(), sendResetCodeBtn));
 
@@ -1112,41 +1036,19 @@ userNickname.firstChild.textContent = userData.nickname || '用户';
       const password = passwordInput.value.trim();
       const isRegister = tabRegister.classList.contains('active');
       const nickname = isRegister && nicknameInput ? nicknameInput.value.trim() : '';
-
-      // 登录：只要邮箱和密码；注册：邮箱、密码、验证码、昵称都要
       if (!email || !password) return alert('请填写邮箱和密码');
       if (isRegister && !code) return alert('请填写验证码');
       if (password.length < 8) return alert('密码至少8位');
       if (isRegister && !nickname) return alert('请设置您的昵称');
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = '处理中...';
-
+      submitBtn.disabled = true; submitBtn.textContent = '处理中...';
       try {
-        // 登录不传 code，注册传 code
         const payload = isRegister ? { email, code, password, nickname } : { email, password };
-        const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
+        const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         const data = await res.json();
-
-        if (data.success) {
-          alert(isRegister ? '注册成功！' : '登录成功！');
-          if (data.user) {
-            localStorage.setItem('user', JSON.stringify(data.user));
-            location.reload();
-          }
-        } else {
-          alert(data.error || '操作失败');
-        }
-      } catch (err) {
-        alert('网络错误，请稍后重试');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '登录 / 注册';
-      }
+        if (data.success) { alert(isRegister ? '注册成功！' : '登录成功！'); if (data.user) { localStorage.setItem('user', JSON.stringify(data.user)); location.reload(); } }
+        else { alert(data.error || '操作失败'); }
+      } catch (err) { alert('网络错误'); }
+      finally { submitBtn.disabled = false; submitBtn.textContent = '登录 / 注册'; }
     });
   }
 
@@ -1156,38 +1058,162 @@ userNickname.firstChild.textContent = userData.nickname || '用户';
       const email = resetEmail.value.trim();
       const code = resetCode.value.trim();
       const password = newPassword.value.trim();
-
       if (!email || !code || !password) return alert('请填写所有字段');
       if (password.length < 8) return alert('密码至少8位');
-
-      resetSubmitBtn.disabled = true;
-      resetSubmitBtn.textContent = '处理中...';
-
+      resetSubmitBtn.disabled = true; resetSubmitBtn.textContent = '处理中...';
       try {
-        const res = await fetch('/api/auth/reset-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, code, newPassword: password })
-        });
+        const res = await fetch('/api/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, code, newPassword: password }) });
         const data = await res.json();
+        if (data.success) { alert('密码重置成功！'); authFormContainer.style.display = 'block'; resetFormContainer.style.display = 'none'; }
+        else { alert(data.error || '重置失败'); }
+      } catch (err) { alert('网络错误'); }
+      finally { resetSubmitBtn.disabled = false; resetSubmitBtn.textContent = '确认修改'; }
+    });
+  }
 
-        if (data.success) {
-          alert('密码重置成功，请使用新密码登录！');
-          authFormContainer.style.display = 'block';
-          resetFormContainer.style.display = 'none';
+  // ================== 7. 悬停卡片逻辑 ==================
+  const userCenter = document.getElementById('userCenter');
+  if (userCenter) {
+    userCenter.addEventListener('mouseenter', () => {
+      const user = localStorage.getItem('user');
+      const popoverLoggedIn = document.getElementById('popoverLoggedIn');
+      const popoverNotLoggedIn = document.getElementById('popoverNotLoggedIn');
+      
+      if (user) {
+        const userData = JSON.parse(user);
+        popoverLoggedIn.style.display = 'block';
+        popoverNotLoggedIn.style.display = 'none';
+
+        if (userData.avatar) {
+          document.getElementById('popoverAvatar').style.backgroundImage = `url(${userData.avatar})`;
+          document.getElementById('popoverAvatarLetter').style.display = 'none';
         } else {
-          alert(data.error || '重置失败');
+          document.getElementById('popoverAvatar').style.backgroundImage = 'none';
+          document.getElementById('popoverAvatarLetter').style.display = 'block';
+          document.getElementById('popoverAvatarLetter').textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
         }
-      } catch (err) {
-        alert('网络错误，请稍后重试');
-      } finally {
-        resetSubmitBtn.disabled = false;
-        resetSubmitBtn.textContent = '确认修改';
+        
+        document.getElementById('popoverNickname').textContent = userData.nickname || '用户';
+        renderPopoverExp(userData.exp);
+      } else {
+        popoverLoggedIn.style.display = 'none';
+        popoverNotLoggedIn.style.display = 'block';
       }
     });
   }
 
-  // ================== 5. 保留你原有的动画与交互 ==================
+  function renderPopoverExp(exp) {
+    const expNum = parseInt(exp) || 0;
+    const popoverExpText = document.getElementById('popoverExpText');
+    const popoverLevelText = document.getElementById('popoverLevelText');
+    const popoverExpBarFill = document.getElementById('popoverExpBarFill');
+    if (!popoverExpText || !popoverLevelText || !popoverExpBarFill) return;
+
+    let level = 1, nextExp = 200;
+    let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
+
+    if (expNum >= 6400) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
+    else if (expNum >= 3200) { level = 6; nextExp = 6400; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
+    else if (expNum >= 1600) { level = 5; nextExp = 3200; baseColor = '#f97316'; darkColor = '#c2410c'; }
+    else if (expNum >= 800) { level = 4; nextExp = 1600; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
+    else if (expNum >= 400) { level = 3; nextExp = 800; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
+    else if (expNum >= 200) { level = 2; nextExp = 400; baseColor = '#22c55e'; darkColor = '#15803d'; }
+
+    if (nextExp === Infinity) { popoverExpText.textContent = `${expNum}/∞`; popoverExpBarFill.style.width = '100%'; }
+    else { popoverExpText.textContent = `${expNum}/${nextExp}`; popoverExpBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
+
+    popoverLevelText.textContent = `Lv${level}`;
+    popoverLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
+    popoverLevelText.style.color = textColor;
+    popoverExpBarFill.style.background = baseColor;
+  }
+
+  // ================== 8. 悬停卡片内交互 ==================
+  const popoverAvatar = document.getElementById('popoverAvatar');
+  const avatarUploadInput = document.getElementById('avatarUploadInput');
+  if (popoverAvatar && avatarUploadInput) {
+    popoverAvatar.addEventListener('click', (e) => { e.stopPropagation(); avatarUploadInput.click(); });
+    avatarUploadInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 500 * 1024) return alert('图片不能超过 500KB，请压缩后再上传');
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target.result;
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        try {
+          const res = await fetch('/api/auth/update-avatar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, avatar: base64 }) });
+          const data = await res.json();
+          if (data.success) {
+            user.avatar = base64; localStorage.setItem('user', JSON.stringify(user));
+            document.getElementById('popoverAvatar').style.backgroundImage = `url(${base64})`;
+            document.getElementById('popoverAvatarLetter').style.display = 'none';
+            alert('头像修改成功！');
+          } else { alert(data.error || '上传失败'); }
+        } catch (err) { alert('网络错误'); }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  const popoverNickname = document.getElementById('popoverNickname');
+  if (popoverNickname) {
+    popoverNickname.addEventListener('click', async () => {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user.email) return;
+      const newNickname = prompt('请输入新的昵称：', user.nickname);
+      if (!newNickname || newNickname.trim() === '' || newNickname === user.nickname) return;
+      try {
+        const res = await fetch('/api/auth/update-nickname', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, newNickname: newNickname.trim() }) });
+        const data = await res.json();
+        if (data.success) {
+          user.nickname = newNickname.trim(); localStorage.setItem('user', JSON.stringify(user));
+          document.getElementById('popoverNickname').textContent = user.nickname;
+          if (!user.avatar) { document.getElementById('popoverAvatarLetter').textContent = user.nickname.charAt(0).toUpperCase(); }
+          alert('昵称修改成功！');
+        } else { alert(data.error || '修改失败'); }
+      } catch (err) { alert('网络错误'); }
+    });
+  }
+
+  const popoverLogoutBtn = document.getElementById('popoverLogoutBtn');
+  if (popoverLogoutBtn) {
+    popoverLogoutBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); localStorage.removeItem('user'); alert('已退出登录'); window.location.reload();
+    });
+  }
+
+  // ================== 9. 四叶草签到 ==================
+  const cloverImg = document.getElementById('cloverImg');
+  const cloverTip = document.getElementById('cloverTip');
+  if (cloverImg && cloverTip) {
+    cloverImg.addEventListener('click', async () => {
+      cloverImg.classList.remove('pop'); void cloverImg.offsetWidth; cloverImg.classList.add('pop');
+      cloverTip.classList.remove('show'); void cloverTip.offsetWidth; cloverTip.classList.add('show');
+      clearTimeout(cloverImg._tipTimer);
+      cloverImg._tipTimer = setTimeout(() => { cloverTip.classList.remove('show'); }, 800);
+
+      const savedUser = localStorage.getItem('user');
+      if (!savedUser) { return alert('请先点击右上角头像登录，再点击四叶草哦！'); }
+      const userData = JSON.parse(savedUser);
+
+      try {
+        const res = await fetch('/api/auth/add-exp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userData.email }) });
+        const data = await res.json();
+        if (data.success) {
+          console.log('签到成功');
+          const meRes = await fetch('/api/auth/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userData.email }) });
+          const meData = await meRes.json();
+          if (meData.success) {
+            localStorage.setItem('user', JSON.stringify(meData.user));
+            renderExp(meData.user.exp);
+          }
+        } else { console.log('签到提示：', data.error || '签到失败'); }
+      } catch (err) { console.log('签到网络错误：', err); }
+    });
+  }
+
+  // ================== 10. 原有的动画与交互 ==================
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       const el = document.querySelector(a.getAttribute('href'));
@@ -1200,67 +1226,30 @@ userNickname.firstChild.textContent = userData.nickname || '用户';
     if (!link) return;
     var href = link.getAttribute('href');
     if (!href) return;
-    if (href.startsWith('#') || href.startsWith('http') || 
-        link.target === '_blank' || href.startsWith('javascript:')) return;
-    e.preventDefault();
-    document.body.classList.add('page-leaving');
+    if (href.startsWith('#') || href.startsWith('http') || link.target === '_blank' || href.startsWith('javascript:')) return;
+    e.preventDefault(); document.body.classList.add('page-leaving');
     setTimeout(function () { window.location.href = href; }, 200);
   });
 
   const profile = document.querySelector('.profile');
   if (profile) {
-    profile.addEventListener('click', () => {
-      document.querySelector('#contact').scrollIntoView({ behavior: 'smooth' });
-    });
+    profile.addEventListener('click', () => { document.querySelector('#contact').scrollIntoView({ behavior: 'smooth' }); });
   }
 
-
-  const cloverImg = document.getElementById('cloverImg');
-  const cloverTip = document.getElementById('cloverTip');
-  if (cloverImg && cloverTip) {
-    cloverImg.addEventListener('click', async () => {
-      // 1. 原有的动画效果
-      cloverImg.classList.remove('pop'); void cloverImg.offsetWidth; cloverImg.classList.add('pop');
-      cloverTip.classList.remove('show'); void cloverTip.offsetWidth; cloverTip.classList.add('show');
-      clearTimeout(cloverImg._tipTimer);
-      cloverImg._tipTimer = setTimeout(() => { cloverTip.classList.remove('show'); }, 800);
-
-      // 2. 签到逻辑
-      const savedUser = localStorage.getItem('user');
-      if (!savedUser) {
-        return alert('请先点击右上角头像登录，再点击四叶草哦！');
-      }
-      const userData = JSON.parse(savedUser);
-
-      try {
-        const res = await fetch('/api/auth/add-exp', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: userData.email })
+  const copyQQ = document.getElementById('copyQQ');
+  const qqNum = document.getElementById('qqNum');
+  if (copyQQ && qqNum) {
+    copyQQ.addEventListener('click', () => {
+      const num = '856429636';
+      const done = () => { qqNum.textContent = num + '（已复制）'; setTimeout(() => { qqNum.textContent = num; }, 2000); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(num).then(done).catch(() => {
+          const ta = document.createElement('textarea'); ta.value = num; document.body.appendChild(ta); ta.select();
+          document.execCommand('copy'); document.body.removeChild(ta); done();
         });
-        const data = await res.json();
-
-        if (data.success) {
-console.log('签到成功');
-          
-          // 重新从后端拉取真实经验值，彻底避免篡改
-          const meRes = await fetch('/api/auth/me', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: userData.email })
-          });
-          const meData = await meRes.json();
-          
-          if (meData.success) {
-            localStorage.setItem('user', JSON.stringify(meData.user));
-            renderExp(meData.user.exp);
-          }
-        } else {
-          console.log('签到提示：', data.error || '签到失败');
-        }
-
-      } catch (err) {
-        alert('网络错误，请稍后重试');
+      } else {
+        const ta = document.createElement('textarea'); ta.value = num; document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta); done();
       }
     });
   }
