@@ -104,6 +104,108 @@ body.page-leaving{opacity:0}
 @media(max-width:480px){
   .container{width:min(100% - 24px,1160px)}
 }
+
+/* ===== 个人中心头像按钮 ===== */
+.user-center {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+}
+.avatar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f7cff, #8a5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+.avatar-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(79, 124, 255, 0.35);
+}
+
+/* ===== 模态框遮罩层 ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(23, 32, 51, 0.55);
+  backdrop-filter: blur(6px);
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
+}
+.modal-overlay.show { display: flex; }
+
+/* ===== 模态框主体 ===== */
+.modal-content {
+  background: #fff;
+  border-radius: 24px;
+  width: min(420px, calc(100% - 40px));
+  padding: 32px 28px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-close {
+  position: absolute;
+  top: 16px; right: 20px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #999;
+  cursor: pointer;
+  line-height: 1;
+}
+.modal-close:hover { color: #333; }
+
+/* ===== 标签切换 ===== */
+.modal-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+.modal-tab {
+  flex: 1; padding: 10px; border: 1px solid #e8ebf5; border-radius: 12px;
+  background: #f7f9ff; color: #6f7890; font-weight: 600; cursor: pointer; transition: 0.2s;
+}
+.modal-tab.active {
+  background: linear-gradient(110deg, #4f7cff, #8a5cf6);
+  color: #fff; border-color: transparent;
+}
+
+/* ===== 表单 ===== */
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 13px; color: #6f7890; margin-bottom: 6px; font-weight: 600; }
+.form-group input {
+  width: 100%; padding: 12px 14px; border: 1px solid #e8ebf5; border-radius: 12px;
+  font-size: 15px; outline: none; transition: border-color 0.2s;
+}
+.form-group input:focus { border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.12); }
+.code-row { display: flex; gap: 10px; }
+.code-row input { flex: 1; }
+.send-code-btn {
+  white-space: nowrap; padding: 12px 16px; border: 1px solid #4f7cff; border-radius: 12px;
+  background: #fff; color: #4f7cff; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s;
+}
+.send-code-btn:hover { background: #f0f3ff; }
+.send-code-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.submit-btn {
+  width: 100%; padding: 14px; border: none; border-radius: 14px;
+  background: linear-gradient(110deg, #4f7cff, #8a5cf6);
+  color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(91, 100, 230, 0.35); }
+.modal-footer { text-align: center; margin-top: 16px; }
+.modal-footer a { font-size: 13px; color: #8a5cf6; }
+
+#resetFormContainer h3 { color: #172033; }
+#backToLoginLink, #forgotPasswordLink { color: #8a5cf6; font-size: 13px; }
+#userNickname { font-size: 24px; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -124,6 +226,15 @@ body.page-leaving{opacity:0}
         <button type="button" data-lang="cn" class="active">简体中文</button>
         <button type="button" data-lang="hk">繁體中文（香港）</button>
         <button type="button" data-lang="tw">繁體中文（台灣）</button>
+      </div>
+    </div>
+    <!-- 头像按钮 -->
+    <div class="user-center">
+      <div class="avatar-btn" id="avatarBtn" title="个人中心">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
       </div>
     </div>
   </div>
@@ -168,6 +279,102 @@ body.page-leaving{opacity:0}
 </section>
 </main>
 
+<!-- ===== 登录/注册模态框 ===== -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeModal">&times;</button>
+
+    <!-- 1. 登录/注册表单 -->
+    <div id="authFormContainer">
+      <div class="modal-tabs">
+        <button class="modal-tab active" data-tab="login" id="tabLogin">登录</button>
+        <button class="modal-tab" data-tab="register" id="tabRegister">注册</button>
+      </div>
+
+      <form id="authForm">
+        <div class="form-group">
+          <label>邮箱</label>
+          <input type="email" id="emailInput" placeholder="请输入邮箱地址" required>
+        </div>
+
+        <div class="form-group" id="nicknameGroup" style="display: none;">
+          <label>昵称</label>
+          <input type="text" id="nicknameInput" placeholder="设置一个独一无二的昵称" maxlength="20">
+        </div>
+
+        <div class="form-group" id="codeGroup" style="display: none;">
+          <label>验证码</label>
+          <div class="code-row">
+            <input type="text" id="codeInput" placeholder="6位数字验证码" maxlength="6">
+            <button type="button" id="sendCodeBtn" class="send-code-btn">获取验证码</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="passwordInput" placeholder="至少8位，包含字母和数字" required>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">登录 / 注册</button>
+      </form>
+      <div class="modal-footer">
+        <a href="javascript:void(0)" id="forgotPasswordLink">忘记密码？</a>
+      </div>
+    </div>
+
+    <!-- 2. 找回密码表单（默认隐藏） -->
+    <div id="resetFormContainer" style="display: none;">
+      <h3 style="margin-bottom: 20px; text-align: center;">重置密码</h3>
+      <form id="resetForm">
+        <div class="form-group">
+          <label>注册邮箱</label>
+          <input type="email" id="resetEmail" placeholder="请输入注册时的邮箱" required>
+        </div>
+        <div class="form-group">
+          <label>验证码</label>
+          <div class="code-row">
+            <input type="text" id="resetCode" placeholder="6位数字验证码" maxlength="6" required>
+            <button type="button" id="sendResetCodeBtn" class="send-code-btn">获取验证码</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>新密码</label>
+          <input type="password" id="newPassword" placeholder="至少8位，包含字母和数字" required>
+        </div>
+        <button type="submit" class="submit-btn" id="resetSubmitBtn">确认修改</button>
+      </form>
+      <div class="modal-footer">
+        <a href="javascript:void(0)" id="backToLoginLink">返回登录</a>
+      </div>
+    </div>
+
+    <!-- 3. 用户信息面板（默认隐藏，登录成功后显示） -->
+    <div id="userPanel" style="display: none; text-align: center;">
+      <div class="avatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px;">
+        <span id="userAvatarLetter">U</span>
+      </div>
+      <h3 id="userNickname" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+        用户昵称
+        <span id="editNicknameBtn" style="cursor: pointer; font-size: 16px;" title="修改昵称">✏️</span>
+      </h3>
+
+      <!-- 经验条区域 -->
+      <div style="margin: 15px 0 20px; font-size: 14px; color: #6f7890; text-align: left;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span>经验值：<span id="userExpText">0/200</span></span>
+          <span id="userLevelText" style="font-weight: bold; font-size: 14px; color: #4b5563;">Lv1</span>
+        </div>
+        <div style="width: 100%; height: 14px; background: #ffffff; border: 1px solid #e8ebf5; border-radius: 7px; overflow: hidden;">
+          <div id="expBarFill" style="height: 100%; width: 0%; background: #4b5563; border-radius: 7px; transition: width 0.5s ease, background-color 0.5s ease;"></div>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="logoutBtn" style="background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
+    </div>
+
+  </div>
+</div>
+
 <footer>
   <div>© 2026 这人针不错</div>
   <div style="margin-top:6px">ZRZBC</div>
@@ -176,87 +383,280 @@ body.page-leaving{opacity:0}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-  /* ---------- 页面切换：假装延迟 0.2 秒 ---------- */
+  // ===== 经验条渲染 =====
+  function renderExp(exp) {
+    const expNum = parseInt(exp) || 0;
+    const expBarFill = document.getElementById('expBarFill');
+    const userExpText = document.getElementById('userExpText');
+    const userLevelText = document.getElementById('userLevelText');
+    if (!expBarFill || !userExpText || !userLevelText) return;
+
+    let level = 1, nextExp = 200;
+    let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
+
+    if (expNum >= 6400) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
+    else if (expNum >= 3200) { level = 6; nextExp = 6400; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
+    else if (expNum >= 1600) { level = 5; nextExp = 3200; baseColor = '#f97316'; darkColor = '#c2410c'; }
+    else if (expNum >= 800) { level = 4; nextExp = 1600; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
+    else if (expNum >= 400) { level = 3; nextExp = 800; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
+    else if (expNum >= 200) { level = 2; nextExp = 400; baseColor = '#22c55e'; darkColor = '#15803d'; }
+
+    if (nextExp === Infinity) { userExpText.textContent = `${expNum}/∞`; expBarFill.style.width = '100%'; }
+    else { userExpText.textContent = `${expNum}/${nextExp}`; expBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
+
+    userLevelText.textContent = `Lv${level}`;
+    userLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
+    userLevelText.style.color = textColor;
+    userLevelText.style.padding = '2px 12px';
+    userLevelText.style.borderRadius = '8px';
+    userLevelText.style.display = 'inline-block';
+    expBarFill.style.background = baseColor;
+  }
+
+  // ===== 获取元素 =====
+  const avatarBtn = document.getElementById('avatarBtn');
+  const authModal = document.getElementById('authModal');
+  const closeModal = document.getElementById('closeModal');
+  const authFormContainer = document.getElementById('authFormContainer');
+  const resetFormContainer = document.getElementById('resetFormContainer');
+  const userPanel = document.getElementById('userPanel');
+  const tabLogin = document.getElementById('tabLogin');
+  const tabRegister = document.getElementById('tabRegister');
+  const authForm = document.getElementById('authForm');
+  const emailInput = document.getElementById('emailInput');
+  const codeInput = document.getElementById('codeInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const nicknameGroup = document.getElementById('nicknameGroup');
+  const nicknameInput = document.getElementById('nicknameInput');
+  const sendCodeBtn = document.getElementById('sendCodeBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+  const resetForm = document.getElementById('resetForm');
+  const resetEmail = document.getElementById('resetEmail');
+  const resetCode = document.getElementById('resetCode');
+  const newPassword = document.getElementById('newPassword');
+  const sendResetCodeBtn = document.getElementById('sendResetCodeBtn');
+  const resetSubmitBtn = document.getElementById('resetSubmitBtn');
+  const backToLoginLink = document.getElementById('backToLoginLink');
+  const userAvatarLetter = document.getElementById('userAvatarLetter');
+  const userNickname = document.getElementById('userNickname');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  function startCountdown(btn) {
+    let countdown = 60;
+    btn.disabled = true; btn.textContent = `${countdown}秒后重试`;
+    const timer = setInterval(() => {
+      countdown--;
+      if (countdown <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; }
+      else { btn.textContent = `${countdown}秒后重试`; }
+    }, 1000);
+  }
+
+  async function sendCode(email, btn) {
+    if (!email || !email.includes('@')) return alert('请输入有效的邮箱地址');
+    btn.disabled = true; btn.textContent = '发送中...';
+    try {
+      const res = await fetch('/api/auth/send-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      const data = await res.json();
+      if (data.success) { startCountdown(btn); }
+      else { alert(data.error || '发送失败'); btn.disabled = false; btn.textContent = '获取验证码'; }
+    } catch (err) { alert('网络错误'); btn.disabled = false; btn.textContent = '获取验证码'; }
+  }
+
+  // ===== 自动登录初始化 =====
+  const savedUser = localStorage.getItem('user');
+  if (savedUser) {
+    try {
+      const userData = JSON.parse(savedUser);
+      const avatarBtnHTML = document.querySelector('#avatarBtn svg');
+      if (avatarBtnHTML) {
+        avatarBtnHTML.outerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
+      }
+    } catch(e) {}
+  }
+
+  // ===== 头像点击 =====
+  if (avatarBtn && authModal) {
+    avatarBtn.addEventListener('click', async () => {
+      const user = localStorage.getItem('user');
+      if (user) {
+        const userData = JSON.parse(user);
+        try {
+          const res = await fetch('/api/auth/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userData.email }) });
+          const data = await res.json();
+          if (data.success && data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            userData.exp = data.user.exp; userData.nickname = data.user.nickname;
+          }
+        } catch (err) {}
+        userAvatarLetter.textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
+        userNickname.childNodes[0].nodeValue = userData.nickname || '用户';
+        renderExp(userData.exp);
+        userPanel.style.display = 'block';
+        authFormContainer.style.display = 'none';
+        resetFormContainer.style.display = 'none';
+      } else {
+        authFormContainer.style.display = 'block';
+        resetFormContainer.style.display = 'none';
+        userPanel.style.display = 'none';
+      }
+      authModal.classList.add('show');
+    });
+  }
+
+  // ===== 修改昵称 =====
+  const editNicknameBtn = document.getElementById('editNicknameBtn');
+  if (editNicknameBtn) {
+    editNicknameBtn.addEventListener('click', async () => {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user.email) return alert('请先登录');
+      const newNickname = prompt('请输入新的昵称：', user.nickname);
+      if (!newNickname || newNickname.trim() === '' || newNickname === user.nickname) return;
+      try {
+        const res = await fetch('/api/auth/update-nickname', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, newNickname: newNickname.trim() }) });
+        const data = await res.json();
+        if (data.success) { alert('昵称修改成功！'); user.nickname = newNickname.trim(); localStorage.setItem('user', JSON.stringify(user)); location.reload(); }
+        else { alert(data.error || '修改失败'); }
+      } catch (err) { alert('网络错误'); }
+    });
+  }
+
+  // ===== 关闭弹窗 =====
+  if (closeModal && authModal) {
+    closeModal.addEventListener('click', () => authModal.classList.remove('show'));
+    authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('show'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && authModal.classList.contains('show')) authModal.classList.remove('show'); });
+  }
+
+  // ===== 退出登录 =====
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('user'); alert('已退出登录');
+      authModal.classList.remove('show'); location.reload();
+    });
+  }
+
+  // ===== 标签切换 =====
+  if (tabLogin && tabRegister) {
+    tabLogin.addEventListener('click', () => {
+      tabLogin.classList.add('active'); tabRegister.classList.remove('active');
+      nicknameGroup.style.display = 'none';
+      if (document.getElementById('codeGroup')) { document.getElementById('codeGroup').style.display = 'none'; if (codeInput) codeInput.required = false; }
+      forgotPasswordLink.style.display = 'inline';
+    });
+    tabRegister.addEventListener('click', () => {
+      tabRegister.classList.add('active'); tabLogin.classList.remove('active');
+      nicknameGroup.style.display = 'block';
+      if (document.getElementById('codeGroup')) { document.getElementById('codeGroup').style.display = 'block'; if (codeInput) codeInput.required = true; }
+      forgotPasswordLink.style.display = 'none';
+    });
+  }
+
+  // ===== 找回密码切换 =====
+  if (forgotPasswordLink && backToLoginLink) {
+    forgotPasswordLink.addEventListener('click', () => { authFormContainer.style.display = 'none'; resetFormContainer.style.display = 'block'; });
+    backToLoginLink.addEventListener('click', () => { authFormContainer.style.display = 'block'; resetFormContainer.style.display = 'none'; });
+  }
+
+  // ===== 发送验证码按钮 =====
+  if (sendCodeBtn) sendCodeBtn.addEventListener('click', () => sendCode(emailInput.value.trim(), sendCodeBtn));
+  if (sendResetCodeBtn) sendResetCodeBtn.addEventListener('click', () => sendCode(resetEmail.value.trim(), sendResetCodeBtn));
+
+  // ===== 提交登录/注册 =====
+  if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const code = codeInput.value.trim();
+      const password = passwordInput.value.trim();
+      const isRegister = tabRegister.classList.contains('active');
+      const nickname = isRegister && nicknameInput ? nicknameInput.value.trim() : '';
+      if (!email || !password) return alert('请填写邮箱和密码');
+      if (isRegister && !code) return alert('请填写验证码');
+      if (password.length < 8) return alert('密码至少8位');
+      if (isRegister && !nickname) return alert('请设置您的昵称');
+      submitBtn.disabled = true; submitBtn.textContent = '处理中...';
+      try {
+        const payload = isRegister ? { email, code, password, nickname } : { email, password };
+        const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (data.success) { alert(isRegister ? '注册成功！' : '登录成功！'); if (data.user) { localStorage.setItem('user', JSON.stringify(data.user)); location.reload(); } }
+        else { alert(data.error || '操作失败'); }
+      } catch (err) { alert('网络错误'); }
+      finally { submitBtn.disabled = false; submitBtn.textContent = '登录 / 注册'; }
+    });
+  }
+
+  // ===== 提交重置密码 =====
+  if (resetForm) {
+    resetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = resetEmail.value.trim();
+      const code = resetCode.value.trim();
+      const password = newPassword.value.trim();
+      if (!email || !code || !password) return alert('请填写所有字段');
+      if (password.length < 8) return alert('密码至少8位');
+      resetSubmitBtn.disabled = true; resetSubmitBtn.textContent = '处理中...';
+      try {
+        const res = await fetch('/api/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, code, newPassword: password }) });
+        const data = await res.json();
+        if (data.success) { alert('密码重置成功！'); authFormContainer.style.display = 'block'; resetFormContainer.style.display = 'none'; }
+        else { alert(data.error || '重置失败'); }
+      } catch (err) { alert('网络错误'); }
+      finally { resetSubmitBtn.disabled = false; resetSubmitBtn.textContent = '确认修改'; }
+    });
+  }
+
+  // ===== 原有的页面切换淡入淡出 =====
   document.addEventListener('click', function (e) {
     var link = e.target.closest('a');
     if (!link) return;
     var href = link.getAttribute('href');
     if (!href) return;
-    if (href.startsWith('#') || href.startsWith('http') ||
-        link.target === '_blank' || href.startsWith('javascript:')) return;
+    if (href.startsWith('#') || href.startsWith('http') || link.target === '_blank' || href.startsWith('javascript:')) return;
     e.preventDefault();
     document.body.classList.add('page-leaving');
-    setTimeout(function () {
-      window.location.href = href;
-    }, 200);
+    setTimeout(function () { window.location.href = href; }, 200);
   });
 
-  /* ---------- 语言切换 ---------- */
+  // ===== 语言切换 =====
   var langBtn = document.getElementById('langBtn');
   var langMenu = document.getElementById('langMenu');
   var langSwitch = document.querySelector('.lang-switch');
-
   if (langBtn && langMenu && langSwitch && typeof OpenCC !== 'undefined') {
-    var converters = {
-      cn: null,
-      hk: OpenCC.Converter({ from: 'cn', to: 'hk' }),
-      tw: OpenCC.Converter({ from: 'cn', to: 'twp' })
-    };
-    var langNames = {
-      cn: '简体中文 ▾',
-      hk: '繁體中文（香港）▾',
-      tw: '繁體中文（台灣）▾'
-    };
-
+    var converters = { cn: null, hk: OpenCC.Converter({ from: 'cn', to: 'hk' }), tw: OpenCC.Converter({ from: 'cn', to: 'twp' }) };
+    var langNames = { cn: '简体中文 ▾', hk: '繁體中文（香港）▾', tw: '繁體中文（台灣）▾' };
     var textNodes = [];
     var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
     var n;
     while ((n = walker.nextNode())) {
       if (!n.nodeValue || !n.nodeValue.trim()) continue;
-      var p = n.parentElement;
-      if (!p) continue;
-      var tag = p.tagName;
-      if (tag === 'SCRIPT' || tag === 'STYLE') continue;
-      n.__original = n.nodeValue;
-      textNodes.push(n);
+      var p = n.parentElement; if (!p) continue;
+      var tag = p.tagName; if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+      n.__original = n.nodeValue; textNodes.push(n);
     }
-
     var applyLang = function (lang) {
       var converter = converters[lang];
       for (var i = 0; i < textNodes.length; i++) {
-        var node = textNodes[i];
-        if (!node.isConnected) continue;
+        var node = textNodes[i]; if (!node.isConnected) continue;
         node.nodeValue = converter ? converter(node.__original) : node.__original;
       }
       langBtn.textContent = langNames[lang];
       var btns = langMenu.querySelectorAll('button');
-      for (var j = 0; j < btns.length; j++) {
-        btns[j].classList.toggle('active', btns[j].getAttribute('data-lang') === lang);
-      }
+      for (var j = 0; j < btns.length; j++) { btns[j].classList.toggle('active', btns[j].getAttribute('data-lang') === lang); }
       document.documentElement.lang = lang === 'cn' ? 'zh-CN' : (lang === 'hk' ? 'zh-HK' : 'zh-TW');
     };
-
-    langBtn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      langMenu.classList.toggle('open');
-    });
-
+    langBtn.addEventListener('click', function (e) { e.stopPropagation(); langMenu.classList.toggle('open'); });
     var menuBtns = langMenu.querySelectorAll('button');
     for (var k = 0; k < menuBtns.length; k++) {
       (function (btn) {
-        btn.addEventListener('click', function () {
-          applyLang(btn.getAttribute('data-lang'));
-          langMenu.classList.remove('open');
-        });
+        btn.addEventListener('click', function () { applyLang(btn.getAttribute('data-lang')); langMenu.classList.remove('open'); });
       })(menuBtns[k]);
     }
-
-    document.addEventListener('click', function (e) {
-      if (!langSwitch.contains(e.target)) langMenu.classList.remove('open');
-    });
+    document.addEventListener('click', function (e) { if (!langSwitch.contains(e.target)) langMenu.classList.remove('open'); });
   }
 
-  /* ---------- 从其他页面带锚点进来时，等页面加载后再滚动 ---------- */
+  // ===== 锚点滚动 =====
   window.addEventListener('load', function () {
     if (location.hash) {
       var el = document.querySelector(location.hash);
