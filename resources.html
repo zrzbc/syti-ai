@@ -106,63 +106,47 @@ body.page-leaving{opacity:0}
 }
 
 /* ===== 个人中心头像按钮 ===== */
-.user-center {
-  display: flex;
-  align-items: center;
-  margin-left: 4px;
-}
+.user-center { position: relative; display: flex; align-items: center; margin-left: 4px; }
 .avatar-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 50%;
   background: linear-gradient(135deg, #4f7cff, #8a5cf6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #fff;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #fff; transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid rgba(255, 255, 255, 0.8); overflow: hidden;
 }
-.avatar-btn:hover {
-  transform: scale(1.08);
-  box-shadow: 0 6px 16px rgba(79, 124, 255, 0.35);
+.avatar-btn:hover { transform: scale(1.08); box-shadow: 0 6px 16px rgba(79, 124, 255, 0.35); }
+
+/* ===== 悬停卡片 ===== */
+.user-popover {
+  position: absolute; top: calc(100% + 8px); right: 0; width: 220px;
+  background: #fff; border: 1px solid #e8ebf5; border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(55,65,110,0.15); display: none; z-index: 50;
+  margin-top: 5px;
 }
+.user-popover::before {
+  content: ""; position: absolute; top: -6px; right: 18px;
+  width: 12px; height: 12px; background: #fff; border-top: 1px solid #e8ebf5;
+  border-left: 1px solid #e8ebf5; transform: rotate(45deg);
+}
+.user-center:hover .user-popover { display: block; }
 
 /* ===== 模态框遮罩层 ===== */
 .modal-overlay {
-  display: none;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(23, 32, 51, 0.55);
-  backdrop-filter: blur(6px);
-  z-index: 999;
-  justify-content: center;
-  align-items: center;
+  display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(23, 32, 51, 0.55); backdrop-filter: blur(6px); z-index: 999;
+  justify-content: center; align-items: center;
 }
 .modal-overlay.show { display: flex; }
 
 /* ===== 模态框主体 ===== */
 .modal-content {
-  background: #fff;
-  border-radius: 24px;
-  width: min(420px, calc(100% - 40px));
-  padding: 32px 28px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
-  position: relative;
-  max-height: 90vh;
-  overflow-y: auto;
+  background: #fff; border-radius: 24px; width: min(420px, calc(100% - 40px));
+  padding: 32px 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+  position: relative; max-height: 90vh; overflow-y: auto;
 }
 .modal-close {
-  position: absolute;
-  top: 16px; right: 20px;
-  background: none;
-  border: none;
-  font-size: 28px;
-  color: #999;
-  cursor: pointer;
-  line-height: 1;
+  position: absolute; top: 16px; right: 20px; background: none; border: none;
+  font-size: 28px; color: #999; cursor: pointer; line-height: 1;
 }
 .modal-close:hover { color: #333; }
 
@@ -173,8 +157,7 @@ body.page-leaving{opacity:0}
   background: #f7f9ff; color: #6f7890; font-weight: 600; cursor: pointer; transition: 0.2s;
 }
 .modal-tab.active {
-  background: linear-gradient(110deg, #4f7cff, #8a5cf6);
-  color: #fff; border-color: transparent;
+  background: linear-gradient(110deg, #4f7cff, #8a5cf6); color: #fff; border-color: transparent;
 }
 
 /* ===== 表单 ===== */
@@ -228,13 +211,40 @@ body.page-leaving{opacity:0}
         <button type="button" data-lang="tw">繁體中文（台灣）</button>
       </div>
     </div>
-    <!-- 头像按钮 -->
-    <div class="user-center">
+    <!-- 头像按钮 & 悬停卡片 -->
+    <div class="user-center" id="userCenter">
       <div class="avatar-btn" id="avatarBtn" title="个人中心">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
+      </div>
+      <div class="user-popover" id="userPopover">
+        <div id="popoverNotLoggedIn" style="display:none; padding: 20px; text-align: center; color: #6f7890; font-size: 14px;">
+          请先点击头像登录或注册
+        </div>
+        <div id="popoverLoggedIn" style="display:none; padding: 16px;">
+          <div style="text-align: center; margin-bottom: 12px;">
+            <div id="popoverAvatar" style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #4f7cff, #8a5cf6); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background-size: cover; background-position: center; position: relative;">
+              <span id="popoverAvatarLetter" style="font-size: 28px; font-weight: bold; color: #fff;">U</span>
+              <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 10px; text-align: center; padding: 2px 0;">修改</div>
+            </div>
+            <input type="file" id="avatarUploadInput" style="display: none;" accept="image/*">
+          </div>
+          <div id="popoverNickname" style="text-align: center; font-size: 16px; font-weight: bold; color: #172033; cursor: pointer; margin-bottom: 4px;" title="点击修改昵称">用户昵称</div>
+          <div style="text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 16px;">点击昵称修改</div>
+
+          <div style="font-size: 12px; color: #6f7890;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span>经验值：<span id="popoverExpText">0/200</span></span>
+              <span id="popoverLevelText" style="font-weight: bold; padding: 1px 8px; border-radius: 6px; color: #fff; background: #4ade80;">Lv1</span>
+            </div>
+            <div style="width: 100%; height: 8px; background: #fff; border: 1px solid #e8ebf5; border-radius: 4px; overflow: hidden;">
+              <div id="popoverExpBarFill" style="height: 100%; width: 0%; background: #4ade80; border-radius: 4px; transition: all 0.3s;"></div>
+            </div>
+          </div>
+          <button class="submit-btn" id="popoverLogoutBtn" style="padding: 8px; font-size: 14px; margin-top: 16px; background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
+        </div>
       </div>
     </div>
   </div>
@@ -273,7 +283,6 @@ body.page-leaving{opacity:0}
     <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video4.jpg') center/cover no-repeat;"></div>
     <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">摇曳露营</span>&nbsp;<span class="tag">二创填词</span><h3>“有你的露营才是莫愁乡！”</h3><p>「这是没有真经历写不出来这词啊。」</p><div class="meta"><span>再来一遍</span><span>（ 跳转 Bilibili ）</span></div></div>
   </a>
-
 </div>
 </div>
 </section>
@@ -350,12 +359,11 @@ body.page-leaving{opacity:0}
 
     <!-- 3. 用户信息面板（默认隐藏，登录成功后显示） -->
     <div id="userPanel" style="display: none; text-align: center;">
-      <div class="avatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px;">
+      <div class="avatar" id="userPanelAvatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px; border-radius: 26px; overflow: hidden; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center;">
         <span id="userAvatarLetter">U</span>
       </div>
       <h3 id="userNickname" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
         用户昵称
-        <span id="editNicknameBtn" style="cursor: pointer; font-size: 16px;" title="修改昵称">✏️</span>
       </h3>
 
       <!-- 经验条区域 -->
@@ -468,9 +476,13 @@ document.addEventListener('DOMContentLoaded', function () {
   if (savedUser) {
     try {
       const userData = JSON.parse(savedUser);
-      const avatarBtnHTML = document.querySelector('#avatarBtn svg');
+      const avatarBtnHTML = document.querySelector('#avatarBtn');
       if (avatarBtnHTML) {
-        avatarBtnHTML.outerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
+        if (userData.avatar) {
+          avatarBtnHTML.innerHTML = `<img src="${userData.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        } else {
+          avatarBtnHTML.innerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
+        }
       }
     } catch(e) {}
   }
@@ -486,10 +498,19 @@ document.addEventListener('DOMContentLoaded', function () {
           const data = await res.json();
           if (data.success && data.user) {
             localStorage.setItem('user', JSON.stringify(data.user));
-            userData.exp = data.user.exp; userData.nickname = data.user.nickname;
+            userData.exp = data.user.exp; userData.nickname = data.user.nickname; userData.avatar = data.user.avatar;
           }
         } catch (err) {}
-        userAvatarLetter.textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
+        
+        const userPanelAvatar = document.getElementById('userPanelAvatar');
+        if (userData.avatar) {
+          userPanelAvatar.style.backgroundImage = `url(${userData.avatar})`;
+          userAvatarLetter.style.display = 'none';
+        } else {
+          userPanelAvatar.style.backgroundImage = 'none';
+          userAvatarLetter.style.display = 'block';
+          userAvatarLetter.textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
+        }
         userNickname.childNodes[0].nodeValue = userData.nickname || '用户';
         renderExp(userData.exp);
         userPanel.style.display = 'block';
@@ -504,23 +525,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ===== 修改昵称 =====
-  const editNicknameBtn = document.getElementById('editNicknameBtn');
-  if (editNicknameBtn) {
-    editNicknameBtn.addEventListener('click', async () => {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (!user.email) return alert('请先登录');
-      const newNickname = prompt('请输入新的昵称：', user.nickname);
-      if (!newNickname || newNickname.trim() === '' || newNickname === user.nickname) return;
-      try {
-        const res = await fetch('/api/auth/update-nickname', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, newNickname: newNickname.trim() }) });
-        const data = await res.json();
-        if (data.success) { alert('昵称修改成功！'); user.nickname = newNickname.trim(); localStorage.setItem('user', JSON.stringify(user)); location.reload(); }
-        else { alert(data.error || '修改失败'); }
-      } catch (err) { alert('网络错误'); }
-    });
-  }
-
   // ===== 关闭弹窗 =====
   if (closeModal && authModal) {
     closeModal.addEventListener('click', () => authModal.classList.remove('show'));
@@ -528,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && authModal.classList.contains('show')) authModal.classList.remove('show'); });
   }
 
-  // ===== 退出登录 =====
+  // ===== 退出登录 (弹窗内) =====
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
       localStorage.removeItem('user'); alert('已退出登录');
@@ -604,6 +608,131 @@ document.addEventListener('DOMContentLoaded', function () {
         else { alert(data.error || '重置失败'); }
       } catch (err) { alert('网络错误'); }
       finally { resetSubmitBtn.disabled = false; resetSubmitBtn.textContent = '确认修改'; }
+    });
+  }
+
+  // ===== 悬停卡片逻辑 =====
+  const userCenter = document.getElementById('userCenter');
+  if (userCenter) {
+    userCenter.addEventListener('mouseenter', () => {
+      const user = localStorage.getItem('user');
+      const popoverLoggedIn = document.getElementById('popoverLoggedIn');
+      const popoverNotLoggedIn = document.getElementById('popoverNotLoggedIn');
+      
+      if (user) {
+        const userData = JSON.parse(user);
+        popoverLoggedIn.style.display = 'block';
+        popoverNotLoggedIn.style.display = 'none';
+
+        if (userData.avatar) {
+          document.getElementById('popoverAvatar').style.backgroundImage = `url(${userData.avatar})`;
+          document.getElementById('popoverAvatarLetter').style.display = 'none';
+        } else {
+          document.getElementById('popoverAvatar').style.backgroundImage = 'none';
+          document.getElementById('popoverAvatarLetter').style.display = 'block';
+          document.getElementById('popoverAvatarLetter').textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
+        }
+        document.getElementById('popoverNickname').textContent = userData.nickname || '用户';
+        renderPopoverExp(userData.exp);
+      } else {
+        popoverLoggedIn.style.display = 'none';
+        popoverNotLoggedIn.style.display = 'block';
+      }
+    });
+  }
+
+  function renderPopoverExp(exp) {
+    const expNum = parseInt(exp) || 0;
+    const popoverExpText = document.getElementById('popoverExpText');
+    const popoverLevelText = document.getElementById('popoverLevelText');
+    const popoverExpBarFill = document.getElementById('popoverExpBarFill');
+    if (!popoverExpText || !popoverLevelText || !popoverExpBarFill) return;
+
+    let level = 1, nextExp = 200;
+    let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
+
+    if (expNum >= 6400) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
+    else if (expNum >= 3200) { level = 6; nextExp = 6400; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
+    else if (expNum >= 1600) { level = 5; nextExp = 3200; baseColor = '#f97316'; darkColor = '#c2410c'; }
+    else if (expNum >= 800) { level = 4; nextExp = 1600; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
+    else if (expNum >= 400) { level = 3; nextExp = 800; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
+    else if (expNum >= 200) { level = 2; nextExp = 400; baseColor = '#22c55e'; darkColor = '#15803d'; }
+
+    if (nextExp === Infinity) { popoverExpText.textContent = `${expNum}/∞`; popoverExpBarFill.style.width = '100%'; }
+    else { popoverExpText.textContent = `${expNum}/${nextExp}`; popoverExpBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
+
+    popoverLevelText.textContent = `Lv${level}`;
+    popoverLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
+    popoverLevelText.style.color = textColor;
+    popoverExpBarFill.style.background = baseColor;
+  }
+
+  // ===== 上传头像 =====
+  const popoverAvatar = document.getElementById('popoverAvatar');
+  const avatarUploadInput = document.getElementById('avatarUploadInput');
+  if (popoverAvatar && avatarUploadInput) {
+    popoverAvatar.addEventListener('click', (e) => { e.stopPropagation(); avatarUploadInput.click(); });
+    avatarUploadInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 500 * 1024) return alert('图片不能超过 500KB，请压缩后再上传');
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target.result;
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        try {
+          const res = await fetch('/api/auth/update-avatar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, avatar: base64 }) });
+          const data = await res.json();
+          if (data.success) {
+            user.avatar = base64; localStorage.setItem('user', JSON.stringify(user));
+            document.getElementById('popoverAvatar').style.backgroundImage = `url(${base64})`;
+            document.getElementById('popoverAvatarLetter').style.display = 'none';
+            
+            // 同步更新导航栏和弹窗里的头像
+            const avatarBtnHTML = document.querySelector('#avatarBtn');
+            if (avatarBtnHTML) avatarBtnHTML.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+            const userPanelAvatar = document.getElementById('userPanelAvatar');
+            if (userPanelAvatar) { userPanelAvatar.style.backgroundImage = `url(${base64})`; userAvatarLetter.style.display = 'none'; }
+            
+            alert('头像修改成功！');
+          } else { alert(data.error || '上传失败'); }
+        } catch (err) { alert('网络错误'); }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ===== 点击昵称修改 =====
+  const popoverNickname = document.getElementById('popoverNickname');
+  if (popoverNickname) {
+    popoverNickname.addEventListener('click', async () => {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user.email) return;
+      const newNickname = prompt('请输入新的昵称：', user.nickname);
+      if (!newNickname || newNickname.trim() === '' || newNickname === user.nickname) return;
+      try {
+        const res = await fetch('/api/auth/update-nickname', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, newNickname: newNickname.trim() }) });
+        const data = await res.json();
+        if (data.success) {
+          user.nickname = newNickname.trim(); localStorage.setItem('user', JSON.stringify(user));
+          document.getElementById('popoverNickname').textContent = user.nickname;
+          if (!user.avatar) {
+            document.getElementById('popoverAvatarLetter').textContent = user.nickname.charAt(0).toUpperCase();
+            userAvatarLetter.textContent = user.nickname.charAt(0).toUpperCase();
+            const avatarBtnHTML = document.querySelector('#avatarBtn');
+            if (avatarBtnHTML) avatarBtnHTML.innerHTML = `<span style="font-size:16px;font-weight:bold;">${user.nickname.charAt(0).toUpperCase()}</span>`;
+          }
+          alert('昵称修改成功！');
+        } else { alert(data.error || '修改失败'); }
+      } catch (err) { alert('网络错误'); }
+    });
+  }
+
+  // ===== 悬停卡片退出登录 =====
+  const popoverLogoutBtn = document.getElementById('popoverLogoutBtn');
+  if (popoverLogoutBtn) {
+    popoverLogoutBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); localStorage.removeItem('user'); alert('已退出登录'); window.location.reload();
     });
   }
 
