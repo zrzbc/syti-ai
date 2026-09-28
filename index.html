@@ -785,7 +785,20 @@ body.page-leaving {
         用户昵称
         <span id="editNicknameBtn" style="cursor: pointer; font-size: 16px;" title="修改昵称">✏️</span>
       </h3>
-      <p style="color: #6f7890; margin: 10px 0 20px; font-size: 14px;">经验值：<span id="userExp">0</span>（暂未开放）</p>
+
+      <!-- 经验条区域 -->
+      <div style="margin: 15px 0 20px; font-size: 14px; color: #6f7890; text-align: left;">
+        <!-- 上方文字：当前经验/下一级所需经验，右侧显示等级 -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span>经验值：<span id="userExpText">0/200</span></span>
+          <span id="userLevelText" style="font-weight: bold; font-size: 16px; color: #4b5563;">Lv1</span>
+        </div>
+        <!-- 进度条容器 -->
+        <div style="width: 100%; height: 14px; background: #ffffff; border: 1px solid #e8ebf5; border-radius: 7px; overflow: hidden;">
+          <div id="expBarFill" style="height: 100%; width: 0%; background: #4b5563; border-radius: 7px; transition: width 0.5s ease, background-color 0.5s ease;"></div>
+        </div>
+      </div>
+
       <button class="submit-btn" id="logoutBtn" style="background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
     </div>
 
@@ -804,6 +817,49 @@ body.page-leaving {
 document.addEventListener('DOMContentLoaded', () => {
 
   // ================== 1. 获取所有 DOM 元素 ==================
+
+  // ===== 经验条渲染逻辑 =====
+  function renderExp(exp) {
+    const expNum = parseInt(exp) || 0;
+    const expBarFill = document.getElementById('expBarFill');
+    const userExpText = document.getElementById('userExpText');
+    const userLevelText = document.getElementById('userLevelText');
+
+    if (!expBarFill || !userExpText || !userLevelText) return;
+
+    let level = 1;
+    let nextExp = 200;
+    let color = '#4b5563'; // Lv1 深灰色
+
+    if (expNum >= 6400) {
+      level = 7; nextExp = Infinity; color = '#a855f7'; // 紫色
+    } else if (expNum >= 3200) {
+      level = 6; nextExp = 6400; color = '#ef4444'; // 红色
+    } else if (expNum >= 1600) {
+      level = 5; nextExp = 3200; color = '#f97316'; // 橙色
+    } else if (expNum >= 800) {
+      level = 4; nextExp = 1600; color = '#d97706'; // 深黄色
+    } else if (expNum >= 400) {
+      level = 3; nextExp = 800; color = '#3b82f6'; // 蓝色
+    } else if (expNum >= 200) {
+      level = 2; nextExp = 400; color = '#22c55e'; // 绿色
+    }
+
+    // 修改文字和颜色
+    if (nextExp === Infinity) {
+      userExpText.textContent = `${expNum}/∞`;
+      expBarFill.style.width = '100%';
+    } else {
+      userExpText.textContent = `${expNum}/${nextExp}`;
+      const percentage = Math.min((expNum / nextExp) * 100, 100);
+      expBarFill.style.width = percentage + '%';
+    }
+    
+    userLevelText.textContent = `Lv${level}`;
+    userLevelText.style.color = color;
+    expBarFill.style.background = color;
+  }
+
   const avatarBtn = document.getElementById('avatarBtn');
   const authModal = document.getElementById('authModal');
   const closeModal = document.getElementById('closeModal');
@@ -894,14 +950,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ===== 弹窗与用户面板逻辑 =====
   if (avatarBtn && authModal) {
-    avatarBtn.addEventListener('click', () => {
+    avatarBtn.addEventListener('click', async () => {
       const user = localStorage.getItem('user');
       if (user) {
+        const userData = JSON.parse(user);
+        
+        // ===== 关键安全步骤：从后端拉取最新数据，覆盖本地伪造的数据 =====
         try {
-          const userData = JSON.parse(user);
-          userAvatarLetter.textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
-          userNickname.childNodes[0].nodeValue = userData.nickname || '用户'; // 只改文本，保留铅笔图标
-        } catch(e) {}
+          const res = await fetch('/api/auth/me', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userData.email })
+          });
+          const data = await res.json();
+          if (data.success && data.user) {
+            // 更新本地存储和当前显示
+            localStorage.setItem('user', JSON.stringify(data.user));
+            userData.exp = data.user.exp; 
+            userData.nickname = data.user.nickname;
+          }
+        } catch (err) {
+          console.error('拉取最新数据失败', err);
+        }
+        // ==========================================================
+
+        // 渲染用户信息
+        userAvatarLetter.textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
+// 清空原来的文本，只保留铅笔图标，并插入新昵称
+userNickname.firstChild.textContent = userData.nickname || '用户';
+        renderExp(userData.exp); // 使用真实数据渲染
+
         userPanel.style.display = 'block';
         authFormContainer.style.display = 'none';
         resetFormContainer.style.display = 'none';
@@ -1114,35 +1192,53 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+
   const cloverImg = document.getElementById('cloverImg');
   const cloverTip = document.getElementById('cloverTip');
   if (cloverImg && cloverTip) {
-    cloverImg.addEventListener('click', () => {
+    cloverImg.addEventListener('click', async () => {
+      // 1. 原有的动画效果
       cloverImg.classList.remove('pop'); void cloverImg.offsetWidth; cloverImg.classList.add('pop');
       cloverTip.classList.remove('show'); void cloverTip.offsetWidth; cloverTip.classList.add('show');
       clearTimeout(cloverImg._tipTimer);
       cloverImg._tipTimer = setTimeout(() => { cloverTip.classList.remove('show'); }, 800);
-    });
-    cloverImg.addEventListener('animationend', () => { cloverImg.classList.remove('pop'); });
-  }
 
-  const copyQQ = document.getElementById('copyQQ');
-  const qqNum = document.getElementById('qqNum');
-  if (copyQQ && qqNum) {
-    copyQQ.addEventListener('click', () => {
-      const num = '856429636';
-      const done = () => {
-        qqNum.textContent = num + '（已复制）';
-        setTimeout(() => { qqNum.textContent = num; }, 2000);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(num).then(done).catch(() => {
-          const ta = document.createElement('textarea'); ta.value = num; document.body.appendChild(ta); ta.select();
-          document.execCommand('copy'); document.body.removeChild(ta); done();
+      // 2. 签到逻辑
+      const savedUser = localStorage.getItem('user');
+      if (!savedUser) {
+        return alert('请先点击右上角头像登录，再点击四叶草哦！');
+      }
+      const userData = JSON.parse(savedUser);
+
+      try {
+        const res = await fetch('/api/auth/add-exp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: userData.email })
         });
-      } else {
-        const ta = document.createElement('textarea'); ta.value = num; document.body.appendChild(ta); ta.select();
-        document.execCommand('copy'); document.body.removeChild(ta); done();
+        const data = await res.json();
+
+        if (data.success) {
+          alert('签到成功！经验值 +10');
+          
+          // 重新从后端拉取真实经验值，彻底避免篡改
+          const meRes = await fetch('/api/auth/me', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userData.email })
+          });
+          const meData = await meRes.json();
+          
+          if (meData.success) {
+            localStorage.setItem('user', JSON.stringify(meData.user));
+            renderExp(meData.user.exp);
+          }
+        } else {
+          alert(data.error || '签到失败');
+        }
+
+      } catch (err) {
+        alert('网络错误，请稍后重试');
       }
     });
   }
