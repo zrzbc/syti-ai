@@ -484,6 +484,19 @@ document.addEventListener('DOMContentLoaded', function () {
           avatarBtnHTML.innerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
         }
       }
+      // 👇 新增：打开网站时立刻向后端同步一次最新数据（包括经验值）
+      fetch('/api/auth/me', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userData.email })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+      })
+      .catch(err => console.log('同步失败', err));
     } catch(e) {}
   }
 
