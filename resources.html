@@ -106,7 +106,7 @@ body.page-leaving{opacity:0}
 }
 
 /* ===== 个人中心头像按钮 ===== */
-.user-center { position: relative; display: flex; align-items: center; margin-left: 4px; }
+.user-center { position: relative; display: flex; align-items: center; margin-left: 4px; padding-bottom: 10px; /* 👈 留出空间，让悬停不中断 */ }
 .avatar-btn {
   width: 36px; height: 36px; border-radius: 50%;
   background: linear-gradient(135deg, #4f7cff, #8a5cf6);
@@ -118,10 +118,9 @@ body.page-leaving{opacity:0}
 
 /* ===== 悬停卡片 ===== */
 .user-popover {
-  position: absolute; top: calc(100% + 8px); right: 0; width: 220px;
+  position: absolute; top: 100%; /* 👈 改为 100%，让卡片直接贴在悬停区域下方 */ right: 0; width: 220px;
   background: #fff; border: 1px solid #e8ebf5; border-radius: 16px;
   box-shadow: 0 10px 30px rgba(55,65,110,0.15); display: none; z-index: 50;
-  margin-top: 5px;
 }
 .user-popover::before {
   content: ""; position: absolute; top: -6px; right: 18px;
@@ -359,8 +358,9 @@ body.page-leaving{opacity:0}
 
     <!-- 3. 用户信息面板（默认隐藏，登录成功后显示） -->
     <div id="userPanel" style="display: none; text-align: center;">
-      <div class="avatar" id="userPanelAvatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px; border-radius: 26px; overflow: hidden; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center;">
-        <span id="userAvatarLetter">U</span>
+      <!-- 👇 这里加上了默认的渐变背景 background: linear-gradient(135deg, #4f7cff, #8a5cf6); -->
+      <div class="avatar" id="userPanelAvatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px; border-radius: 26px; overflow: hidden; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4f7cff, #8a5cf6);">
+        <span id="userAvatarLetter" style="color: #fff;">U</span>
       </div>
       <h3 id="userNickname" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
         用户昵称
@@ -508,7 +508,9 @@ document.addEventListener('DOMContentLoaded', function () {
           userAvatarLetter.style.display = 'none';
         } else {
           userPanelAvatar.style.backgroundImage = 'none';
+          userPanelAvatar.style.background = 'linear-gradient(135deg, #4f7cff, #8a5cf6)'; // 👈 确保背景恢复
           userAvatarLetter.style.display = 'block';
+          userAvatarLetter.style.color = '#fff';
           userAvatarLetter.textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
         }
         userNickname.childNodes[0].nodeValue = userData.nickname || '用户';
@@ -629,7 +631,9 @@ document.addEventListener('DOMContentLoaded', function () {
           document.getElementById('popoverAvatarLetter').style.display = 'none';
         } else {
           document.getElementById('popoverAvatar').style.backgroundImage = 'none';
+          document.getElementById('popoverAvatar').style.background = 'linear-gradient(135deg, #4f7cff, #8a5cf6)'; // 👈 确保背景恢复
           document.getElementById('popoverAvatarLetter').style.display = 'block';
+          document.getElementById('popoverAvatarLetter').style.color = '#fff';
           document.getElementById('popoverAvatarLetter').textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
         }
         document.getElementById('popoverNickname').textContent = userData.nickname || '用户';
