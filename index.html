@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="这人针不错 - 官方网站">
+<meta name="description" content="这人针不错官方网站">
 <title>主页 - 这人针不错</title>
 <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
 <style>
@@ -712,15 +712,18 @@ body.page-leaving {
     </div>
 
     <!-- 登录/注册表单 -->
-    <form id="authForm">
       <div class="form-group">
         <label>邮箱</label>
         <input type="email" id="emailInput" placeholder="请输入邮箱地址" required>
       </div>
 
+      <div class="form-group" id="nicknameGroup" style="display: none;">
+        <label>昵称</label>
+        <input type="text" id="nicknameInput" placeholder="设置一个独一无二的昵称" maxlength="20">
+      </div>
+
       <div class="form-group">
-        <label>验证码</label>
-        <div class="code-row">
+        <label>验证码</label>        <div class="code-row">
           <input type="text" id="codeInput" placeholder="6位数字验证码" maxlength="6" required>
           <button type="button" id="sendCodeBtn" class="send-code-btn">获取验证码</button>
         </div>
@@ -750,30 +753,38 @@ body.page-leaving {
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-  /* ===== 个人中心：头像按钮打开/关闭模态框 ===== */
+  // ================== 1. 获取所有 DOM 元素（统一放在最前面，防止未定义错误） ==================
   const avatarBtn = document.getElementById('avatarBtn');
   const authModal = document.getElementById('authModal');
   const closeModal = document.getElementById('closeModal');
+  
+  const tabLogin = document.getElementById('tabLogin');
+  const tabRegister = document.getElementById('tabRegister');
+  const authForm = document.getElementById('authForm');
+  
+  const emailInput = document.getElementById('emailInput');
+  const codeInput = document.getElementById('codeInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const sendCodeBtn = document.getElementById('sendCodeBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+  
+  // 新增：昵称相关元素
+  const nicknameGroup = document.getElementById('nicknameGroup');
+  const nicknameInput = document.getElementById('nicknameInput');
 
+  // ================== 2. 个人中心与登录/注册交互 ==================
+
+  // --- 打开/关闭弹窗 ---
   if (avatarBtn && authModal && closeModal) {
-    // 点击头像 → 打开弹窗
-    avatarBtn.addEventListener('click', () => {
-      authModal.classList.add('show');
-    });
-
-    // 点击关闭按钮 → 关闭弹窗
-    closeModal.addEventListener('click', () => {
-      authModal.classList.remove('show');
-    });
-
-    // 点击遮罩层（弹窗外面的灰色区域）→ 关闭弹窗
+    avatarBtn.addEventListener('click', () => authModal.classList.add('show'));
+    
+    closeModal.addEventListener('click', () => authModal.classList.remove('show'));
+    
     authModal.addEventListener('click', (e) => {
-      if (e.target === authModal) {
-        authModal.classList.remove('show');
-      }
+      if (e.target === authModal) authModal.classList.remove('show');
     });
-
-    // 按 Esc 键 → 关闭弹窗
+    
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && authModal.classList.contains('show')) {
         authModal.classList.remove('show');
@@ -781,26 +792,116 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ===== 登录/注册标签切换 ===== */
-  const tabLogin = document.getElementById('tabLogin');
-  const tabRegister = document.getElementById('tabRegister');
-  const authForm = document.getElementById('authForm');
-
-  if (tabLogin && tabRegister) {
+  // --- 标签切换（登录 / 注册）---
+  if (tabLogin && tabRegister && nicknameGroup) {
     tabLogin.addEventListener('click', () => {
       tabLogin.classList.add('active');
       tabRegister.classList.remove('active');
-      // 登录时显示"忘记密码"
-      document.getElementById('forgotPasswordLink').style.display = 'inline';
+      if (forgotPasswordLink) forgotPasswordLink.style.display = 'inline';
+      nicknameGroup.style.display = 'none'; // 登录时隐藏昵称框
     });
 
     tabRegister.addEventListener('click', () => {
       tabRegister.classList.add('active');
       tabLogin.classList.remove('active');
-      // 注册时隐藏"忘记密码"
-      document.getElementById('forgotPasswordLink').style.display = 'none';
+      if (forgotPasswordLink) forgotPasswordLink.style.display = 'none';
+      nicknameGroup.style.display = 'block'; // 注册时显示昵称框
     });
   }
+
+  // --- 发送验证码 + 60秒倒计时 ---
+  if (sendCodeBtn && emailInput) {
+    let countdown = 0;
+    let timer = null;
+
+    sendCodeBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      if (!email || !email.includes('@')) {
+        return alert('请输入有效的邮箱地址');
+      }
+
+      sendCodeBtn.disabled = true;
+      sendCodeBtn.textContent = '发送中...';
+
+      try {
+        const res = await fetch('/api/auth/send-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          countdown = 60;
+          sendCodeBtn.textContent = `${countdown}秒后重试`;
+          timer = setInterval(() => {
+            countdown--;
+            if (countdown <= 0) {
+              clearInterval(timer);
+              sendCodeBtn.disabled = false;
+              sendCodeBtn.textContent = '获取验证码';
+            } else {
+              sendCodeBtn.textContent = `${countdown}秒后重试`;
+            }
+          }, 1000);
+        } else {
+          alert(data.error || '发送失败');
+          sendCodeBtn.disabled = false;
+          sendCodeBtn.textContent = '获取验证码';
+        }
+      } catch (err) {
+        alert('网络错误，请稍后重试');
+        sendCodeBtn.disabled = false;
+        sendCodeBtn.textContent = '获取验证码';
+      }
+    });
+  }
+
+  // --- 提交登录 / 注册 ---
+  if (authForm && submitBtn) {
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = emailInput.value.trim();
+      const code = codeInput.value.trim();
+      const password = passwordInput.value.trim();
+      const isRegister = tabRegister.classList.contains('active');
+      
+      // 判断是登录还是注册，注册才去获取昵称
+      const nickname = isRegister && nicknameInput ? nicknameInput.value.trim() : '';
+
+      if (!email || !code || !password) return alert('请填写所有字段');
+      if (password.length < 8) return alert('密码至少8位');
+      if (isRegister && !nickname) return alert('请设置您的昵称');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '处理中...';
+
+      try {
+        const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code, password, nickname })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          alert(isRegister ? '注册成功！' : '登录成功！');
+          authModal.classList.remove('show');
+          if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
+        } else {
+          alert(data.error || '操作失败');
+        }
+      } catch (err) {
+        alert('网络错误，请稍后重试');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '登录 / 注册';
+      }
+    });
+  }
+
+  // ================== 3. 网站原有的交互功能 ==================
 
   // 导航平滑滚动
   document.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -808,20 +909,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.querySelector(a.getAttribute('href'));
       if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth' }); }
     });
+  });
+
   /* ---------- 页面切换：假装延迟 0.2 秒 ---------- */
   document.addEventListener('click', function (e) {
     var link = e.target.closest('a');
     if (!link) return;
     var href = link.getAttribute('href');
     if (!href) return;
-    if (href.startsWith('#') || href.startsWith('http') ||
+    if (href.startsWith('#') || href.startsWith('http') || 
         link.target === '_blank' || href.startsWith('javascript:')) return;
     e.preventDefault();
     document.body.classList.add('page-leaving');
     setTimeout(function () {
       window.location.href = href;
     }, 200);
-  });
   });
 
   // 点击整个名字卡片，滚动到“找到我”
@@ -832,22 +934,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 四叶草点击跳动 + 字幕（连续点击会打断并重新显示）
+  // 四叶草点击跳动 + 字幕
   const cloverImg = document.getElementById('cloverImg');
   const cloverTip = document.getElementById('cloverTip');
   if (cloverImg && cloverTip) {
     cloverImg.addEventListener('click', () => {
-      // 跳动动画：重置再触发
       cloverImg.classList.remove('pop');
       void cloverImg.offsetWidth;
       cloverImg.classList.add('pop');
 
-      // 字幕：先移除再强制重排，保证过渡重新播放
       cloverTip.classList.remove('show');
       void cloverTip.offsetWidth;
       cloverTip.classList.add('show');
 
-      // 打断上一次的隐藏计时，重新计时
       clearTimeout(cloverImg._tipTimer);
       cloverImg._tipTimer = setTimeout(() => {
         cloverTip.classList.remove('show');
@@ -858,7 +957,6 @@ document.addEventListener('DOMContentLoaded', () => {
       cloverImg.classList.remove('pop');
     });
   }
-
 
   // 点击复制 QQ 群号
   const copyQQ = document.getElementById('copyQQ');
@@ -901,7 +999,6 @@ document.addEventListener('DOMContentLoaded', () => {
       tw: '繁體中文（台灣）▾'
     };
 
-    // 缓存所有文本节点
     var textNodes = [];
     var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
     var n;
@@ -965,7 +1062,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const start = performance.now();
       function step(now) {
         const t = Math.min((now - start) / duration, 1);
-        // easeInOutCubic：慢 → 快 → 慢
         const eased = t < 0.5
           ? 4 * t * t * t
           : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -983,21 +1079,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function runStatsCycle() {
-    // 依次滚动三个数字，每个 1 秒
     for (let i = 0; i < statEls.length; i++) {
       await rollOne(statEls[i], 1500);
     }
-    // 全部滚完后，停留 10 秒
     await new Promise(r => setTimeout(r, 5500));
-    // 三个一起渐变消失（1 秒）
     statBoxes.forEach(box => box.classList.add('fade-out'));
     await new Promise(r => setTimeout(r, 1000));
-    // 重置数字为 0+，并恢复不透明
     statEls.forEach(el => {
       el.textContent = '0' + (el.dataset.suffix || '');
     });
     statBoxes.forEach(box => box.classList.remove('fade-out'));
-    // 开始下一轮
     runStatsCycle();
   }
 
