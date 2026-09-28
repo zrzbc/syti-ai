@@ -829,7 +829,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let level = 1;
     let nextExp = 200;
-    let color = '#4b5563'; // Lv1 深灰色
+    let color = '#22c55e'; // Lv1 改成绿色，和升级后的绿色一致
 
     if (expNum >= 6400) {
       level = 7; nextExp = Infinity; color = '#a855f7'; // 紫色
@@ -1219,7 +1219,7 @@ userNickname.firstChild.textContent = userData.nickname || '用户';
         const data = await res.json();
 
         if (data.success) {
-          alert('签到成功！经验值 +10');
+console.log('签到成功');
           
           // 重新从后端拉取真实经验值，彻底避免篡改
           const meRes = await fetch('/api/auth/me', {
@@ -1234,7 +1234,7 @@ userNickname.firstChild.textContent = userData.nickname || '用户';
             renderExp(meData.user.exp);
           }
         } else {
-          alert(data.error || '签到失败');
+          console.log('签到提示：', data.error || '签到失败');
         }
 
       } catch (err) {
