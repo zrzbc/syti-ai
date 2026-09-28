@@ -7,7 +7,8 @@ export async function onRequestPost(context) {
   }
 
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+  // 修改这里：30分钟有效
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
 
   const encoder = new TextEncoder();
   const data = encoder.encode(code + email);
@@ -32,7 +33,7 @@ export async function onRequestPost(context) {
       from: 'noreply@zrzbc.com',
       to: email,
       subject: '【这人针不错】您的验证码',
-      html: `<p>您的验证码是：<strong style="font-size:24px">${code}</strong></p><p>5分钟内有效，请勿泄露给他人。</p>`
+      html: `<p>您的验证码是：<strong style="font-size:24px">${code}</strong></p><p>30分钟内有效，请勿泄露给他人。</p>`
     })
   });
 
