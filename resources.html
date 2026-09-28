@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="资源分享">
+<title>资源分享 - 这人针不错</title>
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
+<style>
+:root{
+  --blue:#4f7cff;
+  --purple:#8a5cf6;
+  --ink:#172033;
+  --muted:#6f7890;
+  --line:#e8ebf5;
+  --bg:#f7f9ff;
+  --card:rgba(255,255,255,.78);
+  --shadow:0 18px 60px rgba(67,72,120,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--ink);background:
+  radial-gradient(circle at 10% 5%,rgba(79,124,255,.14),transparent 28%),
+  radial-gradient(circle at 90% 10%,rgba(138,92,246,.13),transparent 30%),
+  var(--bg);
+  line-height:1.7;overflow-x:hidden;
+}
+a{text-decoration:none;color:inherit}
+button{font:inherit}
+.container{width:min(1160px,calc(100% - 40px));margin:auto}
+.nav{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  width:min(1120px,calc(100% - 32px));z-index:20;
+  background:rgba(255,255,255,.72);backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,.9);box-shadow:0 10px 35px rgba(55,65,110,.08);
+  border-radius:18px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
+}
+.logo{font-weight:800;letter-spacing:-.5px}
+.logo span{background:linear-gradient(90deg,var(--blue),var(--purple));-webkit-background-clip:text;color:transparent}
+.navlinks{display:flex;gap:4px}
+.navlinks a{font-size:14px;color:#59627a;padding:8px 12px;border-radius:10px}
+.navlinks a:hover{background:#f0f3ff;color:#3f63d9}
+.nav-right{display:flex;align-items:center;gap:8px}
+.lang-switch{position:relative}
+.lang-btn{
+  font:inherit;font-size:13px;color:#59627a;
+  padding:8px 12px;border-radius:10px;background:#fff;
+  border:1px solid var(--line);cursor:pointer;transition:.2s;white-space:nowrap;
+}
+.lang-btn:hover{background:#f0f3ff;color:#3f63d9}
+.lang-menu{
+  position:absolute;top:calc(100% + 6px);right:0;min-width:168px;
+  background:#fff;border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 12px 30px rgba(55,65,110,.14);padding:6px;display:none;z-index:30;
+}
+.lang-menu.open{display:block}
+.lang-menu button{
+  display:block;width:100%;text-align:left;padding:8px 10px;
+  font:inherit;font-size:13px;color:#59627a;background:none;
+  border:0;border-radius:8px;cursor:pointer;
+}
+.lang-menu button:hover{background:#f0f3ff;color:#3f63d9}
+.lang-menu button.active{background:#eef2ff;color:#3f63d9;font-weight:600}
+
+section{padding:140px 0 100px}
+.section-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:32px}
+.kicker{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#7180a5;font-weight:750}
+h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
+.section-desc{color:var(--muted);max-width:520px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:var(--card);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.95);box-shadow:0 12px 40px rgba(60,70,120,.07);border-radius:20px;overflow:hidden}
+.video-cover{aspect-ratio:16/9;background:linear-gradient(135deg,#dbe6ff,#eee4ff);display:flex;align-items:center;justify-content:center;color:#6474aa;font-weight:800;position:relative}
+.video-cover:after{display:none}
+.card-body{padding:20px}
+.tag{display:inline-block;font-size:11px;padding:4px 8px;border-radius:7px;background:#eef2ff;color:#566cd2;margin-bottom:10px}
+.card h3{font-size:18px;line-height:1.35;margin-bottom:7px}
+.card p{font-size:13px;color:var(--muted)}
+.meta{display:flex;justify-content:space-between;color:#7a8398;font-size:12px;margin-top:14px}
+.feature{grid-column:span 2}
+.feature .video-cover{aspect-ratio:16/9}
+.grid-resources .feature{grid-column:span 3;display:grid;grid-template-columns:1.4fr 1fr;align-items:center}
+.grid-resources .feature .video-cover{aspect-ratio:16/9;height:auto;min-height:0}
+.feature .video-cover{background:linear-gradient(120deg,#4c78ff,#7a63ec,#a455e6);color:white}
+footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
+
+#resources .card{transition:transform .25s ease,box-shadow .25s ease}
+#resources .card:hover{transform:scale(1.02);box-shadow:0 20px 50px rgba(60,70,120,.15)}
+
+/* 页面切换淡入淡出 */
+body{opacity:1;transition:opacity .2s ease}
+body.page-leaving{opacity:0}
+
+@media(max-width:850px){
+  .navlinks{display:none}
+  .grid,.grid-resources .feature{grid-template-columns:1fr}
+  .feature{grid-column:span 1}
+  .nav-right{gap:4px}
+  .lang-btn{padding:7px 9px;font-size:12px}
+  section{padding:120px 0 70px}
+  h2{font-size:31px}
+}
+@media(max-width:480px){
+  .container{width:min(100% - 24px,1160px)}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="logo" href="index.html">&nbsp;&nbsp;这人<span>针不错</span></a>
+  <div class="nav-right">
+    <div class="navlinks">
+      <a href="index.html#works">作品</a>
+      <a href="index.html#about">关于</a>
+      <a href="index.html#community">社群</a>
+      <a href="index.html#contact">联系</a>
+      <a href="resources.html">资源</a>
+    </div>
+    <div class="lang-switch">
+      <button class="lang-btn" id="langBtn" type="button">简体中文 ▾</button>
+      <div class="lang-menu" id="langMenu">
+        <button type="button" data-lang="cn" class="active">简体中文</button>
+        <button type="button" data-lang="hk">繁體中文（香港）</button>
+        <button type="button" data-lang="tw">繁體中文（台灣）</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main>
+<section id="resources">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Resources</div><h2>资源分享</h2></div>
+    <div class="section-desc">冰點的资源仓库。</div>
+  </div>
+
+<div class="grid grid-resources">
+  <a class="card feature" href="https://afdian.com/p/e0a9c654946e11f19b8952540025c377?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/r1.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">游戏</span>&nbsp;<span class="tag">我的世界</span>&nbsp;<span class="tag">闯关</span>&nbsp;<span class="tag">解密</span>&nbsp;<span class="tag">联机</span><h3>【地图】只要能...到达...那个地方...</h3><p>人数  |  4人<br>
+版本  |  JAVA 1.21.1<br>
+用时  |  约25分钟<br><br>
+【游戏规则】<br>
+四位玩家分别站在不同的矿石上，待石门炸裂，开始闯关。<br>
+共五关，玩家需要根据每关开始前的提示完成对应的任务。</p><div class="meta"><span>- 免费下载</span><span>（ 跳转 爱发电 ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV1g4KDzbEhx/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video2.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">海绵宝宝</span>&nbsp;<span class="tag">meme</span><h3>菌 子 代 餐</h3><p>「哦，我的上帝呀，这个视频给我的感觉简直就像在餐厅里点餐，点的微中辣，结果给我的是特辣，辣到无法呼吸后想要喝水，结果发现是热的一样。」</p><div class="meta"><span>播放 9万+</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV1BbYDz3Ex8/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video3.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">少女终末旅行</span>&nbsp;<span class="tag">二创填词</span><h3>“再见啦，这场虚无的旅行”</h3><p>「本来快忘了，总是有二创来戳我一把。但这么优质的少终挺难得的。」</p><div class="meta"><span>投币 2000+</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+  <a class="card" href="https://www.bilibili.com/video/BV1sZpnzCEvw/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video4.jpg') center/cover no-repeat;"></div>
+    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">摇曳露营</span>&nbsp;<span class="tag">二创填词</span><h3>“有你的露营才是莫愁乡！”</h3><p>「这是没有真经历写不出来这词啊。」</p><div class="meta"><span>再来一遍</span><span>（ 跳转 Bilibili ）</span></div></div>
+  </a>
+
+</div>
+</div>
+</section>
+</main>
+
+<footer>
+  <div>© 2026 这人针不错</div>
+  <div style="margin-top:6px">ZRZBC</div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* ---------- 页面切换：假装延迟 0.2 秒 ---------- */
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest('a');
+    if (!link) return;
+    var href = link.getAttribute('href');
+    if (!href) return;
+    if (href.startsWith('#') || href.startsWith('http') ||
+        link.target === '_blank' || href.startsWith('javascript:')) return;
+    e.preventDefault();
+    document.body.classList.add('page-leaving');
+    setTimeout(function () {
+      window.location.href = href;
+    }, 200);
+  });
+
+  /* ---------- 语言切换 ---------- */
+  var langBtn = document.getElementById('langBtn');
+  var langMenu = document.getElementById('langMenu');
+  var langSwitch = document.querySelector('.lang-switch');
+
+  if (langBtn && langMenu && langSwitch && typeof OpenCC !== 'undefined') {
+    var converters = {
+      cn: null,
+      hk: OpenCC.Converter({ from: 'cn', to: 'hk' }),
+      tw: OpenCC.Converter({ from: 'cn', to: 'twp' })
+    };
+    var langNames = {
+      cn: '简体中文 ▾',
+      hk: '繁體中文（香港）▾',
+      tw: '繁體中文（台灣）▾'
+    };
+
+    var textNodes = [];
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+    var n;
+    while ((n = walker.nextNode())) {
+      if (!n.nodeValue || !n.nodeValue.trim()) continue;
+      var p = n.parentElement;
+      if (!p) continue;
+      var tag = p.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+      n.__original = n.nodeValue;
+      textNodes.push(n);
+    }
+
+    var applyLang = function (lang) {
+      var converter = converters[lang];
+      for (var i = 0; i < textNodes.length; i++) {
+        var node = textNodes[i];
+        if (!node.isConnected) continue;
+        node.nodeValue = converter ? converter(node.__original) : node.__original;
+      }
+      langBtn.textContent = langNames[lang];
+      var btns = langMenu.querySelectorAll('button');
+      for (var j = 0; j < btns.length; j++) {
+        btns[j].classList.toggle('active', btns[j].getAttribute('data-lang') === lang);
+      }
+      document.documentElement.lang = lang === 'cn' ? 'zh-CN' : (lang === 'hk' ? 'zh-HK' : 'zh-TW');
+    };
+
+    langBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      langMenu.classList.toggle('open');
+    });
+
+    var menuBtns = langMenu.querySelectorAll('button');
+    for (var k = 0; k < menuBtns.length; k++) {
+      (function (btn) {
+        btn.addEventListener('click', function () {
+          applyLang(btn.getAttribute('data-lang'));
+          langMenu.classList.remove('open');
+        });
+      })(menuBtns[k]);
+    }
+
+    document.addEventListener('click', function (e) {
+      if (!langSwitch.contains(e.target)) langMenu.classList.remove('open');
+    });
+  }
+
+  /* ---------- 从其他页面带锚点进来时，等页面加载后再滚动 ---------- */
+  window.addEventListener('load', function () {
+    if (location.hash) {
+      var el = document.querySelector(location.hash);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+});
+</script>
+
+</body>
+</html>
