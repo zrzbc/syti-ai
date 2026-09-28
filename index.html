@@ -830,8 +830,8 @@ body.page-leaving {
 
     <!-- 3. 用户信息面板（默认隐藏，登录成功后显示） -->
     <div id="userPanel" style="display: none; text-align: center;">
-      <div class="avatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px;">
-        <span id="userAvatarLetter">U</span>
+      <div class="avatar" id="userPanelAvatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px; border-radius: 26px; overflow: hidden; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4f7cff, #8a5cf6);">
+        <span id="userAvatarLetter" style="color: #fff;">U</span>
       </div>
       <!-- 修改这行：加上铅笔图标 -->
       <h3 id="userNickname" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
@@ -980,7 +980,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         } catch (err) {}
         
-        const userPanelAvatar = document.getElementById('userPanelAvatar') || document.querySelector('.avatar');
+        const userPanelAvatar = document.getElementById('userPanelAvatar');
+
         if (userData.avatar) {
           userAvatarLetter.outerHTML = `<img src="${userData.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:26px;">`;
           if (userPanelAvatar) userPanelAvatar.style.backgroundImage = `url(${userData.avatar})`;
