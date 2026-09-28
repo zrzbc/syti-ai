@@ -954,17 +954,29 @@ document.addEventListener('DOMContentLoaded', () => {
   if (savedUser) {
     try {
       const userData = JSON.parse(savedUser);
-      const avatarBtnHTML = document.querySelector('#avatarBtn svg');
+      const avatarBtnHTML = document.querySelector('#avatarBtn');
       if (avatarBtnHTML) {
         if (userData.avatar) {
-          avatarBtnHTML.outerHTML = `<img src="${userData.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+          avatarBtnHTML.innerHTML = `<img src="${userData.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
         } else {
-          avatarBtnHTML.outerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
+          avatarBtnHTML.innerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
         }
       }
+      // 👇 新增：打开网站时立刻向后端同步一次最新数据（包括经验值）
+      fetch('/api/auth/me', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userData.email })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+        }
+      })
+      .catch(err => console.log('同步失败', err));
     } catch(e) {}
   }
-
   // ================== 5. 弹窗与面板切换 ==================
   if (avatarBtn && authModal) {
     avatarBtn.addEventListener('click', async () => {
