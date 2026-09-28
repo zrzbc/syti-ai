@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="个人视频创作者主页｜视频作品、创作经历、AI项目与社群">
-<title>这人针不错官方网站</title>
+<meta name="description" content="这人针不错官方网站">
+<title>主页 - 这人针不错</title>
 <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
 <style>
 :root{
@@ -294,6 +294,22 @@ footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
   .lang-btn{padding:7px 9px;font-size:12px}
 }
 
+/* 数据滚动 / 淡出动画 */
+.stat b {
+  transition: opacity .5s ease;
+}
+.stat.fade-out b {
+  opacity: 0;
+}
+
+/* 页面切换淡入淡出 */
+body {
+  opacity: 1;
+  transition: opacity .2s ease;
+}
+body.page-leaving {
+  opacity: 0;
+}
 
 </style>
 </head>
@@ -305,7 +321,7 @@ footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
     <div class="navlinks">
       <a href="#works">作品</a><a href="#about">关于</a>
       <a href="#community">社群</a><a href="#contact">联系</a>
-      <a href="#resources">资源</a>
+      <a href="resources.html">资源</a>
     </div>
     <div class="lang-switch">
       <button class="lang-btn" id="langBtn" type="button">简体中文 ▾</button>
@@ -337,9 +353,9 @@ footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
         <div class="role">适可而止就是恰到好处。</div>
       </div>
       <div class="stats">
-        <div class="stat"><b>6K+</b><span>Bilibili 粉丝</span></div>
-        <div class="stat"><b>1.44M+</b><span>累计播放</span></div>
-        <div class="stat"><b>240K+</b><span>单作最高播放</span></div>
+        <div class="stat"><b data-target="6000" data-suffix="+">0+</b><span>Bilibili 粉丝</span></div>
+        <div class="stat"><b data-target="1400000" data-suffix="+">0+</b><span>累计播放</span></div>
+        <div class="stat"><b data-target="240000" data-suffix="+">0+</b><span>单作最高播放</span></div>
       </div>
     </div>
   </div>
@@ -416,7 +432,7 @@ footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
   </div>
 
   <div class="clover-wrap">
-    <div class="clover-tip" id="cloverTip">你 拍了拍 四叶草</div>
+    <div class="clover-tip" id="cloverTip">幸运值 +1</div>
     <img id="cloverImg" src="https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/siyecao.png" alt="四叶草">
   </div>
  </div>
@@ -497,46 +513,11 @@ footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
 </div>
 </section>
 
-<section id="resources">
-<div class="container">
-  <div class="section-head">
-    <div><div class="kicker">Resources</div><h2>资源分享</h2></div>
-    <div class="section-desc">冰點的资源仓库。</div>
-  </div>
-
-<div class="grid grid-resources">
-  <a class="card feature" href="https://afdian.com/p/e0a9c654946e11f19b8952540025c377?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener">
-    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/r1.jpg') center/cover no-repeat;"></div>
-    <div class="card-body"><span class="tag">游戏</span>&nbsp;<span class="tag">我的世界</span>&nbsp;<span class="tag">闯关</span>&nbsp;<span class="tag">解密</span>&nbsp;<span class="tag">联机</span><h3>【地图】只要能...到达...那个地方...</h3><p>人数  |  4人<br>
-版本  |  JAVA 1.21.1<br>
-用时  |  约25分钟<br><br>
-【游戏规则】<br>
-四位玩家分别站在不同的矿石上，待石门炸裂，开始闯关。<br>
-共五关，玩家需要根据每关开始前的提示完成对应的任务。</p><div class="meta"><span>- 免费下载</span><span>（ 跳转 爱发电 ）</span></div></div>
-  </a>
-
-  <a class="card" href="https://www.bilibili.com/video/BV1g4KDzbEhx/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
-    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video2.jpg') center/cover no-repeat;"></div>
-    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">海绵宝宝</span>&nbsp;<span class="tag">meme</span><h3>菌 子 代 餐</h3><p>「哦，我的上帝呀，这个视频给我的感觉简直就像在餐厅里点餐，点的微中辣，结果给我的是特辣，辣到无法呼吸后想要喝水，结果发现是热的一样。」</p><div class="meta"><span>播放 9万+</span><span>（ 跳转 Bilibili ）</span></div></div>
-  </a>
-
-  <a class="card" href="https://www.bilibili.com/video/BV1BbYDz3Ex8/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
-    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video3.jpg') center/cover no-repeat;"></div>
-    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">少女终末旅行</span>&nbsp;<span class="tag">二创填词</span><h3>“再见啦，这场虚无的旅行”</h3><p>「本来快忘了，总是有二创来戳我一把。但这么优质的少终挺难得的。」</p><div class="meta"><span>投币 2000+</span><span>（ 跳转 Bilibili ）</span></div></div>
-  </a>
-
-  <a class="card" href="https://www.bilibili.com/video/BV1sZpnzCEvw/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
-    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video4.jpg') center/cover no-repeat;"></div>
-    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">摇曳露营</span>&nbsp;<span class="tag">二创填词</span><h3>“有你的露营才是莫愁乡！”</h3><p>「这是没有真经历写不出来这词啊。」</p><div class="meta"><span>再来一遍</span><span>（ 跳转 Bilibili ）</span></div></div>
-  </a>
-
-</div>
-</section>
 </main>
 
 <footer>
   <div>© 2026 这人针不错</div>
-  <div style="margin-top:6px">ZRZBC</div>
+  <div style="margin-top:6px">www.zrzbc.com</div>
 </footer>
 
 <script>
@@ -547,6 +528,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.querySelector(a.getAttribute('href'));
       if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth' }); }
     });
+  /* ---------- 页面切换：假装延迟 0.2 秒 ---------- */
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest('a');
+    if (!link) return;
+    var href = link.getAttribute('href');
+    if (!href) return;
+    if (href.startsWith('#') || href.startsWith('http') ||
+        link.target === '_blank' || href.startsWith('javascript:')) return;
+    e.preventDefault();
+    document.body.classList.add('page-leaving');
+    setTimeout(function () {
+      window.location.href = href;
+    }, 200);
+  });
   });
 
   // 点击整个名字卡片，滚动到“找到我”
@@ -557,27 +552,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 四叶草点击跳动 + 字幕
+  // 四叶草点击跳动 + 字幕（连续点击会打断并重新显示）
   const cloverImg = document.getElementById('cloverImg');
   const cloverTip = document.getElementById('cloverTip');
   if (cloverImg && cloverTip) {
     cloverImg.addEventListener('click', () => {
+      // 跳动动画：重置再触发
       cloverImg.classList.remove('pop');
       void cloverImg.offsetWidth;
       cloverImg.classList.add('pop');
 
+      // 字幕：先移除再强制重排，保证过渡重新播放
+      cloverTip.classList.remove('show');
+      void cloverTip.offsetWidth;
       cloverTip.classList.add('show');
+
+      // 打断上一次的隐藏计时，重新计时
       clearTimeout(cloverImg._tipTimer);
       cloverImg._tipTimer = setTimeout(() => {
         cloverTip.classList.remove('show');
-      }, 1200);
+      }, 800);
     });
 
     cloverImg.addEventListener('animationend', () => {
       cloverImg.classList.remove('pop');
     });
   }
-
 
 
   // 点击复制 QQ 群号
@@ -668,6 +668,61 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', function (e) {
       if (!langSwitch.contains(e.target)) langMenu.classList.remove('open');
     });
+  }
+
+  /* ---------- 三个数据：滚动 + 循环 ---------- */
+  const statEls = document.querySelectorAll('.stat b');
+  const statBoxes = document.querySelectorAll('.stat');
+
+  function formatNum(n) {
+    return n.toLocaleString('en-US');
+  }
+
+  function rollOne(el, duration) {
+    return new Promise(resolve => {
+      const target = parseInt(el.dataset.target, 10);
+      const suffix = el.dataset.suffix || '';
+      const start = performance.now();
+      function step(now) {
+        const t = Math.min((now - start) / duration, 1);
+        // easeInOutCubic：慢 → 快 → 慢
+        const eased = t < 0.5
+          ? 4 * t * t * t
+          : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        const val = Math.floor(eased * target);
+        el.textContent = formatNum(val) + suffix;
+        if (t < 1) {
+          requestAnimationFrame(step);
+        } else {
+          el.textContent = formatNum(target) + suffix;
+          resolve();
+        }
+      }
+      requestAnimationFrame(step);
+    });
+  }
+
+  async function runStatsCycle() {
+    // 依次滚动三个数字，每个 1 秒
+    for (let i = 0; i < statEls.length; i++) {
+      await rollOne(statEls[i], 1500);
+    }
+    // 全部滚完后，停留 10 秒
+    await new Promise(r => setTimeout(r, 5500));
+    // 三个一起渐变消失（1 秒）
+    statBoxes.forEach(box => box.classList.add('fade-out'));
+    await new Promise(r => setTimeout(r, 1000));
+    // 重置数字为 0+，并恢复不透明
+    statEls.forEach(el => {
+      el.textContent = '0' + (el.dataset.suffix || '');
+    });
+    statBoxes.forEach(box => box.classList.remove('fade-out'));
+    // 开始下一轮
+    runStatsCycle();
+  }
+
+  if (statEls.length === 3) {
+    runStatsCycle();
   }
 
   // 点击邮箱复制
