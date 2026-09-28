@@ -311,6 +311,185 @@ body.page-leaving {
   opacity: 0;
 }
 
+/* ===== 个人中心头像按钮 ===== */
+.user-center {
+  display: flex;
+  align-items: center;
+  margin-left: 4px; /* 和语言切换器之间留一点缝隙 */
+}
+
+.avatar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%; /* 圆形 */
+  background: linear-gradient(135deg, #4f7cff, #8a5cf6); /* 和你网站主题色一致的渐变 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff; /* 图标颜色 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.avatar-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(79, 124, 255, 0.35);
+}
+
+/* ===== 模态框遮罩层 ===== */
+.modal-overlay {
+  display: none; /* 默认隐藏 */
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(23, 32, 51, 0.55); /* 半透明深色背景 */
+  backdrop-filter: blur(6px);
+  z-index: 999;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-overlay.show {
+  display: flex; /* 加上 .show 类时显示 */
+}
+
+/* ===== 模态框主体 ===== */
+.modal-content {
+  background: #fff;
+  border-radius: 24px;
+  width: min(420px, calc(100% - 40px));
+  padding: 32px 28px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-close {
+  position: absolute;
+  top: 16px; right: 20px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #999;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-close:hover { color: #333; }
+
+/* ===== 标签切换 ===== */
+.modal-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.modal-tab {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #e8ebf5;
+  border-radius: 12px;
+  background: #f7f9ff;
+  color: #6f7890;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.modal-tab.active {
+  background: linear-gradient(110deg, #4f7cff, #8a5cf6);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* ===== 表单 ===== */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  color: #6f7890;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #e8ebf5;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus {
+  border-color: #4f7cff;
+  box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.12);
+}
+
+.code-row {
+  display: flex;
+  gap: 10px;
+}
+
+.code-row input { flex: 1; }
+
+.send-code-btn {
+  white-space: nowrap;
+  padding: 12px 16px;
+  border: 1px solid #4f7cff;
+  border-radius: 12px;
+  background: #fff;
+  color: #4f7cff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.send-code-btn:hover {
+  background: #f0f3ff;
+}
+
+.send-code-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(110deg, #4f7cff, #8a5cf6);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(91, 100, 230, 0.35);
+}
+
+.modal-footer {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.modal-footer a {
+  font-size: 13px;
+  color: #8a5cf6;
+}
+
 </style>
 </head>
 <body>
@@ -329,6 +508,15 @@ body.page-leaving {
         <button type="button" data-lang="cn" class="active">简体中文</button>
         <button type="button" data-lang="hk">繁體中文（香港）</button>
         <button type="button" data-lang="tw">繁體中文（台灣）</button>
+      </div>
+    </div>
+    <!-- 头像按钮 -->
+    <div class="user-center">
+      <div class="avatar-btn" id="avatarBtn" title="个人中心">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
       </div>
     </div>
   </div>
@@ -513,6 +701,45 @@ body.page-leaving {
 </div>
 </section>
 
+<!-- ===== 登录/注册模态框 ===== -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeModal">&times;</button>
+    
+    <div class="modal-tabs">
+      <button class="modal-tab active" data-tab="login" id="tabLogin">登录</button>
+      <button class="modal-tab" data-tab="register" id="tabRegister">注册</button>
+    </div>
+
+    <!-- 登录/注册表单 -->
+    <form id="authForm">
+      <div class="form-group">
+        <label>邮箱</label>
+        <input type="email" id="emailInput" placeholder="请输入邮箱地址" required>
+      </div>
+
+      <div class="form-group">
+        <label>验证码</label>
+        <div class="code-row">
+          <input type="text" id="codeInput" placeholder="6位数字验证码" maxlength="6" required>
+          <button type="button" id="sendCodeBtn" class="send-code-btn">获取验证码</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>密码</label>
+        <input type="password" id="passwordInput" placeholder="至少8位，包含字母和数字" required>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">登录 / 注册</button>
+    </form>
+
+    <div class="modal-footer">
+      <a href="javascript:void(0)" id="forgotPasswordLink">忘记密码？</a>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <footer>
@@ -522,6 +749,59 @@ body.page-leaving {
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+
+  /* ===== 个人中心：头像按钮打开/关闭模态框 ===== */
+  const avatarBtn = document.getElementById('avatarBtn');
+  const authModal = document.getElementById('authModal');
+  const closeModal = document.getElementById('closeModal');
+
+  if (avatarBtn && authModal && closeModal) {
+    // 点击头像 → 打开弹窗
+    avatarBtn.addEventListener('click', () => {
+      authModal.classList.add('show');
+    });
+
+    // 点击关闭按钮 → 关闭弹窗
+    closeModal.addEventListener('click', () => {
+      authModal.classList.remove('show');
+    });
+
+    // 点击遮罩层（弹窗外面的灰色区域）→ 关闭弹窗
+    authModal.addEventListener('click', (e) => {
+      if (e.target === authModal) {
+        authModal.classList.remove('show');
+      }
+    });
+
+    // 按 Esc 键 → 关闭弹窗
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && authModal.classList.contains('show')) {
+        authModal.classList.remove('show');
+      }
+    });
+  }
+
+  /* ===== 登录/注册标签切换 ===== */
+  const tabLogin = document.getElementById('tabLogin');
+  const tabRegister = document.getElementById('tabRegister');
+  const authForm = document.getElementById('authForm');
+
+  if (tabLogin && tabRegister) {
+    tabLogin.addEventListener('click', () => {
+      tabLogin.classList.add('active');
+      tabRegister.classList.remove('active');
+      // 登录时显示"忘记密码"
+      document.getElementById('forgotPasswordLink').style.display = 'inline';
+    });
+
+    tabRegister.addEventListener('click', () => {
+      tabRegister.classList.add('active');
+      tabLogin.classList.remove('active');
+      // 注册时隐藏"忘记密码"
+      document.getElementById('forgotPasswordLink').style.display = 'none';
+    });
+  }
+
   // 导航平滑滚动
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
