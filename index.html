@@ -565,7 +565,8 @@ body.page-leaving {
 .leaderboard-row.rank-1 { background: linear-gradient(135deg, #ffd700, #ffb800); }
 .leaderboard-row.rank-2 { background: linear-gradient(135deg, #a0c4ff, #6b9bff); }
 .leaderboard-row.rank-3 { background: linear-gradient(135deg, #d2a679, #b8864a); }
-.leaderboard-row.rank-1, .leaderboard-row.rank-2, .leaderboard-row.rank-3 { color: #fff; }
+.leaderboard-row.rank-2, .leaderboard-row.rank-3 { color: #fff; }
+.leaderboard-row.rank-1 { color: #000; }
 .leaderboard-row.current-user {
   margin-top: 16px;
   border-top: 1px dashed #d9dce5;
@@ -633,7 +634,8 @@ body.page-leaving {
               <div id="popoverExpBarFill" style="height: 100%; width: 0%; background: #4ade80; border-radius: 4px; transition: all 0.3s;"></div>
             </div>
           </div>
-          <button class="submit-btn" id="popoverLogoutBtn" style="padding: 8px; font-size: 14px; margin-top: 16px; background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
+          <button class="submit-btn" id="popoverSigninBtn" style="padding: 8px; font-size: 14px; margin-top: 16px; background: #fff; color: #172033; border: 1px solid #e8ebf5;">签到</button>
+          <button class="submit-btn" id="popoverLogoutBtn" style="padding: 8px; font-size: 14px; margin-top: 8px; background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
         </div>
       </div>
     </div>
@@ -1079,37 +1081,15 @@ document.addEventListener('DOMContentLoaded', () => {
     avatarBtn.addEventListener('click', async () => {
       const user = localStorage.getItem('user');
       if (user) {
-        const userData = JSON.parse(user);
-        try {
-          const res = await fetch('/api/auth/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userData.email }) });
-          const data = await res.json();
-          if (data.success && data.user) {
-            localStorage.setItem('user', JSON.stringify(data.user));
-            userData.exp = data.user.exp; userData.nickname = data.user.nickname; userData.avatar = data.user.avatar;
-          }
-        } catch (err) {}
-        
-        const userPanelAvatar = document.getElementById('userPanelAvatar');
-
-        if (userData.avatar) {
-          userAvatarLetter.outerHTML = `<img src="${userData.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:26px;">`;
-          if (userPanelAvatar) userPanelAvatar.style.backgroundImage = `url(${userData.avatar})`;
-        } else {
-          if (userPanelAvatar) userPanelAvatar.style.background = 'linear-gradient(135deg, #4f7cff, #8a5cf6)';
-          userAvatarLetter.textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
-          userAvatarLetter.style.color = '#fff';
-        }
-        userNickname.childNodes[0].nodeValue = userData.nickname || '用户';
-        renderExp(userData.exp);
-        userPanel.style.display = 'block';
-        authFormContainer.style.display = 'none';
-        resetFormContainer.style.display = 'none';
+        // 已登录：不弹出任何东西（悬停卡片里已有信息）
+        return;
       } else {
+        // 未登录：打开登录/注册弹窗
         authFormContainer.style.display = 'block';
         resetFormContainer.style.display = 'none';
         userPanel.style.display = 'none';
+        authModal.classList.add('show');
       }
-      authModal.classList.add('show');
     });
   }
 
@@ -1300,7 +1280,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ===== 悬停卡片里的签到按钮 =====
+  const popoverSigninBtn = document.getElementById('popoverSigninBtn');
+  if (popoverSigninBtn) {
+    popoverSigninBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelector('#signin').scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
   const popoverLogoutBtn = document.getElementById('popoverLogoutBtn');
+
   if (popoverLogoutBtn) {
     popoverLogoutBtn.addEventListener('click', (e) => {
       e.stopPropagation(); localStorage.removeItem('user'); alert('已退出登录'); window.location.reload();
