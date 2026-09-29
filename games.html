@@ -101,6 +101,24 @@ h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
   transform: translateY(-4px);
   box-shadow: 0 20px 50px rgba(60,70,120,.15);
 }
+
+.game-card { position: relative; }
+.game-plays {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  background: rgba(23, 32, 51, 0.78);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+  letter-spacing: 1px;
+  backdrop-filter: blur(4px);
+  z-index: 5;
+  pointer-events: none;
+}
+
 .game-cover {
   width: 100%;
   aspect-ratio: 16/9;
@@ -272,8 +290,10 @@ body.page-leaving{opacity:0}
 
   <div class="game-list" id="gameList">
 
-    <!-- 游戏 1 -->
+
+
     <a class="game-card game-item" href="laizishenyuan.html" target="_blank" rel="noopener" data-title="前方深渊" data-desc="像素风 冒险 动作 2D">
+<span class="game-plays" data-game-id="laizishenyuan">游玩次数：--</span>
       <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/laizishenyuan.png');"></div>
       <div class="game-info">
 <h3>前方深渊</h3>
@@ -284,6 +304,7 @@ body.page-leaving{opacity:0}
     </a>
 
     <a class="game-card game-item" href="mimatiaozhanjiandan.html" target="_blank" rel="noopener" data-title="密码挑战简单" data-desc="免登录 推理 策略 烧脑 ">
+<span class="game-plays" data-game-id="mimatiaozhanjiandan">游玩次数：--</span>
       <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/mimatiaozhan.png');"></div>
       <div class="game-info">
 <h3>密码挑战 · 简单版（免登录）</h3>
@@ -294,6 +315,7 @@ body.page-leaving{opacity:0}
     </a>
 
     <a class="game-card game-item" href="mimatiaozhankunnan.html" target="_blank" rel="noopener" data-title="密码挑战困难" data-desc="免登录 推理 策略 烧脑 ">
+<span class="game-plays" data-game-id="mimatiaozhankunnan">游玩次数：--</span>
       <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/mimatiaozhan.png');"></div>
       <div class="game-info">
 <h3>密码挑战 · 困难版（免登录）</h3>
@@ -304,6 +326,7 @@ body.page-leaving{opacity:0}
     </a>
 
     <a class="game-card game-item" href="yizhiqianjin.html" target="_blank" rel="noopener" data-title="一掷千金" data-desc="免登录 推理 博弈 心理 ">
+<span class="game-plays" data-game-id="yizhiqianjin">游玩次数：--</span>
       <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/yizhiqianjin.png');"></div>
       <div class="game-info">
 <h3>一掷千金（免登录）</h3>
@@ -403,6 +426,47 @@ body.page-leaving{opacity:0}
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+
+  // ===== 游玩次数统计 =====
+  async function loadPlayCounts() {
+    try {
+      const res = await fetch('/api/game/get-clicks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}'
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.querySelectorAll('.game-plays').forEach(el => {
+          const id = el.dataset.gameId;
+          const count = data.data[id] || 0;
+          el.textContent = '游玩次数：' + count.toLocaleString();
+        });
+      }
+    } catch(e) { console.log('加载游玩次数失败', e); }
+  }
+
+  function recordPlay(gameId) {
+    fetch('/api/game/add-click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId }),
+      keepalive: true
+    }).catch(function(){});
+  }
+
+  loadPlayCounts();
+
+  document.querySelectorAll('.game-item').forEach(card => {
+    card.addEventListener('click', () => {
+      const plays = card.querySelector('.game-plays');
+      if (plays) {
+        recordPlay(plays.dataset.gameId);
+        const cur = parseInt((plays.textContent.match(/[\d,]+/) || ['0'])[0].replace(/,/g, '')) || 0;
+        plays.textContent = '游玩次数：' + (cur + 1).toLocaleString();
+      }
+    });
+  });
 
   // ===== 搜索 =====
   const searchInput = document.getElementById('searchInput');
