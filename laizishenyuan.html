@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+
 <script>
 (function() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -11,6 +13,23 @@
     window.location.href = 'index.html';
     return;
   }
+
+  // ===== 账号隔离：检测是否切换了账号 =====
+  const lastEmail = localStorage.getItem('abyssLastEmail') || '';
+  if (lastEmail !== user.email) {
+    // 切换了账号，清空旧账号的所有 abyss 数据
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('abyss')) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    // 记录当前账号
+    localStorage.setItem('abyssLastEmail', user.email);
+  }
+
   // 同步拉取服务端数据（阻塞式）
   const xhr = new XMLHttpRequest();
   xhr.open('POST', '/api/game/load', false);
@@ -26,6 +45,7 @@
   } catch(e) { console.error('加载游戏数据失败', e); }
 })();
 </script>
+
     <title>前方深渊</title>
     <style>
         * {
@@ -4663,14 +4683,16 @@ ensureBgmStarted();
 <script>
 // 定时把本地数据同步到服务器
 (function() {
-  let syncTimer = null;
   function syncToServer() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (!user.email) return;
+    // ===== 安全检查：当前 localStorage 里的数据必须属于当前账号 =====
+    const owner = localStorage.getItem('abyssLastEmail') || '';
+    if (owner !== user.email) return; // 数据不属于当前账号，拒绝上传
     const data = {};
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key && key.startsWith('abyss')) {
+      if (key && key.startsWith('abyss') && key !== 'abyssLastEmail') {
         data[key] = localStorage.getItem(key);
       }
     }
@@ -4680,12 +4702,11 @@ ensureBgmStarted();
       body: JSON.stringify({ email: user.email, data })
     }).catch(function(){});
   }
-  // 每 3 秒同步一次
   setInterval(syncToServer, 3000);
-  // 页面关闭前同步一次
   window.addEventListener('beforeunload', syncToServer);
 })();
 </script>
+
 
 </body>
 </html>
