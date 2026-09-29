@@ -33,12 +33,12 @@ export async function onRequestPost(context) {
 
   // 根据第几天给经验
   let expReward = 0;
-  const dayRewards = { 1: 5, 2: 8, 3: 10, 5: 8, 6: 12 };
+  const dayRewards = { 1: 50, 2: 80, 3: 100, 5: 80, 6: 120 };
   if (newSigninDays === 4 || newSigninDays === 7) {
-    // 随机 8~20 经验
-    expReward = Math.floor(Math.random() * 13) + 8;
+    // 随机 80~200 经验
+    expReward = Math.floor(Math.random() * 121) + 80;
   } else {
-    expReward = dayRewards[newSigninDays] || 5;
+    expReward = dayRewards[newSigninDays] || 50;
   }
 
   const newExp = (user.exp || 0) + expReward;
