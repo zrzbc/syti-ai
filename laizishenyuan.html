@@ -1,0 +1,4691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<script>
+(function() {
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!user.email) {
+    alert('请先登录后再打开游戏');
+    window.location.href = 'index.html';
+    return;
+  }
+  // 同步拉取服务端数据（阻塞式）
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/game/load', false);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  try {
+    xhr.send(JSON.stringify({ email: user.email }));
+    const resp = JSON.parse(xhr.responseText);
+    if (resp.success && resp.data) {
+      for (const key in resp.data) {
+        localStorage.setItem(key, resp.data[key]);
+      }
+    }
+  } catch(e) { console.error('加载游戏数据失败', e); }
+})();
+</script>
+    <title>前方深渊</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #0a0512;
+            font-family: 'Courier New', monospace;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        canvas {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            cursor: crosshair;
+            transform-origin: center center;
+            transition: transform 0.1s;
+        }
+#bottom-left-buttons {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    display: none;   /* 初始隐藏，开始游戏后才显示 */
+    gap: 10px;
+    z-index: 30;
+    flex-wrap: wrap;
+}
+        .pixel-btn {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            padding: 8px 14px;
+            background: rgba(10, 5, 20, 0.85);
+            border: 2px solid #00ffcc55;
+            border-radius: 4px;
+            color: #00ffcc;
+            cursor: pointer;
+            text-shadow: 0 0 6px #00ffcc55;
+            transition: all 0.2s;
+            box-shadow: 0 0 12px #00ffcc22;
+        }
+        .pixel-btn:hover {
+            background: rgba(0, 255, 204, 0.15);
+            border-color: #00ffccaa;
+            box-shadow: 0 0 20px #00ffcc44;
+            color: #ffffff;
+        }
+        .pixel-btn:active {
+            transform: scale(0.95);
+        }
+        #game-over-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 20;
+            flex-direction: column;
+            gap: 18px;
+            backdrop-filter: blur(4px);
+        }
+        #game-over-overlay.active {
+            display: flex;
+        }
+        #game-over-overlay h1 {
+            color: #ff4466;
+            font-size: 42px;
+            letter-spacing: 6px;
+            text-shadow: 0 0 20px #ff446688, 0 0 40px #ff446644;
+            font-family: 'Courier New', monospace;
+        }
+        #game-over-overlay .final-score {
+            color: #ffd700;
+            font-size: 24px;
+            letter-spacing: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .overlay-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+        }
+        .restart-hint {
+            color: #ffffffcc;
+            font-size: 14px;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            animation: blink 1.5s ease-in-out infinite;
+        }
+
+#game-over-overlay .final-coins {
+    color: #ffd700;
+    font-size: 20px;
+    letter-spacing: 3px;
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 10px #ffd70088;
+}
+
+        #pause-hint {
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffffffaa;
+            font-size: 15px;
+            letter-spacing: 3px;
+            text-align: center;
+            pointer-events: none;
+            z-index: 25;
+            display: none;
+            animation: blink 1.2s ease-in-out infinite;
+            font-weight: bold;
+        }
+        #pause-hint.active {
+            display: block;
+        }
+        @keyframes blink {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+#tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.82);
+    z-index: 70;           /* ← 改为 70，高于菜单的 60 */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    overflow-y: auto;
+}
+
+        #tutorial-overlay.active {
+            display: flex;
+        }
+        #tutorial-panel {
+            background: #1a0d12;
+            border: 3px solid #00ffcc66;
+            border-radius: 8px;
+            padding: 20px 24px;
+            max-width: 620px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            color: #e8e0d0;
+            font-size: 13px;
+            line-height: 1.6;
+            box-shadow: 0 0 40px #00ffcc22, inset 0 0 20px #00ffcc11;
+            font-family: 'Courier New', monospace;
+        }
+        #tutorial-panel h2 {
+            color: #ffd700;
+            text-align: center;
+            font-size: 22px;
+            letter-spacing: 4px;
+            margin-bottom: 14px;
+            border-bottom: 2px dashed #00ffcc33;
+            padding-bottom: 8px;
+        }
+        #tutorial-panel h3 {
+            color: #00ffcc;
+            font-size: 15px;
+            margin-top: 14px;
+            margin-bottom: 6px;
+        }
+        #tutorial-panel .monster-card {
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 4px solid;
+            padding: 8px 12px;
+            margin: 6px 0;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        #tutorial-panel .monster-card.c {
+            border-color: #f1c40f;
+        }
+        #tutorial-panel .monster-card.b {
+            border-color: #2ecc71;
+        }
+        #tutorial-panel .monster-card.a {
+            border-color: #e74c3c;
+        }
+        #tutorial-panel .monster-card.s {
+            border-color: #9b59b6;
+        }
+        #tutorial-panel .monster-card.ss {
+            border-color: #5dade2;
+        }
+        #btn-close-tutorial {
+            display: block;
+            margin: 14px auto;
+            padding: 8px 28px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            background: rgba(10, 5, 20, 0.9);
+            border: 2px solid #00ffcc88;
+            border-radius: 4px;
+            color: #00ffcc;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #btn-close-tutorial:hover {
+            background: rgba(0, 255, 204, 0.15);
+            border-color: #00ffccff;
+            color: #fff;
+        }
+.key-hint {
+    display: inline-block;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid #ffffff33;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #ffd700;
+    margin: 0 2px;
+}
+
+/* ========== 菜单界面样式 ========== */
+#menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.1);   /* 半透明黑色蒙层，数值可调 */
+  backdrop-filter: blur(8px);          /* 标准语法，模糊背后的内容 */
+    -webkit-backdrop-filter: blur(8px);  /* Safari 兼容 */
+    z-index: 60;
+    overflow-y: auto;
+}
+
+#menu-stats {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    color: #ffd700;
+    font-size: 14px;
+    letter-spacing: 2px;
+    font-family: 'Courier New', monospace;
+    text-shadow: 2px 2px 0 #000000, 0 0 12px #ffd70066;
+    z-index: 10;
+}
+
+#menu-overlay.active {
+    display: flex;
+}
+#menu-panel {
+    background: none;          /* 移除背景 */
+    border: none;              /* 移除边框 */
+    border-radius: 0;
+    padding: 36px 32px 28px;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    box-shadow: none;          /* 移除阴影 */
+    font-family: 'Courier New', monospace;
+}
+#menu-title {
+    font-size: 42px;
+    font-weight: bold;
+    letter-spacing: 10px;
+    color: #00ffcc;
+    text-shadow:
+        0 0 20px #00ffcc88,
+        0 0 40px #00ffcc44,
+        3px 3px 0 #003322,
+        2px 2px 0 #000000;   /* 添加黑色描边，确保在亮背景上可读 */
+    margin-bottom: 6px;
+}
+#menu-subtitle {
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: #668899;
+    text-shadow: 1px 1px 0 #000000;
+    margin-bottom: 16px;
+}
+
+#menu-divider {
+    width: 80%;
+    margin: 0 auto 20px;
+    border-top: 2px dashed #00ffcc33;
+}
+.menu-main-btn {
+    display: block;
+    width: 100%;
+    padding: 14px 18px;
+    margin: 10px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 17px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    background: rgba(10, 5, 20, 0.9);
+    border: 2px solid #00ffcc66;
+    border-radius: 4px;
+    color: #00ffcc;
+    cursor: pointer;
+    text-shadow: 0 0 8px #00ffcc55;
+    transition: all 0.2s;
+    box-shadow: 0 0 16px #00ffcc22;
+}
+.menu-main-btn:hover {
+    background: rgba(0, 255, 204, 0.15);
+    border-color: #00ffccff;
+    box-shadow: 0 0 28px #00ffcc44;
+    color: #ffffff;
+}
+.menu-main-btn:active {
+    transform: scale(0.97);
+}
+.menu-btn-disabled {
+    border-color: #33445555;
+    color: #334455;
+    cursor: not-allowed;
+    text-shadow: none;
+    box-shadow: none;
+    background: rgba(10, 5, 20, 0.6);
+}
+.menu-btn-disabled:hover {
+    border-color: #33445555;
+    color: #334455;
+    background: rgba(10, 5, 20, 0.6);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+.dev-tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: #ff8844;
+    background: #ff884422;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-left: 6px;
+    border: 1px solid #ff884455;
+    vertical-align: middle;
+}
+#menu-bottom-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    justify-content: center;
+}
+.menu-small-btn {
+    flex: 1;
+    padding: 10px 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    background: rgba(10, 5, 20, 0.85);
+    border: 2px solid #00ffcc44;
+    border-radius: 4px;
+    color: #00ffccaa;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 0 10px #00ffcc18;
+}
+.menu-small-btn:hover {
+    background: rgba(0, 255, 204, 0.12);
+    border-color: #00ffccaa;
+    color: #ffffff;
+}
+#menu-toast {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffd700;
+    font-size: 12px;
+    letter-spacing: 2px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    font-family: 'Courier New', monospace;
+    white-space: nowrap;
+}
+#menu-toast.active {
+    opacity: 1;
+}
+
+/* ========== 商城界面样式 ========== */
+#shop-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 70;
+    overflow-y: auto;
+}
+#shop-overlay.active {
+    display: flex;
+}
+#shop-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    gap: 16px;
+    flex-wrap: wrap;
+    z-index: 10;
+}
+#shop-stats {
+    color: #ffd700;
+    font-size: 14px;
+    letter-spacing: 2px;
+    font-family: 'Courier New', monospace;
+    text-shadow: 2px 2px 0 #000000, 0 0 12px #ffd70066;
+}
+#shop-container {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    padding: 10px 20px 20px;
+    gap: 20px;
+}
+.shop-column {
+    flex: 1;
+    background: rgba(10, 5, 20, 0.7);
+    border: 2px solid #00ffcc44;
+    border-radius: 8px;
+    padding: 16px;
+    overflow-y: auto;
+    color: #e8e0d0;
+    font-family: 'Courier New', monospace;
+}
+.shop-column h2 {
+    color: #ffd700;
+    text-align: center;
+    letter-spacing: 4px;
+    margin-bottom: 16px;
+    border-bottom: 2px dashed #00ffcc33;
+    padding-bottom: 8px;
+}
+.shop-category {
+    margin-bottom: 20px;
+}
+.shop-category h3 {
+    color: #00ffcc;
+    font-size: 16px;
+    letter-spacing: 3px;
+    margin-bottom: 10px;
+}
+.shop-item {
+    background: rgba(0, 0, 0, 0.5);
+    border-left: 4px solid;
+    padding: 10px 12px;
+    margin: 8px 0;
+    border-radius: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.shop-item .item-name {
+    font-weight: bold;
+    color: #ffffff;
+    letter-spacing: 1px;
+}
+.shop-item .item-desc {
+    font-size: 12px;
+    color: #aaa;
+    flex: 1;
+}
+.shop-buy-btn {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 6px 12px;
+    background: rgba(10, 5, 20, 0.9);
+    border: 2px solid #00ffcc55;
+    border-radius: 4px;
+    color: #00ffcc;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.shop-buy-btn:hover {
+    background: rgba(0, 255, 204, 0.15);
+    border-color: #00ffccaa;
+    color: #fff;
+}
+.shop-buy-btn:disabled {
+    border-color: #33445555;
+    color: #334455;
+    cursor: not-allowed;
+    background: rgba(10, 5, 20, 0.6);
+}
+
+/* ========== 成就界面样式 ========== */
+#achievements-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 80;
+    overflow-y: auto;
+}
+#achievements-overlay.active {
+    display: flex;
+}
+#achievements-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    gap: 16px;
+    flex-wrap: wrap;
+    z-index: 10;
+}
+#achievements-container {
+    flex: 1;
+    min-height: 0;
+    padding: 10px 20px 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.achievement-item {
+    background: rgba(10, 5, 20, 0.75);
+    border: 2px solid #00ffcc44;
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: #e8e0d0;
+    font-family: 'Courier New', monospace;
+    transition: all 0.2s;
+}
+
+
+
+.achievement-item.unlocked {
+    border-color: #00ffcc88;
+    background: rgba(0, 255, 204, 0.08);
+    position: relative;
+    padding-left: 60px;   /* 为左侧的大勾留出空间 */
+}
+.achievement-item.locked {
+    border-color: #555;
+    background: rgba(20, 15, 25, 0.7);
+    color: #777;
+}
+.achievement-item .achievement-top,
+.achievement-item .achievement-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.achievement-name {
+    font-size: 20px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #00ffcc;
+}
+.achievement-item.locked .achievement-name {
+    color: #666;
+}
+.achievement-reward {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffd700;
+    white-space: nowrap;
+}
+
+.achievement-check {
+    position: absolute;
+    left: 15px;              /* 距离左边界 */
+    top: 50%;                /* 垂直居中于整个成就卡片 */
+    transform: translateY(-50%);
+    font-size: 36px;         /* 更大的勾 */
+    color: #00ff00;
+    line-height: 1;
+    font-weight: bold;
+    pointer-events: none;    /* 避免影响点击 */
+}
+
+.achievement-desc {
+    font-size: 14px;
+    color: #ccc;
+    line-height: 1.4;
+}
+.achievement-item.locked .achievement-desc {
+    color: #666;
+}
+.achievement-time {
+    font-size: 12px;
+    color: #aaa;
+    white-space: nowrap;
+}
+.achievement-item.locked .achievement-time {
+    color: #555;
+}
+
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+<!-- ========== 菜单覆盖层 ========== -->
+<div id="menu-overlay" class="active">
+<div id="menu-stats">金币: 0</div>
+    <div id="menu-panel">
+        <div id="menu-title">前方深渊</div>
+        <div id="menu-subtitle">THE ABYSS AHEAD</div>
+        <div id="menu-divider"></div>
+
+        <button class="menu-main-btn" id="btn-single-player">单人模式</button>
+
+        <button class="menu-main-btn menu-btn-disabled" disabled>
+            多人模式 <span class="dev-tag">正在开发</span>
+        </button>
+
+        <button class="menu-main-btn menu-btn-disabled" disabled>
+            挑战模式 <span class="dev-tag">正在开发</span>
+        </button>
+
+<div id="menu-bottom-row">
+    <button class="menu-small-btn" id="btn-shop">商城</button>
+    <button class="menu-small-btn" id="btn-achievements">成就</button>
+    <button class="menu-small-btn" id="btn-settings">设置</button>
+    <button class="menu-small-btn" id="btn-menu-tutorial">教程</button>
+</div>
+
+        <div id="menu-toast"></div>
+    </div>
+</div>
+
+<!-- ========== 商城覆盖层 ========== -->
+<div id="shop-overlay">
+    <div id="shop-header">
+        <button id="btn-shop-back" class="pixel-btn">← 返回</button>
+<div id="shop-scroll-wrapper" style="flex:1; height:36px; overflow:hidden; position:relative; margin:0 12px;">
+    <div id="shop-scroll-list" style="position:absolute; top:0; left:0; width:100%; transition: top 0.5s ease;">
+        <!-- 每一行用 div 表示，可任意增删 -->
+        <div class="shop-scroll-item" style="height:36px; line-height:36px; color:#00ffcc; font-family:'Courier New',monospace; font-size:20px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            当前商品仅适用于本轮游戏，下局需重新购买。
+        </div>
+        <div class="shop-scroll-item" style="height:36px; line-height:36px; color:#00ffcc; font-family:'Courier New',monospace; font-size:20px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            多人模式和挑战模式无法使用以下商品。
+        </div>
+        <div class="shop-scroll-item" style="height:36px; line-height:36px; color:#00ffcc; font-family:'Courier New',monospace; font-size:20px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            每类商品仅限购买一项。
+        </div>
+        <!-- 可继续添加更多行，格式同上 -->
+    </div>
+</div>
+<div id="shop-stats">金币: 0</div>
+    </div>
+    <div id="shop-container">
+        <div class="shop-column" id="shop-items">
+            <h2>道具</h2>
+            <!-- 子弹 -->
+            <div class="shop-category">
+                <h3>子弹</h3>
+                <div class="shop-item">
+                    <span class="item-name">子弹+25</span>
+                    <span class="item-desc">且初始子弹上限增至25</span>
+                    <button class="shop-buy-btn" data-item="bullet25">购买 200</button>
+                </div>
+                <div class="shop-item">
+                    <span class="item-name">子弹+40</span>
+                    <span class="item-desc">且初始子弹上限增至40</span>
+                    <button class="shop-buy-btn" data-item="bullet40">购买 350</button>
+                </div>
+                <div class="shop-item">
+                    <span class="item-name">子弹+65</span>
+                    <span class="item-desc">且初始子弹上限增至65</span>
+                    <button class="shop-buy-btn" data-item="bullet65">购买 480</button>
+                </div>
+                <div class="shop-item">
+                    <span class="item-name">无限子弹</span>
+                    <span class="item-desc">整局无限子弹，随便打！</span>
+                    <button class="shop-buy-btn" data-item="bullet_inf">购买 650</button>
+                </div>
+            </div>
+            <!-- 护盾 -->
+            <div class="shop-category">
+                <h3>护盾</h3>
+                <div class="shop-item">
+                    <span class="item-name">护盾+3</span>
+                    <span class="item-desc">一开始就是满满的安全感！</span>
+                    <button class="shop-buy-btn" data-item="shield3">购买 300</button>
+                </div>
+                <div class="shop-item">
+                    <span class="item-name">护盾+5</span>
+                    <span class="item-desc">且护盾上限增至5</span>
+                    <button class="shop-buy-btn" data-item="shield5">购买 480</button>
+                </div>
+                <div class="shop-item">
+                    <span class="item-name">护盾+8</span>
+                    <span class="item-desc">且护盾上限增至8</span>
+                    <button class="shop-buy-btn" data-item="shield8">购买 640</button>
+                </div>
+<div class="shop-item">
+    <span class="item-name">护盾持续15s</span>
+    <span class="item-desc">每次护盾持续15秒</span>
+    <button class="shop-buy-btn" data-item="shieldDur15">购买 300</button>
+</div>
+<div class="shop-item">
+    <span class="item-name">护盾持续20s</span>
+    <span class="item-desc">每次护盾持续20秒</span>
+    <button class="shop-buy-btn" data-item="shieldDur20">购买 520</button>
+</div>
+<div class="shop-item">
+    <span class="item-name">护盾持续25s</span>
+    <span class="item-desc">每次护盾持续25秒</span>
+    <button class="shop-buy-btn" data-item="shieldDur25">购买 680</button>
+</div>
+            </div>
+            <!-- 驯服 -->
+            <div class="shop-category">
+                <h3>驯服</h3>
+                <div class="shop-item">
+                    <span class="item-name">驯服+1</span>
+                    <span class="item-desc">特种部队从第一个兵开始！</span>
+                    <button class="shop-buy-btn" data-item="tame1">购买 420</button>
+                </div>
+                <div class="shop-item">
+                    <span class="item-name">驯服+2</span>
+                    <span class="item-desc">且驯服上限增至6</span>
+                    <button class="shop-buy-btn" data-item="tame2">购买 750</button>
+                </div>
+                <div class="shop-item">
+                    <span class="item-name">驯服+3</span>
+                    <span class="item-desc">且驯服上限增至8</span>
+                    <button class="shop-buy-btn" data-item="tame3">购买 1100</button>
+                </div>
+            </div>
+        </div>
+<div class="shop-column" id="shop-skills">
+    <h2>技能</h2>
+
+    <!-- 近战 -->
+    <div class="shop-category">
+        <h3>近战</h3>
+        <div class="shop-item">
+            <span class="item-name">近战1.2x</span>
+            <span class="item-desc">近战时力量增强道原来的1.2倍</span>
+            <button class="shop-buy-btn" data-item="nearMult12">购买 580</button>
+        </div>
+        <div class="shop-item">
+            <span class="item-name">近战1.5x</span>
+            <span class="item-desc">近战时力量增强道原来的1.5倍</span>
+            <button class="shop-buy-btn" data-item="nearMult15">购买 720</button>
+        </div>
+        <div class="shop-item">
+            <span class="item-name">近战1.8x</span>
+            <span class="item-desc">近战时力量增强道原来的1.8倍</span>
+            <button class="shop-buy-btn" data-item="nearMult18">购买 850</button>
+        </div>
+        <div class="shop-item">
+            <span class="item-name">近战2.0x</span>
+            <span class="item-desc">近战时力量增强道原来的2.0倍</span>
+            <button class="shop-buy-btn" data-item="nearMult20">购买 930</button>
+        </div>
+    </div>
+
+    <!-- 远程 -->
+    <div class="shop-category">
+        <h3>远程</h3>
+        <div class="shop-item">
+            <span class="item-name">远程1.5x</span>
+            <span class="item-desc">远程时力量增强道原来的1.5倍</span>
+            <button class="shop-buy-btn" data-item="rangeMult15">购买 350</button>
+        </div>
+        <div class="shop-item">
+            <span class="item-name">远程2.0x</span>
+            <span class="item-desc">远程时力量增强道原来的2.0倍</span>
+            <button class="shop-buy-btn" data-item="rangeMult20">购买 500</button>
+        </div>
+        <div class="shop-item">
+            <span class="item-name">远程2.5x</span>
+            <span class="item-desc">远程时力量增强道原来的2.5倍</span>
+            <button class="shop-buy-btn" data-item="rangeMult25">购买 650</button>
+        </div>
+    </div>
+
+    <!-- 生命值 -->
+    <div class="shop-category">
+        <h3>生命值</h3>
+        <div class="shop-item">
+            <span class="item-name">上限70</span>
+            <span class="item-desc">1000米后稍微增强生命上限</span>
+            <button class="shop-buy-btn" data-item="hpMax70">购买 630</button>
+        </div>
+        <div class="shop-item">
+            <span class="item-name">上限85</span>
+            <span class="item-desc">1000米后硬核增强生命上限</span>
+            <button class="shop-buy-btn" data-item="hpMax85">购买 1100</button>
+        </div>
+        <div class="shop-item">
+            <span class="item-name">上限100</span>
+            <span class="item-desc">请输入文本...</span>
+            <button class="shop-buy-btn" data-item="hpMax100">购买 1650</button>
+        </div>
+    </div>
+</div>
+    </div>
+</div>
+
+<!-- ========== 成就覆盖层 ========== -->
+<div id="achievements-overlay">
+    <div id="achievements-header">
+        <button id="btn-achievements-back" class="pixel-btn">← 返回</button>
+        <div id="achievements-stats">成就</div>
+    </div>
+    <div id="achievements-container">
+        <!-- 成就列表将由 JavaScript 动态生成 -->
+    </div>
+</div>
+
+<!-- 金币修改器弹窗 -->
+<div id="coin-editor-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); flex-direction:column; align-items:center; justify-content:center; z-index:200;">
+    <div style="background:#1a0d12; border:2px solid #ffd700; border-radius:8px; padding:24px 36px; text-align:center; color:#fff; max-width:80%;">
+        <h3 style="margin:0 0 12px;">金币修改器</h3>
+        <p style="margin:0 0 12px;">输入新的金币数量</p>
+        <input type="number" id="coin-editor-input" min="0" value="0" style="padding:8px; font-size:16px; border:2px solid #00ffcc; border-radius:4px; background:#0a0512; color:#fff; width:150px; margin-bottom:16px; text-align:center;">
+<div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+    <button id="coin-editor-confirm" style="padding:8px 20px; background:#ffd700; color:#000; border:none; border-radius:4px; font-size:14px; cursor:pointer;">确认</button>
+    <button id="coin-editor-cancel" style="padding:8px 20px; background:#333; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer;">取消</button>
+    <button id="coin-editor-admin" style="padding:8px 20px; background:#ff4444; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer;">管理员</button>
+    <button id="coin-editor-reset-all" style="padding:8px 20px; background:#cc0000; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer; font-weight:bold;">重置所有数据</button>
+</div>
+    </div>
+</div>
+
+<!-- 保存确认弹窗 -->
+<div id="save-confirm-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); flex-direction:column; align-items:center; justify-content:center; z-index:9999;">
+    <div style="background:#1a0d12; border:2px solid #00ffcc; border-radius:8px; padding:24px 36px; text-align:center; color:#fff; max-width:80%;">
+        <h3 style="margin:0 0 12px;">是否保存当前进度？</h3>
+        <p style="margin:0 0 12px;">&nbsp;</p>
+        <button id="save-yes" style="margin-right:10px; padding:8px 20px; background:#00ffcc; color:#000; border:none; border-radius:4px; font-size:14px; cursor:pointer;">是</button>
+        <button id="save-no" style="padding:8px 20px; background:#333; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer;">否</button>
+    </div>
+</div>
+
+<!-- 卡死重启弹窗 -->
+<div id="stall-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); flex-direction:column; align-items:center; justify-content:center; z-index:999;">
+    <div style="background:#1a0d12; border:2px solid #00ffcc; border-radius:8px; padding:24px 36px; text-align:center; color:#fff; max-width:80%;">
+        <h3 style="margin:0 0 12px;">游戏卡顿了吗？</h3>
+        <small style="color:#aaa; display:block; margin-bottom:16px;">请返回菜单重新进入</small>
+        <p style="margin:0 0 12px;">&nbsp;</p>
+        <button id="stall-yes" style="margin-right:10px; padding:8px 20px; background:#00ffcc; color:#000; border:none; border-radius:4px; font-size:14px; cursor:pointer;">菜单</button>
+        <button id="stall-no" style="padding:8px 20px; background:#333; color:#fff; border:none; border-radius:4px; font-size:14px; cursor:pointer;">取消</button>
+    </div>
+</div>
+
+<div id="bottom-left-buttons">
+    <button class="pixel-btn" id="btn-pause">暂停</button>
+    <button class="pixel-btn" id="btn-restart">重玩</button>
+    <button class="pixel-btn" id="btn-menu">菜单</button>
+    <button class="pixel-btn" id="btn-stall">卡顿？</button>
+</div>
+
+    <div id="pause-hint">按 Enter 继续</div>
+    <div id="game-over-overlay">
+        <h1>前方深渊</h1>
+        <div class="final-score" id="final-score-text">分数: 0</div>
+<div class="final-coins" id="final-coins-text">金币: +0</div>
+<div class="final-coins" id="final-achievement-text" style="color:#00ffcc; font-size:18px;"></div>
+        <div class="overlay-buttons">
+            <button class="pixel-btn" id="btn-overlay-menu">返回</button>
+        </div>
+        <div class="restart-hint">按 ENTER 重新开始</div>
+    </div>
+    <div id="tutorial-overlay">
+        <div id="tutorial-panel">
+            <h2>前方深渊 · 教程</h2>
+            <p style="text-align:center;color:#aaa;margin-bottom:8px;">深入地底，挑战极限！</p>
+
+<h3>· 制作人员</h3>
+<div style="text-align:center; margin-bottom:20px;">
+    <a href="https://space.bilibili.com/488273925?spm_id_from=333.1007.0.0" target="_blank" style="text-decoration:none; color:#e8e0d0;">
+        <img src="https://i.ibb.co/fdkTHqMg/f3c18ecf9d1d7816812572661cb46cae.jpg" alt="头像" style="width:80px; height:80px; border-radius:50%; border:2px solid #00ffcc; display:block; margin:0 auto 6px;">
+        <span style="font-size:16px; color:#ffd700;">这人针不错</span>
+    </a>
+</div>
+
+<h3>· 玩家1 默认操作</h3>
+            <p>
+                <span class="key-hint">D</span> 前进&nbsp;|&nbsp;
+                <span class="key-hint">A</span> 后退<br>
+                <span class="key-hint">W</span> + <span class="key-hint">D</span> 向前疾跑&nbsp;|&nbsp;
+                <span class="key-hint">W</span> + <span class="key-hint">A</span> 向后疾跑<br>
+                <span class="key-hint">空格</span> 跳跃 / 二段跳<br>
+                <span class="key-hint">J</span> 近战攻击&nbsp;|&nbsp;
+                <span class="key-hint">K</span> 远程射击&nbsp;|&nbsp;
+                <span class="key-hint">L</span> 开启护盾&nbsp;|&nbsp;
+ <span class="key-hint">；</span> 驯服怪物
+            </p>
+
+<h3>· 玩家2 默认操作</h3>
+            <p>
+                <span class="key-hint">→</span> 前进&nbsp;|&nbsp;
+                <span class="key-hint">←</span> 后退<br>
+                <span class="key-hint">Enter</span> + <span class="key-hint">→</span> 向前疾跑&nbsp;|&nbsp;
+                <span class="key-hint">Enter</span> + <span class="key-hint">←</span> 向后疾跑<br>
+                <span class="key-hint">↑</span> 跳跃 / 二段跳<br>
+                <span class="key-hint">+</span> 近战攻击&nbsp;|&nbsp;
+                <span class="key-hint">/</span> 远程射击&nbsp;|&nbsp;
+                <span class="key-hint">*</span> 开启护盾&nbsp;|&nbsp;
+ <span class="key-hint">-</span> 驯服怪物
+            </p>
+
+
+            <h3>· 技能伤害</h3>
+            <p>
+                1000米以下: 近战2 / 远程1<br>
+                1000 - 2000米: 近战3 / 远程2<br>
+                2000米以上: 近战5 / 远程3
+            </p>
+
+            <h3>· 怪物种类与技能</h3>
+            <div class="monster-card c">
+                <b style="color:#f1c40f;">C级怪物</b><br>
+                移速3m/s，体型最小。有25%概率浮空。常见于前期。
+            </div>
+            <div class="monster-card b">
+                <b style="color:#2ecc71;">B级怪物</b><br>
+                移速4.5m/s。靠近5米内时，有40%概率突然加速至10m/s冲撞，但仅一次。<br>
+                此外，还有30%概率反射玩家子弹。
+            </div>
+            <div class="monster-card a">
+                <b style="color:#e74c3c;">A级怪物</b><br>
+                移速5m/s。血量低于10时开始闪烁，2秒后爆炸，对半径6米内的所有生物造成8点伤害。<br>
+                爆炸前会显示红圈范围，请注意躲避。
+            </div>
+            <div class="monster-card s">
+                <b style="color:#9b59b6;">S级怪物</b><br>
+                移速7.5m/s。每12秒召唤2~4只C级怪物。
+            </div>
+            <div class="monster-card ss">
+                <b style="color:#5dade2;">SS级怪物</b><br>
+                移速9m/s，体型最大。<br>
+                在玩家靠近时，有60%概率闪现到玩家身后。<br>
+                此外，其每12秒会召唤4~6只C级怪物或B级怪物。
+            </div>
+
+            <h3>· 物品</h3>
+<p>
+<span style="display:inline-block; border:2px solid #ffd700; border-radius:4px; padding:0 8px; margin-right:4px; color:#ffd700; font-weight:bold;">金蘑菇</span>：每吃1个金蘑菇会增加3点血量。<br>
+<span style="display:inline-block; border:2px solid #ffffff; border-radius:4px; padding:0 8px; margin-right:4px; color:#ffffff; font-weight:bold;">白骨头</span>：击败怪物有概率获得白骨头，每捡起1个白骨头可增加1颗子弹。<br>
+<span style="display:inline-block; border:2px solid #b266ff; border-radius:4px; padding:0 8px; margin-right:4px; color:#b266ff; font-weight:bold;">紫水晶</span>：每捡7个紫水晶可增加1次驯服机会。
+</p>
+
+            <h3>· 道具</h3>
+<p>
+<span style="display:inline-block; border:2px solid #ffffff; border-radius:4px; padding:0 8px; margin-right:4px; color:#ffffff; font-weight:bold;">子弹</span>：使用远程攻击可发射子弹，子弹会根据地形轨迹自动锁定面前的怪物，射程和穿透力会随着距离的增加而提升。<br>
+<span style="display:inline-block; border:2px solid #00ffcc; border-radius:4px; padding:0 8px; margin-right:4px; color:#00ffcc; font-weight:bold;">护盾</span>：使用护盾在10秒内可以免受怪物攻击。<br>
+<span style="display:inline-block; border:2px solid #b266ff; border-radius:4px; padding:0 8px; margin-right:4px; color:#b266ff; font-weight:bold;">驯服</span>：使用驯服可自动在玩家周围选择1只综合实力较强的怪物为你战斗，并有概率触发其原来的技能，最多同时驯服5只。
+</p>
+
+
+
+
+    <a href="https://v.wjx.cn/vm/QXpro0k.aspx# " target="_blank" style="text-decoration:none; color:#e8e0d0;">
+
+            <p style="text-align:center;color:#8899aa;margin-top:12px;">更多功能仍在开发当中，敬请期待！<br>
+- 点击框外任意处返回 -</p>
+
+            <button class="close-tutorial" id="btn-close-tutorial">反馈建议</button>
+
+
+        </div>
+    </div>
+    <script>
+        // ==================== 常量 ====================
+        const PX_PER_METER = 40;
+        const PLAYER_WIDTH = 26;
+        const PLAYER_HEIGHT = 64;
+        const NORMAL_SPEED = 6 * PX_PER_METER;
+        const RUN_SPEED = 9 * PX_PER_METER;
+        const GRAVITY = 22 * PX_PER_METER;
+        const JUMP_VELOCITY = -10.5 * PX_PER_METER;
+        const INITIAL_HP = 20;
+        const BASE_MAX_HP = 30;
+        const SHIELD_REQUIRED_MUSHROOMS = 15;
+        const SHIELD_DURATION = 10;
+        const SHIELD_RADIUS = 5 * PX_PER_METER;
+        const SHIELD_BLINK_START = 3;
+        const SHIELD_COOLDOWN = 15;
+        const MAX_SHIELD_CHARGES = 3;
+        const AMETHYST_REQUIRED = 7;
+        const MAX_TAMED_MONSTERS = 5; // 最多驯服5个
+        const TAMED_HEAL_INTERVAL = 15; // 15秒一滴血
+        const COMPANION_MIN_DIST = 2 * PX_PER_METER; // 与玩家保持2米以上
+        const TAME_RADIUS = 10 * PX_PER_METER;
+        const A_EXPLODE_RADIUS = 6 * PX_PER_METER;
+        const A_EXPLODE_DAMAGE = 8;
+        const B_REFLECT_CHANCE = 0.30;
+        const S_SUMMON_INTERVAL = 12;
+        const SS_SUMMON_MIN = 4,
+            SS_SUMMON_MAX = 6;
+        const SS_TELEPORT_CHANCE = 0.60;
+        const SS_TELEPORT_MAX_USES = 3;
+        const SS_TELEPORT_DIST = 10 * PX_PER_METER;
+        const DIST_THRESHOLD_1 = 300;
+        const DIST_THRESHOLD_2 = 1000;
+        const MONSTER_SPAWN_AHEAD = 50 * PX_PER_METER;
+        const NO_MONSTER_ZONE = 20 * PX_PER_METER;
+        const MONSTER_MIN_SPACING = 2 * PX_PER_METER;
+        const CLEANUP_DISTANCE = 160 * PX_PER_METER;
+        const NEAR_ATTACK_COOLDOWN = 0.35;
+        const RANGED_COOLDOWN = 0.5;
+        const NEAR_RANGE = 3 * PX_PER_METER;
+        const RANGED_RANGE = 10 * PX_PER_METER;
+        const BULLET_SPEED = 15 * PX_PER_METER;
+        const WATER_DROP_MIN_DIST = 50 * PX_PER_METER;
+        const MAX_VISIBLE_MONSTERS = 10;
+        const GROUP_AVG_DIST = 20 * PX_PER_METER;
+        const AUTO_HEAL_INTERVAL_BASE = 10;
+        const SS_UNLOCK_DIST = 1350;
+        const AUTO_PAUSE_DELAY = 15;
+// ===== 背景音乐 =====
+const BGM_URLS = [
+    'https://cdn.jsdelivr.net/gh/zrzbc/music/111.mp3',
+    'https://cdn.jsdelivr.net/gh/zrzbc/music/222.mp3'
+];
+let bgmAudio = null;
+let bgmIndex = -1;
+let bgmReady = false;
+
+function initBgm() {
+    if (!bgmAudio) {
+        bgmAudio = new Audio();
+        bgmAudio.loop = false;
+        bgmAudio.addEventListener('ended', function() {
+            bgmIndex = 1 - bgmIndex;          // 交替播放
+            bgmAudio.src = BGM_URLS[bgmIndex];
+            bgmAudio.play().catch(() => {});
+        });
+    }
+    bgmIndex = Math.random() < 0.5 ? 0 : 1;
+    bgmAudio.src = BGM_URLS[bgmIndex];
+    bgmAudio.currentTime = 0;
+    bgmReady = true;
+}
+
+function startBgm() {
+    if (!bgmReady) initBgm();
+    if (bgmAudio && !bgmAudio.paused) return;
+    if (bgmAudio) {
+        bgmAudio.play().catch(e => {
+            // 自动播放被阻止，等待用户交互
+        });
+    }
+}
+
+function stopBgm() {
+    if (bgmAudio) {
+        bgmAudio.pause();
+        bgmAudio.currentTime = 0;
+    }
+}
+
+function restartBgm() {
+    stopBgm();
+    if (!bgmReady) initBgm();
+    bgmIndex = Math.random() < 0.5 ? 0 : 1;
+    bgmAudio.src = BGM_URLS[bgmIndex];
+    bgmAudio.currentTime = 0;
+    bgmAudio.play().catch(() => {});
+}
+
+function ensureBgmStarted() {
+    if (!bgmReady) initBgm();
+    if (bgmAudio && !bgmAudio.paused) return;
+    startBgm();
+    if (bgmAudio.paused) {
+        const onInteraction = function() {
+            startBgm();
+            if (!bgmAudio.paused) {
+                document.removeEventListener('click', onInteraction);
+                document.removeEventListener('keydown', onInteraction);
+                document.removeEventListener('touchstart', onInteraction);
+            }
+        };
+
+// ===== 新增：暂停与恢复（不重置进度） =====
+function pauseBgm() {
+    if (bgmAudio && !bgmAudio.paused) {
+        bgmAudio.pause();
+    }
+}
+
+function resumeBgm() {
+    if (!bgmAudio) return;
+    // 如果歌曲已结束，则自动切换到下一首
+    if (bgmAudio.ended) {
+        bgmIndex = 1 - bgmIndex;
+        bgmAudio.src = BGM_URLS[bgmIndex];
+        bgmAudio.currentTime = 0;
+    }
+    bgmAudio.play().catch(() => {});
+}
+
+        document.addEventListener('click', onInteraction);
+        document.addEventListener('keydown', onInteraction);
+        document.addEventListener('touchstart', onInteraction);
+    }
+}
+        const SWARM_THRESHOLD = 4;
+        const SWARM_RADIUS = 4 * PX_PER_METER;
+        const MAX_SEPARATION_PUSH = 0.8 * PX_PER_METER;
+        const LAVA_DROP_PROB = 0.0225;
+        const WATER_DROP_PROB = 0.0225;
+        const MAX_TOTAL_MONSTERS = 15; // 防止900米后卡顿，限制总数
+
+function getMaxBullets() {
+    if (shopEffects.infiniteBullets) return Infinity;
+    let baseMax;
+    if (distanceM >= 1800) baseMax = 60;
+    else if (distanceM >= 1300) baseMax = 45;
+    else if (distanceM >= 750) baseMax = 30;
+    else baseMax = 10;
+    // 只取比购买上限更高的数值，否则保持购买的上限
+    return Math.max(baseMax, shopEffects.maxBullets);
+}
+
+function getMaxHP() {
+    // 若购买了生命上限道具，且距离达到1000米后才生效
+    if (distanceM >= 1000) {
+        if (shopPurchases.hpMax70) return 70;
+        if (shopPurchases.hpMax85) return 85;
+        if (shopPurchases.hpMax100) return 100;
+    }
+    // 否则按距离动态提升
+    if (distanceM >= 2000) return 60;
+    if (distanceM >= 800) return 45;
+    return BASE_MAX_HP;
+}
+        function getMushroomHeal() {
+            if (distanceM >= 1200) return 8;
+            if (distanceM >= 650) return 5;
+            return 3;
+        }
+
+function getAutoHealInterval() {
+    if (distanceM >= 1500) return 1;
+    if (distanceM >= 800) return 1;
+    if (distanceM >= 400) return 3;
+    return 5;
+}
+
+function getAutoHealAmount() {
+    if (distanceM >= 1500) return 2;
+    return 1;
+}
+
+function getDamageMultiplier() {
+    if (distanceM >= 1800) return 4;
+    if (distanceM >= 1200) return 2;
+    return 1;
+}
+
+function getMonsterDamage(damage) {
+    const multiplier = getDamageMultiplier();
+    let result = Math.floor(damage * multiplier);
+    result = Math.max(1, Math.min(23, result));   // 伤害下限1，上限23
+    return result;
+}
+        const MONSTER_DEFS = {
+            C: { hp: 4, damage: 2, score: 32, color: '#f1c40f', dark: '#9a7d0a', accent: '#fef08a', w: 22, h: 34, speed: 3 * PX_PER_METER, dropChance: 0.30, healDropChance: 0.10, chaseRange: 8 * PX_PER_METER },
+            B: { hp: 8, damage: 3, score: 73, color: '#2ecc71', dark: '#1a7a3f', accent: '#a9dfbf', w: 28, h: 44, speed: 4.5 * PX_PER_METER, dropChance: 0.40, healDropChance: 0.25, chaseRange: 7 * PX_PER_METER },
+            A: { hp: 16, damage: 3, score: 169, color: '#e74c3c', dark: '#8c1f14', accent: '#f1948a', w: PLAYER_WIDTH, h: PLAYER_HEIGHT, speed: 5 * PX_PER_METER, dropChance: 0.55, healDropChance: 0.40, chaseRange: 6 * PX_PER_METER },
+            S: { hp: 24, damage: 5, score: 225, color: '#9b59b6', dark: '#5e2d79', accent: '#d2b4de', w: 38, h: 68, speed: 7.5 * PX_PER_METER, dropChance: 0.70, healDropChance: 0.65, chaseRange: 5 * PX_PER_METER },
+            SS: { hp: 35, damage: 8, score: 570, color: '#5dade2', dark: '#4a235a', accent: '#d7bde2', w: 45, h: 80, speed: 9 * PX_PER_METER, dropChance: 0.70, healDropChance: 0.70, chaseRange: 9 * PX_PER_METER },
+        };
+
+        // ==================== 元素引用 ====================
+        const canvas = document.getElementById('gameCanvas');
+// 菜单元素引用
+const menuOverlay = document.getElementById('menu-overlay');
+const menuToast = document.getElementById('menu-toast');
+        const ctx = canvas.getContext('2d');
+        let canvasW = 0,
+            canvasH = 0,
+            dpr = 1;
+
+        function resizeCanvas() {
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvasW = window.innerWidth;
+            canvasH = window.innerHeight;
+            canvas.width = Math.floor(canvasW * dpr);
+            canvas.height = Math.floor(canvasH * dpr);
+            canvas.style.width = canvasW + 'px';
+            canvas.style.height = canvasH + 'px';
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.imageSmoothingEnabled = false;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // ==================== 噪声 ====================
+        function hash(n) { n = Math.sin(n * 127.1 + 311.7) * 43758.5453; return n - Math.floor(n); }
+
+        function smoothNoise1D(x) { const ix = Math.floor(x); const fx = x - ix; const a = hash(ix); const b = hash(ix + 1); const t = fx * fx * (3 - 2 * fx); return a * (1 - t) + b * t; }
+
+        function tunnelCenterY(worldX) {
+            const baseY = canvasH * 0.52;
+            const x = worldX / PX_PER_METER;
+            return baseY + Math.sin(x * 0.055 + 0.3) * canvasH * 0.16 + Math.sin(x * 0.023 + 1.7) * canvasH * 0.11 + Math.sin(x * 0.009 + 0.8) * canvasH * 0.07 + smoothNoise1D(x * 0.04) * canvasH * 0.06;
+        }
+
+        function tunnelHalfHeight(worldX) {
+            const x = worldX / PX_PER_METER;
+            const h = (58 + 115) / 2 + Math.sin(x * 0.037 + 0.9) * 22 + Math.sin(x * 0.061 + 2.3) * 12 + smoothNoise1D(x * 0.028 + 5.2) * 18;
+            return Math.max(58, Math.min(115, h));
+        }
+
+        function groundYAt(worldX) { return tunnelCenterY(worldX) + tunnelHalfHeight(worldX); }
+
+        function ceilingYAt(worldX) { return tunnelCenterY(worldX) - tunnelHalfHeight(worldX); }
+
+        function getBackgroundRGB(distM) {
+            const init = { r: 18, g: 10, b: 8 },
+                coffee = { r: 60, g: 35, b: 20 },
+                deepBlue = { r: 10, g: 20, b: 40 };
+            let r = init.r,
+                g = init.g,
+                b = init.b;
+            if (distM >= 1000) { const t = Math.min(1, (distM - 1000) / 500); r = lerp(init.r, coffee.r, t); g = lerp(init.g, coffee.g, t); b = lerp(init.b, coffee.b, t); }
+            if (distM >= 2000) { const t = Math.min(1, (distM - 2000) / 500); r = lerp(coffee.r, deepBlue.r, t); g = lerp(coffee.g, deepBlue.g, t); b = lerp(coffee.b, deepBlue.b, t); }
+            return { r, g, b };
+        }
+
+        function lerp(a, b, t) { return a + (b - a) * t; }
+
+        // ==================== 状态 ====================
+        let gameRunning = true;
+let totalScore = 0;   // 累计总分
+
+let playerCoins = 0;             // 玩家金币
+let shopPurchases = {};          // 已购买项目 { itemId: true }
+let shopConfig = {
+    bullet25: { price: 200, desc: '初始子弹x25' },
+    bullet40: { price: 350, desc: '初始子弹x40' },
+    bullet65: { price: 480, desc: '初始子弹x65' },
+    bullet_inf: { price: 650, desc: '整局无限子弹' },
+    shield3: { price: 300, desc: '初始护盾x3' },
+    shield5: { price: 480, desc: '初始护盾x5' },
+    shield8: { price: 640, desc: '初始护盾x8' },
+    tame1: { price: 420, desc: '初始驯服x1' },
+    tame2: { price: 750, desc: '初始驯服x2' },
+    tame3: { price: 1100, desc: '初始驯服x3' },
+    nearMult12: { price: 580, desc: '近战1.2x' },
+    nearMult15: { price: 720, desc: '近战1.5x' },
+    nearMult18: { price: 850, desc: '近战1.8x' },
+    nearMult20: { price: 930, desc: '近战2.0x' },
+    rangeMult15: { price: 350, desc: '远程1.5x' },
+    rangeMult20: { price: 500, desc: '远程2.0x' },
+    rangeMult25: { price: 650, desc: '远程2.5x' },
+    hpMax70: { price: 630, desc: '生命上限70' },
+    hpMax85: { price: 1100, desc: '生命上限85' },
+    hpMax100: { price: 1650, desc: '生命上限100' },
+    shieldDur15: { price: 300, desc: '护盾持续15秒' },
+    shieldDur20: { price: 520, desc: '护盾持续20秒' },
+    shieldDur25: { price: 680, desc: '护盾持续25秒' },
+};
+
+let gameStarted = false;   // 是否已点击"单人模式"开始游戏
+// ==================== 成就系统 ====================
+const ACHIEVEMENTS = [
+    {
+        id: 'first_step',
+        name: '初入深渊',
+        desc: '在单人模式的一场游戏中前进300米。',
+        reward: 500,
+        type: 'distance',
+        target: 300,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'shadow_walker',
+        name: '暗影行者',
+        desc: '在单人模式的一场游戏中前进1200米。',
+        reward: 800,
+        type: 'distance',
+        target: 1200,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'abyss_belly',
+        name: '深渊腹地',
+        desc: '在单人模式的一场游戏中前进2500米。',
+        reward: 3100,
+        type: 'distance',
+        target: 2500,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'first_blood',
+        name: '第一次流血',
+        desc: '在单人模式中累计杀死30只怪物。',
+        reward: 600,
+        type: 'kill_total',
+        target: 30,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'intermediate_slayer',
+        name: '中级屠戮者',
+        desc: '在单人模式中累计杀死220只怪物。',
+        reward: 1700,
+        type: 'kill_total',
+        target: 220,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'abyss_hunter',
+        name: '深渊猎手',
+        desc: '在单人模式中累计杀死500只怪物。',
+        reward: 3100,
+        type: 'kill_total',
+        target: 500,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'combo_master',
+        name: '跳杀大师',
+        desc: '在单人模式中使用跳杀累计120次。',
+        reward: 1200,
+        type: 'combo_total',
+        target: 120,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'no_damage_kills',
+        name: '欸~打不到我！',
+        desc: '在单人模式的一场游戏中，不受伤的情况下累计击杀15只怪物。',
+        reward: 1500,
+        type: 'no_damage_kills',
+        target: 15,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'monster_commander',
+        name: '怪物指挥官',
+        desc: '在单人模式中同时拥有5只被驯服的怪物。',
+        reward: 2800,
+        type: 'tamed_simultaneous',
+        target: 5,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'borrowed_knife',
+        name: '借刀杀人',
+        desc: '在单人模式中让被驯服的怪物累计击杀30只怪物。',
+        reward: 1500,
+        type: 'tamed_kills_total',
+        target: 30,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'scavenger',
+        name: '拾荒者',
+        desc: '在单人模式中累计捡起120块白骨头。',
+        reward: 1500,
+        type: 'bones_picked_total',
+        target: 120,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'crystal_collector',
+        name: '水晶收藏家',
+        desc: '在单人模式中累计捡起80颗紫水晶。',
+        reward: 2100,
+        type: 'amethysts_picked_total',
+        target: 80,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'bullet_storm',
+        name: '好！我射！',
+        desc: '在单人模式中累计发射220颗子弹。',
+        reward: 1500,
+        type: 'bullets_fired_total',
+        target: 220,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'shopaholic',
+        name: '购物狂',
+        desc: '在商店累计购买10次商品。',
+        reward: 800,
+        type: 'shop_purchases_total',
+        target: 10,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'fully_armed',
+        name: '全副武装',
+        desc: '在单人模式的一场游戏中同时拥有三种商店增益，含子弹、护盾、驯服。',
+        reward: 600,
+        type: 'three_buffs',
+        target: 1,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'capitalist',
+        name: '深渊资本家',
+        desc: '在单人模式的一场游戏中获得1000金币。',
+        reward: 800,
+        type: 'coins_in_run',
+        target: 1000,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'loyal_companion',
+        name: '忠诚伙伴',
+        desc: '在单人模式的一场游戏中，一只被驯服的怪物存活超过3分钟。',
+        reward: 1500,
+        type: 'tamed_survive_time',
+        target: 180,  // 3分钟 = 180秒
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'double_jump_master',
+        name: '嘿！不要踩空气！',
+        desc: '在单人模式中使用二段跳累计80次。',
+        reward: 1000,
+        type: 'double_jump_total',
+        target: 80,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'modest_achievement',
+        name: '小有成就',
+        desc: '累计获得5500金币。',
+        reward: 800,
+        type: 'coins_total',
+        target: 5500,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'tank',
+        name: '你简直是块会说话的钢板！',
+        desc: '在单人模式中受伤累计500次。',
+        reward: 1800,
+        type: 'damage_taken_total',
+        target: 500,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'no_life',
+        name: '肝帝',
+        desc: '在单人模式的一场游戏中累计游玩30分钟。',
+        reward: 2200,
+        type: 'play_time_in_run',
+        target: 1800,  // 30分钟 = 1800秒
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'never_give_up',
+        name: '屡败屡战',
+        desc: '在单人模式中累计死亡80次。',
+        reward: 2200,
+        type: 'death_total',
+        target: 80,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'perfect_aim',
+        name: '弹无虚发',
+        desc: '在单人模式的一场游戏中连续10颗子弹都命中怪物。',
+        reward: 1200,
+        type: 'consecutive_hits',
+        target: 10,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'prepared',
+        name: '有备无患',
+        desc: '在单人模式的一场游戏中同时拥有未使用的3块盾牌和5个驯服充能。',
+        reward: 1500,
+        type: 'shield_and_tame',
+        target: 1,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'carnivore',
+        name: '肉食主义者',
+        desc: '在单人模式的一场游戏中，不吃金蘑菇的情况下前进1200米。',
+        reward: 1800,
+        type: 'no_mushroom_run',
+        target: 1200,
+        current: 0,
+        unlocked: false
+    },
+    {
+        id: 'explosion_art',
+        name: '爆炸就是艺术！',
+        desc: '在单人模式中，让A级怪物在爆炸时误伤附近其他怪物累计120只。',
+        reward: 2100,
+        type: 'a_explode_kills_total',
+        target: 120,
+        current: 0,
+        unlocked: false
+    }
+];
+
+// 已解锁成就记录 { id: timestamp }，timestamp 为完成时间（毫秒）
+let unlockedAchievements = {};
+// 本局新解锁的成就（用于结算奖励）
+let newAchievementsThisRun = [];
+// 本局累计击杀数（跨局累计击杀不放在这里，而是使用全局 totalKills）
+let totalKills = 0;
+let totalComboUses = 0;           // 累计触发连击次数
+let noDamageKillsThisRun = 0;     // 本局无伤击杀数
+let hasBeenHurtThisRun = false;   // 本局是否受过伤
+let tamedMonsterTotalKills = 0;   // 驯服怪物累计击杀数
+let totalBonesPickedUp = 0;       // 累计拾取白骨头数量
+let totalAmethystsPickedUp = 0;   // 累计拾取紫水晶数量
+let totalBulletsFired = 0;        // 累计发射子弹数量
+let totalShopPurchases = 0;       // 累计购买次数
+let maxDistanceEver = 0;   // 历史最高单局距离（米）
+let menuActive = true;     // 菜单是否显示中
+let gameOver = false;
+let maxProgressX = 0,
+    score = 0,
+    distanceM = 0,
+    killScore = 0;   // 新增：击杀怪物累积分数
+        let playerHP = INITIAL_HP;
+        let playerX = 0,
+            playerY = 0,
+            playerVX = 0,
+            playerVY = 0;
+        let isOnGround = false,
+            jumpCount = 0;
+        let nearAttackTimer = 0,
+            rangedAttackTimer = 0,
+            playerHurtTimer = 0,
+            damageCooldown = 0,
+            playerDeathTimer = 0;
+        let bullets = 10,
+            shieldCharges = 0,
+shieldMushroomCounter = 0,
+            shieldActive = false,
+            shieldTimer = 0,
+            shieldBlinkTimer = 0;
+        let cameraX = 0,
+            cameraY = 0;
+        let monsters = [],
+            mushrooms = [],
+            bones = [],
+            bulletsList = [],
+            particles = [],
+            waterDrops = [],
+            lavaDrops = [],
+            floatingTexts = [];
+        let tamedMonsters = [];
+        let amethysts = [];
+        let amethystCount = 0;
+let tameEnergy = 0;   // 驯服充能次数，上限5
+// ===== 新增成就相关变量 =====
+let coinsEarnedThisRun = 0;              // 本局获得的金币数
+let tamedSurviveStartTime = {};          // 记录每只驯服怪物开始存活的时间
+let doubleJumpCount = 0;                 // 累计二段跳次数
+let totalCoinsEarned = 0;                // 累计获得金币总数
+let damageTakenCount = 0;                // 累计受伤次数
+let playTimeThisRun = 0;                 // 本局游戏时间（秒）
+let deathCount = 0;                      // 累计死亡次数
+let consecutiveHits = 0;                 // 当前连续命中数
+let maxConsecutiveHits = 0;              // 本局最大连续命中数
+let mushroomEatenThisRun = 0;            // 本局吃蘑菇数量
+let aExplodeKillsCount = 0;              // A级爆炸误伤累计数
+let runStartTime = 0;                    // 本局开始时间
+let gameSessionActive = false;           // 本局是否活跃（用于计时）
+let currentMaxShieldCharges = MAX_SHIELD_CHARGES;   // 当前护盾上限（可被购买提升）
+let currentMaxTamedMonsters = MAX_TAMED_MONSTERS;   // 当前驯服上限（可被购买提升）
+
+let shopEffects = {
+    maxBullets: 10,
+    initialBullets: 10,
+    infiniteBullets: false,
+    maxShieldCharges: MAX_SHIELD_CHARGES,
+    initialShieldCharges: 0,
+    maxTamedMonsters: MAX_TAMED_MONSTERS,
+    initialTameEnergy: 0
+};
+
+let meleeDamageBonus = 0;    // 近战伤害加成
+let rangedDamageBonus = 0;   // 远程伤害加成
+
+let fixedMaxHP = 0;                 // 0表示未购买，否则为固定生命上限
+let nearDamageMultiplier = 1;
+let rangedDamageMultiplier = 1;
+let shieldDuration = SHIELD_DURATION;   // 当前护盾持续时间，默认10秒
+
+        let shieldCooldownTimer = 0;
+let nextMonsterGroupX = MONSTER_SPAWN_AHEAD,
+    nextMushroomX = 60 * PX_PER_METER,
+    nextAmethystX = 180 * PX_PER_METER;
+        let shakeIntensity = 0,
+            shakeX = 0,
+            shakeY = 0,
+            cameraTilt = 0;
+        let cameraZoom = 1,
+            cameraTargetZoom = 1;
+        let keys = {},
+            enterPressed = false,
+            toastMessage = '',
+            toastTimer = 0;
+let moveDir = 0; 
+let displayHP = INITIAL_HP;   // 用于平滑过渡的血量值
+        let lastSkillLevel = 0,
+            lastMilestone = 0,
+            autoHealTimer = getAutoHealInterval(),
+            isPaused = false;
+        let lastInputTime = performance.now();
+        let invincible = false,
+            shareClickCount = 0,
+            shareClickTimer = 0;
+let adminNextGame = false;
+        const SHARE_CLICK_THRESHOLD = 10,
+            SHARE_CLICK_WINDOW = 2.5;
+
+        // ==================== 输入 ====================
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (['d', 'a', 'w', 'j', 'k', 'l', ' ', 'enter', ';'].includes(key)) e.preventDefault();
+            lastInputTime = performance.now();
+if (!gameStarted || menuActive) return;
+            if (isPaused) { isPaused = false;
+                updatePauseButton();
+                updatePauseHint(); }
+            keys[key] = true;
+            if (key === ' ') tryJump();
+            if (key === 'enter') { if (!keys.enter) enterPressed = true;
+                keys.enter = true; if (gameOver) { restartGame(); return; } }
+            if (key === 'j' && !gameOver && !isPaused) { if (nearAttackTimer <= 0) performNearAttack(); }
+            if (key === 'k' && !gameOver && !isPaused) { if (rangedAttackTimer <= 0 && bullets > 0) performRangedAttack(); }
+            if (key === 'l' && !gameOver && !isPaused) { if (shieldCharges > 0 && !shieldActive && shieldCooldownTimer <= 0) activateShield(); }
+            if (key === ';' && !gameOver && !isPaused) { tameMonster(); }
+        });
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            keys[key] = false;
+            if (key === 'enter') keys.enter = false;
+        });
+        window.addEventListener('mousedown', () => { lastInputTime = performance.now(); });
+        window.addEventListener('touchstart', () => { lastInputTime = performance.now(); });
+        window.addEventListener('blur', () => { for (let k in keys) keys[k] = false; });
+
+        function tryJump() {
+if (gameOver || isPaused || !gameStarted) return;
+            if (isOnGround) { playerVY = JUMP_VELOCITY;
+                isOnGround = false;
+                jumpCount = 1;
+                spawnParticles(playerX + PLAYER_WIDTH * 0.5, playerY + PLAYER_HEIGHT, 8, '#887755', 16, 0.3, 3); } else if (jumpCount < 2) { playerVY = JUMP_VELOCITY * 0.92;
+                jumpCount = 2;
+                spawnParticles(playerX + PLAYER_WIDTH * 0.5, playerY, 12, '#ffffff', 22, 0.3, 3);
+        // ===== 二段跳计数 =====
+        doubleJumpCount++;
+        localStorage.setItem('abyssDoubleJumpCount', doubleJumpCount);
+ }
+        }
+
+        // ==================== 粒子系统 ====================
+function spawnParticles(x, y, count, color, spread, life, size, gravity = 300) {
+    // 限制单次生成数量和总粒子数
+    const maxTotal = 80;
+    const maxPerCall = 30;
+    count = Math.min(count, maxPerCall);
+    for (let i = 0; i < count; i++) {
+        if (particles.length >= maxTotal) break;
+        particles.push({ x: x + (Math.random() - 0.5) * spread * 0.6, y: y + (Math.random() - 0.5) * spread * 0.4, vx: (Math.random() - 0.5) * spread * 3, vy: (Math.random() - 0.7) * spread * 2.5, life: life * (0.5 + Math.random() * 0.8), maxLife: life, size: size * (0.5 + Math.random() * 0.8), color: color, gravity: gravity });
+    }
+}
+        function updateParticles(dt) {
+            for (let i = particles.length - 1; i >= 0; i--) { const p = particles[i]; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.gravity * dt; p.life -= dt; if (p.life <= 0) particles.splice(i, 1); }
+        }
+
+        function spawnFloatingText(x, y, text, color, life = 0.6, vy = -50) { floatingTexts.push({ x, y, text, color, life, maxLife: life, vy }); }
+
+        function updateFloatingTexts(dt) {
+            for (let i = floatingTexts.length - 1; i >= 0; i--) { const ft = floatingTexts[i]; ft.y += ft.vy * dt; ft.life -= dt; if (ft.life <= 0) floatingTexts.splice(i, 1); }
+        }
+
+        // ==================== 水滴/岩浆/紫水晶 ====================
+        function spawnWaterDrop() {
+            let attempts = 0;
+            while (attempts < 30) {
+                const wx = playerX + (Math.random() - 0.5) * 100 * PX_PER_METER;
+                const cy = ceilingYAt(wx),
+                    gy = groundYAt(wx);
+                if (gy - cy < 80) { attempts++; continue; }
+                let tooClose = false;
+                for (const wd of waterDrops) if (Math.abs(wd.x - wx) < WATER_DROP_MIN_DIST) { tooClose = true; break; }
+                if (!tooClose) { waterDrops.push({ x: wx, y: cy + 5, vy: 0, size: 2 + Math.random() * 2.5 }); return; }
+                attempts++;
+            }
+        }
+
+        function spawnLavaDrop() {
+            let attempts = 0;
+            while (attempts < 30) {
+                const wx = playerX + (Math.random() - 0.5) * 100 * PX_PER_METER;
+                const cy = ceilingYAt(wx),
+                    gy = groundYAt(wx);
+                if (gy - cy < 80) { attempts++; continue; }
+                lavaDrops.push({ x: wx, y: cy + 5, vy: 0, size: 2 + Math.random() * 3 });
+                return;
+                attempts++;
+            }
+        }
+
+        function updateDrops(dt) {
+            for (let i = waterDrops.length - 1; i >= 0; i--) { const wd = waterDrops[i]; wd.vy += GRAVITY * 0.35 * dt; wd.y += wd.vy * dt; const gy = groundYAt(wd.x); if (wd.y > gy - 2) { spawnParticles(wd.x, gy, 5, '#88ccff', 8, 0.3, 2, 100);
+                    waterDrops.splice(i, 1); } }
+            for (let i = lavaDrops.length - 1; i >= 0; i--) { const ld = lavaDrops[i]; ld.vy += GRAVITY * 0.4 * dt; ld.y += ld.vy * dt; const gy = groundYAt(ld.x); if (ld.y > gy - 2) { spawnParticles(ld.x, gy, 6, '#ff5522', 10, 0.4, 3, 150);
+                    lavaDrops.splice(i, 1); } }
+        }
+
+        class Amethyst {
+            constructor(x) { this.x = x;
+                this.y = groundYAt(x) - 14;
+                this.bobPhase = Math.random() * Math.PI * 2;
+                this.glow = 0; }
+            update(dt) { this.bobPhase += dt * 3;
+                this.y = groundYAt(this.x) - 14 + Math.sin(this.bobPhase) * 3.5;
+                this.glow = 0.5 + Math.sin(this.bobPhase * 1.3) * 0.35; }
+        }
+
+        // ==================== 怪物类 ====================
+        class Monster {
+            constructor(worldX, level, isDropping = false) {
+                const def = MONSTER_DEFS[level];
+                this.level = level;
+                this.def = def;
+                this.x = worldX;
+                this.maxHP = def.hp;
+                this.hp = def.hp;
+                this.damage = def.damage;
+                this.scoreValue = def.score;
+                this.speed = def.speed * (0.9 + Math.random() * 0.2);
+                this.chaseSpeed = def.speed * 1.35;
+                this.anchorX = worldX;
+                this.patrolRange = (5 + Math.random() * 6) * PX_PER_METER;
+                this.direction = Math.random() > 0.5 ? 1 : -1;
+                this.width = def.w;
+                this.height = def.h;
+                this.hitFlashTimer = 0;
+                this.wobblePhase = Math.random() * Math.PI * 2;
+                this.color = def.color;
+                this.dark = def.dark;
+                this.accent = def.accent;
+                this.dropChance = def.dropChance;
+                this.healDropChance = def.healDropChance || 0;
+                this.chaseRange = def.chaseRange;
+                this.dead = false;
+                this.deathTimer = 0;
+                this.exploding = false;
+                this.explodeTimer = 0;
+                this.blinkExplode = false;
+                this.summonTimer = (level === 'S' || level === 'SS') ? S_SUMMON_INTERVAL * (0.5 + Math.random() * 0.5) : 99999;
+                this.isDropping = isDropping;
+                this.dropVy = 0;
+                this.rushUsed = false;
+                this.rushActive = false;
+                this.rushTimer = 0;
+                this.rushProbability = 0.4;
+                this.teleportCount = 0;
+                this.teleportCooldown = 0;
+                this.tamed = false;
+this.summonCount = 0;
+this.summonedAtTen = false; // 是否已在10米处触发过首次召唤
+this.petAttackCooldown = 0; // 攻击宠物冷却
+                if (isDropping) { const cy = ceilingYAt(worldX); this.y = cy - 20 - Math.random() * 30; this.groundY = groundYAt(worldX); this.dropVy = 0; } else { this.groundY = groundYAt(worldX); this.y = this.groundY - this.height; if (level === 'C' && Math.random() < 0.25) this.floatOffset = 4 + Math.random() * 10; else this.floatOffset = 0; }
+            }
+update(dt, px, py, nearbyPlayerCount) {
+                if (this.dead) {
+                    if (this.exploding) { this.explodeTimer -= dt; if (this.explodeTimer <= 0) { this.deathTimer = 0.1; this.exploding = false;
+                            explodeA(this); } }
+                    this.deathTimer -= dt;
+                    return;
+                }
+                this.hitFlashTimer = Math.max(0, this.hitFlashTimer - dt);
+                if (this.petAttackCooldown > 0) this.petAttackCooldown -= dt;
+                this.wobblePhase += dt * 6;
+                if (this.teleportCooldown > 0) this.teleportCooldown -= dt;
+                if (this.level === 'A' && this.hp < 10 && !this.blinkExplode && !this.exploding) { this.blinkExplode = true;
+                    this.explodeTimer = 2.0;
+                    this.exploding = true; }
+                if (this.blinkExplode && this.exploding) { this.explodeTimer -= dt; if (this.explodeTimer <= 0) { this.dead = true;
+                        this.exploding = false;
+                        this.deathTimer = 0.3;
+                        explodeA(this);
+                        return; } }
+if (this.level === 'S' || this.level === 'SS') {
+    const isTamed = this.tamed;
+    const isS = (this.level === 'S');
+
+    if (!isTamed) {
+        // ===== 野怪召唤逻辑（保持不变） =====
+        const distPlayer = Math.abs(px - this.x);
+        if (!this.summonedAtTen && distPlayer <= 10 * PX_PER_METER) {
+            this.summonedAtTen = true;
+            this.summonTimer = S_SUMMON_INTERVAL;
+            if (isS) summonCByS(this); else summonCBBySS(this);
+        } else {
+            this.summonTimer -= dt;
+            if (this.summonTimer <= 0) {
+                this.summonTimer = S_SUMMON_INTERVAL * (0.7 + Math.random() * 0.6);
+                if (isS) summonCByS(this); else summonCBBySS(this);
+            }
+        }
+    } else {
+        // ===== 驯服召唤逻辑（新规则） =====
+        // 统计玩家周围10米内敌对怪物数量
+        let hostileCount = 0;
+        for (const m of monsters) {
+            if (m.dead || m.isDropping || m.tamed) continue;
+            const dx = m.x - px;
+            if (dx * dx <= (10 * PX_PER_METER) * (10 * PX_PER_METER)) {
+                hostileCount++;
+            }
+        }
+
+        // 触发条件：敌对怪物>=4，技能次数<3，冷却结束
+        if (hostileCount >= 4 && this.summonCount < 3 && this.summonTimer <= 0) {
+            this.summonCount++;
+            this.summonTimer = S_SUMMON_INTERVAL; // 12秒冷却
+            if (isS) summonCByS(this); else summonCBBySS(this);
+        } else {
+            if (this.summonTimer > 0) this.summonTimer -= dt;
+        }
+    }
+}
+                if (this.isDropping) { this.dropVy += GRAVITY * 0.6 * dt;
+                    this.y += this.dropVy * dt; const gy = groundYAt(this.x); if (this.y >= gy - this.height) { this.y = gy - this.height;
+                        this.isDropping = false;
+                        this.dropVy = 0;
+                        spawnParticles(this.x + this.width / 2, this.y + this.height, 6, '#887755', 15, 0.4, 3); }
+                    this.groundY = gy;
+                    return; }
+                if (this.level === 'B' && !this.rushUsed && !this.dead && !this.isDropping) {
+                    const distToPlayer = Math.abs(this.x - px);
+                    if (distToPlayer < 5 * PX_PER_METER && distToPlayer > (this.width + PLAYER_WIDTH) * 0.5) {
+                        if (Math.random() < this.rushProbability) { this.rushUsed = true;
+                            this.rushActive = true;
+                            this.rushTimer = 1.0;
+                            spawnParticles(this.x + this.width * 0.5, this.y + 10, 10, '#2ecc71', 20, 0.4, 4); }
+                    }
+                }
+                if (this.rushActive) { this.rushTimer -= dt; if (this.rushTimer <= 0) this.rushActive = false; }
+const isChasing = Math.abs(this.x - px) < this.chaseRange && py > ceilingYAt(px) && py < groundYAt(px) && !(nearbyPlayerCount >= 4);
+                let moveSpeed = isChasing ? (this.rushActive ? 10 * PX_PER_METER : this.chaseSpeed) : this.speed;
+                if (isChasing) { const dx = px - this.x;
+                    this.direction = dx > 0 ? 1 : -1;
+                    this.x += this.direction * moveSpeed * dt; } else { this.x += this.direction * moveSpeed * dt; if (Math.abs(this.x - this.anchorX) > this.patrolRange) { this.direction *= -1; } }
+                this.groundY = groundYAt(this.x);
+                const minY = ceilingYAt(this.x) + 8,
+                    maxY = this.groundY - this.height;
+                this.y = Math.max(minY, Math.min(maxY, this.groundY - this.height - (this.floatOffset || 0)));
+// 优化：每2帧才进行一次碰撞检测，且使用更严格的过滤
+if (Math.floor(Date.now() / 30) % 2 === 0) {
+    for (const other of monsters) {
+        if (other === this || other.dead || other.isDropping || other.tamed) continue;
+        const dx = this.x - other.x;
+        const dy = this.y - other.y;
+        // 使用平方距离预过滤，避免开方
+        if (dx * dx > 3600 || dy * dy > 3600) continue; // 60px * 60px = 3600
+        const distSq = dx * dx + dy * dy;
+        const minDist = (this.width + other.width) * 0.5;
+        if (distSq < minDist * minDist && distSq > 0.0001) {
+            const dist = Math.sqrt(distSq);
+            const pushFactor = 0.3;
+            const pushX = (dx / dist) * (minDist - dist) * pushFactor;
+            const pushY = (dy / dist) * (minDist - dist) * pushFactor * 0.5;
+            this.x += clamp(pushX, -MAX_SEPARATION_PUSH, MAX_SEPARATION_PUSH);
+            other.x -= clamp(pushX * 0.7, -MAX_SEPARATION_PUSH, MAX_SEPARATION_PUSH);
+            this.y += clamp(pushY, -MAX_SEPARATION_PUSH, MAX_SEPARATION_PUSH);
+            other.y -= clamp(pushY * 0.7, -MAX_SEPARATION_PUSH, MAX_SEPARATION_PUSH);
+        }
+    }
+}
+            }
+            takeDamage(amount) {
+                if (this.dead) return false;
+                this.hp -= amount;
+                this.hitFlashTimer = 0.1;
+                let pc, colors, spread;
+                switch (this.level) { case 'C': pc = 6;
+                    colors = ['#f1c40f', '#fff8dc'];
+                    spread = 18; break; case 'B': pc = 12;
+                    colors = ['#2ecc71', '#a9dfbf', '#ffffff'];
+                    spread = 25; break; case 'A': pc = 22;
+                    colors = ['#e74c3c', '#f1948a', '#ffaa33', '#ffffff'];
+                    spread = 35; break; case 'S': pc = 35;
+                    colors = ['#9b59b6', '#d2b4de', '#ff44ff', '#ffffff', '#ffaa00'];
+                    spread = 45; break; case 'SS': pc = 45;
+                    colors = ['#5dade2', '#4a235a', '#d7bde2', '#ffffff', '#ff44ff', '#ffaa00'];
+                    spread = 55; break; default: pc = 6;
+                    colors = ['#ffffff'];
+                    spread = 15; }
+                spawnParticles(this.x + this.width * 0.5, this.y + 6, pc, colors[Math.floor(Math.random() * colors.length)], spread, 0.4, 3.5, 250);
+                if (this.level === 'S' || this.level === 'SS') spawnParticles(this.x + this.width * 0.5, this.y + this.height * 0.5, 14, '#ffffff', 40, 0.5, 5, 200);
+                spawnFloatingText(this.x + this.width * 0.5, this.y - 10, '-' + amount, this.color);
+               
+// B级及以上怪物有10%概率掉落紫水晶
+if (this.level === 'B' || this.level === 'A' || this.level === 'S' || this.level === 'SS') {
+    if (Math.random() < 0.1) {
+        amethysts.push(new Amethyst(this.x + this.width * 0.5));
+    }
+}
+
+ if (this.hp <= 0) {
+                    this.dead = true;
+                    this.deathTimer = 0.55;
+                    this.exploding = false;
+                    this.blinkExplode = false;
+                    let dpc;
+                    switch (this.level) { case 'C': dpc = 20; break; case 'B': dpc = 30; break; case 'A': dpc = 40; break; case 'S': dpc = 60; break; case 'SS': dpc = 80; break; default: dpc = 20; }
+                    spawnParticles(this.x + this.width * 0.5, this.y + this.height * 0.5, dpc, this.color, 50, 0.8, 5, 300);
+                    spawnParticles(this.x + this.width * 0.5, this.y + this.height * 0.5, dpc * 0.5, '#ffffff', 35, 0.5, 3, 100);
+                    if (Math.random() < this.healDropChance) { const newHP = Math.min(getMaxHP(), playerHP + 1); if (newHP > playerHP) { playerHP = newHP;
+                            spawnFloatingText(playerX + PLAYER_WIDTH * 0.5, playerY - 25, '+1血量', '#ff5566', 0.7); } }
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+
+function summonCByS(sMonster) {
+    // 怪物总数达到上限后禁止召唤
+    if (monsters.length + tamedMonsters.length >= MAX_TOTAL_MONSTERS) return;
+    // 降低单次召唤数量：1~2只
+    const count = 1 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < count; i++) {
+        let sx;
+        if (sMonster.tamed) {
+            // 驯服召唤：生成在玩家周围3格半径内
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * 3 * PX_PER_METER;
+            sx = playerX + Math.cos(angle) * dist;
+        } else {
+            // 野怪召唤：生成在召唤者周围随机偏移
+            const offset = (Math.random() - 0.5) * 40 * PX_PER_METER;
+            sx = Math.max(NO_MONSTER_ZONE, sMonster.x + offset);
+        }
+        const gy = groundYAt(sx),
+            cy = ceilingYAt(sx);
+        if (gy - cy > 60) {
+            const nm = new Monster(sx, 'C', true);
+            if (sMonster.tamed) {
+                nm.tamed = true;
+                nm.color = '#5cb3cc';
+                nm.dark = '#2a7aa8';
+                tamedMonsters.push(nm);
+            } else {
+                monsters.push(nm);
+            }
+        }
+    }
+}
+
+function summonCBBySS(ssMonster) {
+    if (monsters.length + tamedMonsters.length >= MAX_TOTAL_MONSTERS) return;
+    // 降低单次召唤数量：2~3只
+    const count = 2 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < count; i++) {
+        let sx;
+        if (ssMonster.tamed) {
+            // 驯服召唤：生成在玩家周围3格半径内
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * 3 * PX_PER_METER;
+            sx = playerX + Math.cos(angle) * dist;
+        } else {
+            // 野怪召唤：生成在召唤者周围随机偏移
+            const offset = (Math.random() - 0.5) * 40 * PX_PER_METER;
+            sx = Math.max(NO_MONSTER_ZONE, ssMonster.x + offset);
+        }
+        const gy = groundYAt(sx),
+            cy = ceilingYAt(sx);
+        if (gy - cy > 60) {
+            const lvl = Math.random() < 0.5 ? 'C' : 'B';
+            const nm = new Monster(sx, lvl, true);
+            if (ssMonster.tamed) {
+                nm.tamed = true;
+                nm.color = '#5cb3cc';
+                nm.dark = '#2a7aa8';
+                tamedMonsters.push(nm);
+            } else {
+                monsters.push(nm);
+            }
+        }
+    }
+}
+
+        // ==================== 战斗 ====================
+        
+// 动态远程射程
+function getRangedRange() {
+    if (distanceM >= 1800) return 250 * 40 * PX_PER_METER;
+    if (distanceM >= 1200) return 130 * 40 * PX_PER_METER;
+    if (distanceM >= 500) return 50 * 40 * PX_PER_METER;
+    return 10 * 40 * PX_PER_METER;
+}
+
+// 子弹最大穿透数
+function getMaxPenetration() {
+    if (distanceM >= 1800) return 8;
+    if (distanceM >= 1200) return 5;
+    if (distanceM >= 500) return 3;
+    return 1;
+}
+
+function getSkillLevel() {
+    const dm = maxProgressX / PX_PER_METER;
+    if (dm < 1000) return { near: 2, ranged: 1 };
+    if (dm < 2000) return { near: 3, ranged: 2 };
+    return { near: 5, ranged: 3 };
+}
+        function countMonstersNearPlayer(radius) {
+            let count = 0;
+            for (const m of monsters) { if (m.dead || m.isDropping || m.tamed) continue; const dx = (m.x + m.width * 0.5) - (playerX + PLAYER_WIDTH * 0.5),
+                    dy = (m.y + m.height * 0.5) - (playerY + PLAYER_HEIGHT * 0.5); if (Math.sqrt(dx * dx + dy * dy) <= radius) count++; }
+            return count;
+        }
+
+        // ==================== A级怪物爆炸 ====================
+
+// 扇形斩击特效
+function spawnSlashEffect(x, y, facing, color) {
+    const count = 18;
+    const baseAngle = facing > 0 ? 0 : Math.PI; // 朝向角度（向右或向左）
+    for (let i = 0; i < count; i++) {
+        if (particles.length >= 80) break; // 防止超出粒子总数限制
+        const angle = baseAngle + (Math.random() - 0.5) * (Math.PI * 2 / 3); // 左右各60度
+        const speed = 150 + Math.random() * 120;
+        const vx = Math.cos(angle) * speed;
+        const vy = Math.sin(angle) * speed;
+        particles.push({
+            x: x + (Math.random() - 0.5) * 10,
+            y: y + (Math.random() - 0.5) * 10,
+            vx: vx,
+            vy: vy,
+            life: 0.25 + Math.random() * 0.15,
+            maxLife: 0.4,
+            size: 3 + Math.random() * 2,
+            color: color,
+            gravity: 0
+        });
+    }
+}
+
+function explodeA(monster) {
+    const cx = monster.x + monster.width * 0.5;
+    const cy = monster.y + monster.height * 0.5;
+    const radius = A_EXPLODE_RADIUS;
+    const isTamed = monster.tamed;   // 判断是否为驯服怪物
+
+    // 粒子颜色：驯服用蓝色系，野怪保持红色
+    if (isTamed) {
+        spawnParticles(cx, cy, 20, '#4dc9f6', 35, 0.5, 4, 200);
+        spawnParticles(cx, cy, 12, '#00ffff', 25, 0.4, 3, 150);
+        spawnParticles(cx, cy, 8, '#ffffff', 18, 0.3, 2, 100);
+    } else {
+        spawnParticles(cx, cy, 20, '#ff4444', 35, 0.5, 4, 200);
+        spawnParticles(cx, cy, 12, '#ffaa00', 25, 0.4, 3, 150);
+        spawnParticles(cx, cy, 8, '#ffffff', 18, 0.3, 2, 100);
+    }
+
+    // 对玩家造成伤害（驯服爆炸不伤害玩家）
+    if (!isTamed) {
+        const pdx = (playerX + PLAYER_WIDTH * 0.5) - cx;
+        const pdy = (playerY + PLAYER_HEIGHT * 0.5) - cy;
+        if (Math.sqrt(pdx * pdx + pdy * pdy) < radius && !shieldActive && !invincible) {
+            playerHP -= getMonsterDamage(A_EXPLODE_DAMAGE);
+hasBeenHurtThisRun = true;
+            playerHP = Math.floor(playerHP);
+            damageCooldown = 0.9;
+            playerHurtTimer = 0.35;
+            shakeIntensity = Math.min(10, shakeIntensity + 8);
+            if (playerHP <= 0) {
+                playerHP = 0;
+                triggerGameOver();
+            }
+        }
+    }
+
+    // 对其他怪物造成伤害（驯服爆炸仍伤害敌方怪物）
+    for (const other of monsters) {
+        if (other === monster || other.dead || other.isDropping || other.tamed) continue;
+        const dx = (other.x + other.width * 0.5) - cx;
+        const dy = (other.y + other.height * 0.5) - cy;
+        if (Math.sqrt(dx * dx + dy * dy) < radius) {
+            other.takeDamage(A_EXPLODE_DAMAGE);
+                // ===== A级爆炸误伤计数 =====
+const died = other.takeDamage(A_EXPLODE_DAMAGE);
+if (died && !monster.tamed) {
+    aExplodeKillsCount++;
+    localStorage.setItem('abyssAExplodeKillsCount', aExplodeKillsCount);
+}
+        }
+    }
+
+    // 对驯服怪物造成伤害（驯服爆炸不伤害友方）
+    if (!isTamed) {
+        for (const pet of tamedMonsters) {
+            if (pet.dead) continue;
+            const dx = (pet.x + pet.width * 0.5) - cx;
+            const dy = (pet.y + pet.height * 0.5) - cy;
+            if (Math.sqrt(dx * dx + dy * dy) < radius) {
+                pet.hp -= getMonsterDamage(A_EXPLODE_DAMAGE);
+                if (pet.hp <= 0) {
+                    pet.dead = true;
+                    spawnParticles(pet.x + pet.width * 0.5, pet.y + pet.height * 0.5, 20, '#5cb3cc', 30, 0.6, 3);
+                }
+            }
+        }
+    }
+
+    // 屏幕震动（保留，强度可略降）
+    shakeIntensity = Math.max(shakeIntensity, isTamed ? 4 : 8);
+}
+
+
+function performNearAttack() {
+            if (isPaused) return;
+            nearAttackTimer = NEAR_ATTACK_COOLDOWN;
+            const skill = getSkillLevel();
+    let dmg = skill.near + meleeDamageBonus;
+            const facing = moveDir >= 0 ? 1 : -1;
+            const atkX = playerX + PLAYER_WIDTH * 0.5 + facing * NEAR_RANGE * 0.6,
+                atkY = playerY + PLAYER_HEIGHT * 0.5;
+             const swarmCount = countMonstersNearPlayer(SWARM_RADIUS);
+    const swarmBonus = swarmCount >= SWARM_THRESHOLD;
+    let attackRange = NEAR_RANGE;
+    
+    // === 跳跃攻击伤害1.5倍，连击优先 ===
+    if (!isOnGround && !swarmBonus) {
+        dmg *= 1.5;
+    }
+    if (swarmBonus) {
+        dmg = skill.near * 3.5;   // 连击直接使用3.5倍，无视跳跃加成
+        attackRange = SWARM_RADIUS;
+        // 原有群怪特效代码保持不变（震动、粒子、文字提示等）
+        cameraTilt = (Math.random() > 0.5 ? 1 : -1) * 0.08;
+        shakeIntensity = Math.max(shakeIntensity, 6);
+        spawnParticles(playerX + PLAYER_WIDTH * 0.5, playerY + PLAYER_HEIGHT * 0.5, 55, '#ffd700', 70, 0.7, 6, 180);
+        spawnParticles(playerX + PLAYER_WIDTH * 0.5, playerY + PLAYER_HEIGHT * 0.5, 35, '#ff8844', 55, 0.5, 5, 220);
+        spawnFloatingText(playerX + PLAYER_WIDTH * 0.5, playerY - 30, '群怪爆发!', '#ffd700', 1.0);
+    }
+
+totalComboUses++;
+    
+    // === 扇形斩击特效颜色 ===
+    let slashColor = '#ffffff'; // 默认白色
+    if (!isOnGround || swarmBonus) {
+        slashColor = '#00ffff'; // 跳跃斩击或连击用青色
+    }
+
+    dmg *= nearDamageMultiplier;   // 应用购买的近战伤害倍率
+
+    spawnSlashEffect(atkX, atkY, facing, slashColor);
+
+    // 原有粒子特效保持
+    spawnParticles(atkX, atkY, 10, '#ffcc66', 28, 0.3, 3, 150);
+
+    if (swarmBonus) {
+        // ... 后面的攻击判定代码保持不变 ...
+
+                const candidates = [];
+                for (const m of monsters) { if (m.dead || m.isDropping || m.tamed) continue; const dx = (m.x + m.width * 0.5) - (playerX + PLAYER_WIDTH * 0.5),
+                        dy = (m.y + m.height * 0.5) - (playerY + PLAYER_HEIGHT * 0.5); const dist = Math.sqrt(dx * dx + dy * dy); if (dist < attackRange + m.width * 0.5) candidates.push({ monster: m, dist }); }
+                candidates.sort((a, b) => a.dist - b.dist);
+                const targets = candidates.slice(0, 4);
+                for (const target of targets) { const m = target.monster; const died = m.takeDamage(dmg);
+if (died) {
+    killScore += m.scoreValue;
+    totalKills++;
+    if (Math.random() < m.dropChance) bones.push(new Bone(m.x + m.width * 0.5, m.y + m.height * 0.5));
+if (!hasBeenHurtThisRun) noDamageKillsThisRun++;
+} }
+            } else {
+                for (let i = monsters.length - 1; i >= 0; i--) { const m = monsters[i]; if (m.dead || m.isDropping || m.tamed) continue; const dx = (m.x + m.width * 0.5) - (playerX + PLAYER_WIDTH * 0.5),
+                        dy = (m.y + m.height * 0.5) - (playerY + PLAYER_HEIGHT * 0.5); const dist = Math.sqrt(dx * dx + dy * dy); if (dist < attackRange * 0.7 + m.width * 0.5) { const died = m.takeDamage(dmg);
+if (died) {
+    killScore += m.scoreValue;
+    totalKills++;
+    if (Math.random() < m.dropChance) bones.push(new Bone(m.x + m.width * 0.5, m.y + m.height * 0.5));
+if (!hasBeenHurtThisRun) noDamageKillsThisRun++;
+}} }
+            }
+        }
+
+function performRangedAttack() {
+    if (isPaused) return;
+    if (bullets <= 0) return;
+    if (!shopEffects.infiniteBullets) {
+        bullets--;
+    }
+
+totalBulletsFired++;
+    rangedAttackTimer = RANGED_COOLDOWN;
+    const skill = getSkillLevel();
+    const dmg = (skill.ranged + rangedDamageBonus) * rangedDamageMultiplier;
+    const facing = moveDir >= 0 ? 1 : -1;
+    const bx = playerX + PLAYER_WIDTH * 0.5 + facing * 12,
+        by = playerY + PLAYER_HEIGHT * 0.4;
+    const bullet = new Bullet(bx, by, facing, dmg);
+    bullet.maxPenetration = getMaxPenetration();
+    bulletsList.push(bullet);
+    spawnParticles(bx, by, 4, '#88ccff', 10, 0.2, 2, 100);
+}
+
+        function activateShield() {
+            if (isPaused) return;
+            if (shieldCharges <= 0 || shieldActive || shieldCooldownTimer > 0) return;
+            shieldCharges--;
+            shieldActive = true;
+            shieldTimer = shieldDuration;
+            shieldCooldownTimer = SHIELD_COOLDOWN;
+            spawnParticles(playerX + PLAYER_WIDTH * 0.5, playerY + PLAYER_HEIGHT * 0.5, 30, '#00ffcc', 50, 0.6, 4, 100);
+            spawnFloatingText(playerX + PLAYER_WIDTH * 0.5, playerY - 20, '护盾!', '#00ffcc', 0.8);
+            showToast('护盾激活!');
+        }
+
+        function updateShield(dt) {
+            if (!shieldActive) return;
+            shieldTimer -= dt;
+            if (shieldTimer <= SHIELD_BLINK_START && shieldTimer > 0) shieldBlinkTimer += dt;
+            if (shieldTimer <= 0) { shieldActive = false;
+                shieldTimer = 0;
+                shieldBlinkTimer = 0;
+                spawnParticles(playerX + PLAYER_WIDTH * 0.5, playerY + PLAYER_HEIGHT * 0.5, 15, '#8899aa', 30, 0.4, 3, 50);
+                spawnFloatingText(playerX + PLAYER_WIDTH * 0.5, playerY - 20, '护盾消失', '#8899aa', 0.6);
+                showToast('护盾消失'); }
+        }
+
+        // ==================== 驯服系统 ====================
+        function tameMonster() {
+            if (isPaused || gameOver) return;
+            if (tameEnergy <= 0) { showToast('驯服充能不足!'); return; }
+if (tamedMonsters.length >= currentMaxTamedMonsters) { showToast('驯服已满!'); return; }
+            let bestMonster = null;
+            let bestScore = -1;
+            for (const m of monsters) {
+                if (m.dead || m.isDropping || m.tamed) continue;
+                const dx = (m.x + m.width * 0.5) - (playerX + PLAYER_WIDTH * 0.5),
+                    dy = (m.y + m.height * 0.5) - (playerY + PLAYER_HEIGHT * 0.5);
+                if (Math.sqrt(dx * dx + dy * dy) <= TAME_RADIUS) {
+                    const score = m.maxHP + m.damage * 100;
+                    if (score > bestScore) { bestScore = score;
+                        bestMonster = m; }
+                }
+            }
+            if (bestMonster) {
+                const index = monsters.indexOf(bestMonster);
+                if (index > -1) monsters.splice(index, 1);
+                bestMonster.tamed = true;
+        // ===== 记录驯服怪物存活开始时间 =====
+        const id = Date.now() + '_' + Math.random();
+        bestMonster.id = id;
+        tamedSurviveStartTime[id] = Date.now() / 1000;
+                bestMonster.color = '#5cb3cc';
+                bestMonster.dark = '#2a7aa8';
+                bestMonster.dropChance = 0;
+                bestMonster.healDropChance = 0;
+                // 重置召唤技能
+                bestMonster.summonTimer = 0;      // 冷却归零，立即可触发
+                bestMonster.summonCount = 0;      // 使用次数归零
+                bestMonster.summonedAtTen = false; // 清除首次召唤标记
+                tamedMonsters.push(bestMonster);
+                tameEnergy--;
+                spawnFloatingText(playerX + PLAYER_WIDTH * 0.5, playerY - 30, '充能-1', '#b266ff', 0.8);
+                // 驯服瞬间爆炸粒子效果
+                spawnParticles(bestMonster.x + bestMonster.width * 0.5, bestMonster.y + bestMonster.height * 0.5, 35, '#5cb3cc', 50, 0.8, 5, 250);
+                spawnParticles(bestMonster.x + bestMonster.width * 0.5, bestMonster.y + bestMonster.height * 0.5, 25, '#ffffff', 35, 0.5, 3, 150);
+                spawnFloatingText(bestMonster.x + bestMonster.width * 0.5, bestMonster.y - 20, '驯服!', '#5cb3cc', 1.0);
+                showToast('驯服成功!');
+            } else { showToast('半径内没有可驯服怪物'); }
+        }
+
+        // ==================== 子弹 ====================
+        class Bullet {
+            constructor(x, y, dir, damage) { this.x = x;
+                this.y = y;
+                this.dir = dir;
+                this.vx = dir * BULLET_SPEED;
+                this.vy = 0;
+                this.damage = damage;
+                this.radius = 3;
+                this.life = 0.9;
+                this.trail = [];
+                this.fromMonster = false;
+this.hitMonsters = new Set();   // 记录已击中的怪物
+this.hitCount = 0;              // 当前穿透数
+this.maxPenetration = 1;        // 最大穿透数，初始为1（不穿透）
+ }
+            update(dt) {
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > 8) this.trail.shift();
+const gy = groundYAt(this.x),
+    cy = ceilingYAt(this.x);
+const centerY = (gy + cy) / 2,
+    deltaY = centerY - this.y;
+// 地形弯曲
+this.vy += deltaY * 0.15 * dt * 60;
+this.vy *= 0.92;
+
+// ---- 优化：锁定前方最近的怪物（追踪） ----
+let target = null;
+const maxDist = getRangedRange();
+let bestDistSq = maxDist * maxDist;
+for (const m of monsters) {
+    if (m.dead || m.tamed || m.isDropping) continue;
+    const dx = m.x - this.x;
+    if (dx * this.dir <= 0) continue; // 只追踪前方
+    if (dx * this.dir > maxDist) continue; // 超出射程直接跳过
+    const dy = m.y + m.height * 0.5 - this.y;
+    if (dy * dy > 10000) continue; // 垂直距离超过100px跳过
+    const distSq = dx * dx + dy * dy;
+    if (distSq < bestDistSq) { 
+        bestDistSq = distSq; 
+        target = m; 
+    }
+}
+if (target) {
+    const tx = target.x + target.width * 0.5;
+    const ty = target.y + target.height * 0.5;
+    const dx = tx - this.x;
+    const dy = ty - this.y;
+    const angle = Math.atan2(dy, dx);
+    const speed = Math.hypot(this.vx, this.vy) || BULLET_SPEED;
+    const targetVX = Math.cos(angle) * speed;
+    const targetVY = Math.sin(angle) * speed;
+    // 逐步转向目标（0.15 是转向强度，可调节）
+    this.vx += (targetVX - this.vx) * 0.15;
+    this.vy += (targetVY - this.vy) * 0.15;
+    // 再施加一次地形弯曲（但已包含在上面的vx/vy调整内，可不再加）
+    // 如果希望仍然保留明显坡度感，可在这里再叠加少量地形弯曲
+    // this.vy += deltaY * 0.15 * dt * 60;
+}
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+                this.life -= dt;
+        if (Math.abs(this.x - playerX) > getRangedRange() || this.life <= 0) {
+            consecutiveHits = 0;
+            return true;
+        }
+        if (this.y > gy - this.radius || this.y < cy + this.radius) {
+            consecutiveHits = 0;
+            return true;
+        }
+for (let i = monsters.length - 1; i >= 0; i--) {
+    const m = monsters[i];
+    if (m.dead || m.isDropping || m.tamed || this.hitMonsters.has(m)) continue;
+    const dx = (m.x + m.width * 0.5) - this.x;
+    const dy = (m.y + m.height * 0.5) - this.y;
+    if (Math.sqrt(dx * dx + dy * dy) < m.width * 0.5 + this.radius) {
+        if (m.level === 'B' && !this.fromMonster && Math.random() < B_REFLECT_CHANCE) {
+            spawnParticles(this.x, this.y, 8, '#ffcc00', 20, 0.3, 3, 100);
+            this.dir *= -1;
+            this.vx = this.dir * BULLET_SPEED * 0.85;
+            this.fromMonster = true;
+            this.life = 0.7;
+            return false;
+        }
+const died = m.takeDamage(this.damage);
+        // ===== 连续命中计数 =====
+        consecutiveHits++;
+        if (consecutiveHits > maxConsecutiveHits) {
+            maxConsecutiveHits = consecutiveHits;
+        }
+if (died) {
+    killScore += m.scoreValue;
+    totalKills++;
+    if (Math.random() < m.dropChance) bones.push(new Bone(m.x + m.width * 0.5, m.y + m.height * 0.5));
+if (!hasBeenHurtThisRun) noDamageKillsThisRun++;
+}
+        spawnParticles(this.x, this.y, 6, '#ffaa33', 14, 0.25, 3, 100);
+        this.hitMonsters.add(m);
+        this.hitCount++;
+        if (this.hitCount >= this.maxPenetration) return true;
+    }
+}
+                if (this.fromMonster) {
+                    const pdx = (playerX + PLAYER_WIDTH * 0.5) - this.x,
+                        pdy = (playerY + PLAYER_HEIGHT * 0.5) - this.y;
+                    if (Math.sqrt(pdx * pdx + pdy * pdy) < PLAYER_WIDTH * 0.5 && !shieldActive && !invincible) {
+                        playerHP -= this.damage;
+hasBeenHurtThisRun = true;
+                        playerHurtTimer = 0.3;
+                        damageCooldown = 0.5;
+                        if (playerHP <= 0) { playerHP = 0;
+                            triggerGameOver(); }
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        // ==================== 掉落物 ====================
+        class Bone {
+            constructor(x, y) { this.x = x;
+                this.y = y;
+                this.bobPhase = Math.random() * Math.PI * 2; }
+            update(dt) { this.bobPhase += dt * 4;
+                this.y = groundYAt(this.x) - 10 + Math.sin(this.bobPhase) * 2.5; }
+        }
+
+        class Mushroom {
+            constructor(x) { this.x = x;
+                this.y = groundYAt(x) - 14;
+                this.bobPhase = Math.random() * Math.PI * 2;
+                this.glow = 0; }
+            update(dt) { this.bobPhase += dt * 3;
+                this.y = groundYAt(this.x) - 14 + Math.sin(this.bobPhase) * 3.5;
+                this.glow = 0.5 + Math.sin(this.bobPhase * 1.3) * 0.35; }
+        }
+
+        // ==================== 生成逻辑 ====================
+        function countVisibleMonsters() { const left = cameraX,
+                right = cameraX + canvasW; let count = 0; for (const m of monsters) if (m.x > left && m.x < right && !m.tamed) count++; return count; }
+
+function spawnMonsterGroup() {
+    if (monsters.length > MAX_TOTAL_MONSTERS) {
+        nextMonsterGroupX += GROUP_AVG_DIST * (0.8 + Math.random() * 0.4);
+        return;
+    }
+
+    const dm = maxProgressX / PX_PER_METER;
+    let pool = [];
+    if (dm < 150) pool = ['C', 'C'];
+    else if (dm < 400) pool = ['C', 'C', 'B'];
+    else if (dm < 850) pool = ['C', 'B', 'A'];
+    else if (dm < 1350) pool = ['C','C','C','B','B','B','A','A','A','S'];
+    else pool = ['C','C','C','C','C','B','B','B','B','B','A','A','A','A','A','S','S','S','SS','SS'];
+
+    let count = 2 + Math.floor(Math.random() * 3);
+    if (dm >= 500 && dm < 1000) {
+        count *= 2;
+    } else if (dm >= 1000 && dm < 1800) {
+        count *= 3;
+    } else if (dm >= 1800) {
+        count *= 4;
+    }
+
+    const centerX = nextMonsterGroupX;
+    for (let i = 0; i < count; i++) {
+        // 玩家周围15米内怪物数量限制（最多7只）
+        let closeCount = 0;
+        for (const m of monsters) {
+            if (m.dead) continue;
+            if (Math.abs(m.x - playerX) <= 15 * PX_PER_METER) closeCount++;
+        }
+        if (closeCount >= 7) break;
+
+        const level = pool[Math.floor(Math.random() * pool.length)];
+        let mx = centerX + (Math.random() - 0.5) * 6 * PX_PER_METER;
+        let attempts = 0;
+        let ok = false;
+
+        while (attempts < 20) {
+            ok = true;
+            // 基础间距2米
+            for (const m of monsters) {
+                if (Math.abs(m.x - mx) < MONSTER_MIN_SPACING) { ok = false; break; }
+            }
+            if (!ok) {
+                mx += (Math.random() > 0.5 ? 1 : -1) * MONSTER_MIN_SPACING;
+                attempts++;
+                continue;
+            }
+            // A级：半径15米内不能有另一个A级
+            if (level === 'A') {
+                for (const m of monsters) {
+                    if (!m.dead && m.level === 'A' && Math.abs(m.x - mx) <= 15 * PX_PER_METER) { ok = false; break; }
+                }
+            }
+// S/SS：半径15米内不能有另一个S/SS
+if (level === 'S' || level === 'SS') {
+    for (const m of monsters) {
+        if (!m.dead && (m.level === 'S' || m.level === 'SS') && Math.abs(m.x - mx) <= 15 * PX_PER_METER) { ok = false; break; }
+    }
+}
+            if (ok) break;
+            // 调整位置重试
+            mx += (Math.random() > 0.5 ? 1 : -1) * PX_PER_METER;
+            attempts++;
+        }
+
+        if (!ok) continue; // 找不到合适位置就跳过该怪物
+
+        const gy = groundYAt(mx);
+        const cy = ceilingYAt(mx);
+        if (gy - cy > MONSTER_DEFS[level].h + 25 && mx > NO_MONSTER_ZONE) {
+            monsters.push(new Monster(mx, level));
+        }
+    }
+
+    let groupDist = GROUP_AVG_DIST * (0.8 + Math.random() * 0.4);
+    if (dm < 300) groupDist *= 2;
+    nextMonsterGroupX += groupDist;
+}
+
+function spawnMushroom() {
+    const sx = nextMushroomX;
+    const gy = groundYAt(sx),
+        cy = ceilingYAt(sx);
+    if (gy - cy > 70) mushrooms.push(new Mushroom(sx));
+    const dm = maxProgressX / PX_PER_METER;
+    let baseDist;
+    if (dm < DIST_THRESHOLD_1) baseDist = 60 * PX_PER_METER * (0.8 + Math.random() * 0.4);
+    else if (dm < DIST_THRESHOLD_2) baseDist = 95 * PX_PER_METER * (0.8 + Math.random() * 0.4);
+    else baseDist = 140 * PX_PER_METER * (0.8 + Math.random() * 0.4);
+    if (dm >= 500) baseDist *= 0.5;
+    nextMushroomX = sx + baseDist;
+}
+function spawnAmethyst() {
+    const sx = nextAmethystX;
+    const gy = groundYAt(sx),
+        cy = ceilingYAt(sx);
+    if (gy - cy > 70) amethysts.push(new Amethyst(sx));
+    const dm = maxProgressX / PX_PER_METER;
+    let baseDist;
+    if (dm < DIST_THRESHOLD_1) baseDist = 180 * PX_PER_METER * (0.8 + Math.random() * 0.4);
+    else if (dm < DIST_THRESHOLD_2) baseDist = 285 * PX_PER_METER * (0.8 + Math.random() * 0.4);
+    else baseDist = 420 * PX_PER_METER * (0.8 + Math.random() * 0.4);
+    nextAmethystX = sx + baseDist;
+}
+        // ==================== 游戏循环====================
+function triggerGameOver() {
+    localStorage.removeItem('abyssSaveData');
+    // ===== 累计死亡次数 =====
+    deathCount++;
+    localStorage.setItem('abyssDeathCount', deathCount);
+    
+    // ===== 累计金币 =====
+    totalCoinsEarned += coinsEarnedThisRun;
+    localStorage.setItem('abyssTotalCoinsEarned', totalCoinsEarned);
+    localStorage.setItem('abyssDamageTakenCount', damageTakenCount);
+    localStorage.setItem('abyssDoubleJumpCount', doubleJumpCount);
+    localStorage.setItem('abyssAExplodeKillsCount', aExplodeKillsCount);
+    gameOver = true;
+invincible = false;
+    gameRunning = false;
+    document.getElementById('bottom-left-buttons').style.display = 'none';
+    playerDeathTimer = 1.0;
+const finalScore = distanceM * 3 + killScore;
+document.getElementById('final-score-text').textContent = '分数: ' + finalScore + ' | 距离: ' + distanceM + 'm';
+document.getElementById('game-over-overlay').classList.add('active');
+stopBgm();
+
+// 将本局分数累加到累计总分，并确保非负
+totalScore = Math.max(0, totalScore + finalScore);
+localStorage.setItem('abyssTotalScore', totalScore);
+localStorage.setItem('abyssMaxDistanceEver', maxDistanceEver);
+
+// 新增：将本局分数转换为金币并累加
+    const coinsEarned = Math.ceil(finalScore / 9);
+    coinsEarnedThisRun += coinsEarned;
+
+// 成就奖励结算
+let achievementBonus = 0;
+for (const ach of newAchievementsThisRun) {
+    achievementBonus += ach.reward;
+}
+
+// 总金币增加
+    playerCoins += coinsEarnedThisRun + achievementBonus;
+localStorage.setItem('abyssPlayerCoins', playerCoins);
+
+// 显示金币奖励
+document.getElementById('final-coins-text').textContent = '金币: +' + coinsEarned;
+
+// 显示成就奖励（如果有）
+if (achievementBonus > 0) {
+    document.getElementById('final-achievement-text').textContent = '成就奖励 +' + achievementBonus;
+} else {
+    document.getElementById('final-achievement-text').textContent = '';
+}
+
+// 清空本局新解锁成就（防止重复结算）
+newAchievementsThisRun = [];
+
+    // 清除本局购买的道具，下一局需要重新购买
+    shopPurchases = {};
+    localStorage.removeItem('abyssShopPurchases');
+}
+
+        function restartGame() {
+newAchievementsThisRun = [];
+    // ===== 重置本局成就相关变量 =====
+    coinsEarnedThisRun = 0;
+    tamedSurviveStartTime = {};
+    consecutiveHits = 0;
+    maxConsecutiveHits = 0;
+    mushroomEatenThisRun = 0;
+    playTimeThisRun = 0;
+    runStartTime = Date.now() / 1000;
+    gameSessionActive = true;
+if (adminNextGame) {
+    invincible = true;
+    adminNextGame = false;
+    localStorage.removeItem('abyssAdminNextGame');
+} else {
+invincible = false;
+}
+   localStorage.removeItem('abyssSaveData'); 
+            gameRunning = true;
+            gameOver = false;
+            isPaused = false;
+            updatePauseButton();
+            updatePauseHint();
+restartBgm();   // 回到游戏界面后重新播放
+            document.getElementById('game-over-overlay').classList.remove('active');
+            playerHP = INITIAL_HP;
+            playerX = 0;
+            playerY = groundYAt(0) - PLAYER_HEIGHT;
+            playerVX = 0;
+            playerVY = 0;
+            isOnGround = true;
+            jumpCount = 0;
+            nearAttackTimer = 0;
+            rangedAttackTimer = 0;
+            playerHurtTimer = 0;
+            damageCooldown = 0;
+            playerDeathTimer = 0;
+            bullets = 10;
+            shieldCharges = 0;
+shieldMushroomCounter = 0;
+            shieldActive = false;
+            shieldTimer = 0;
+            shieldCooldownTimer = 0;
+            monsters = [];
+            mushrooms = [];
+            amethysts = [];
+            bones = [];
+            bulletsList = [];
+            particles = [];
+            waterDrops = [];
+            lavaDrops = [];
+            floatingTexts = [];
+            tamedMonsters = [];
+            nextMonsterGroupX = MONSTER_SPAWN_AHEAD;
+nextMushroomX = 60 * PX_PER_METER;
+nextAmethystX = 180 * PX_PER_METER;
+            maxProgressX = 0;
+            score = 0;
+killScore = 0;
+            distanceM = 0;
+            cameraX = 0;
+            cameraY = groundYAt(0) - canvasH * 0.45;
+            shakeIntensity = 0;
+            cameraTilt = 0;
+            cameraZoom = 1;
+            cameraTargetZoom = 1;
+            lastSkillLevel = 0;
+            lastMilestone = 0;
+            autoHealTimer = getAutoHealInterval();
+            invincible = false;
+noDamageKillsThisRun = 0;
+hasBeenHurtThisRun = false;
+            shareClickCount = 0;
+            shareClickTimer = 0;
+            amethystCount = 0;
+   tameEnergy = 0;
+            lastInputTime = performance.now();
+            for (let i = 0; i < 3; i++) { mushrooms.push(new Mushroom(20 * PX_PER_METER + i * 50 * PX_PER_METER));
+                amethysts.push(new Amethyst(40 * PX_PER_METER + i * 60 * PX_PER_METER)); }
+            for (let i = 0; i < 5; i++) spawnWaterDrop();
+    // 应用商城购买效果
+    applyShopEffects();
+            for (let i = 0; i < 4; i++) spawnLavaDrop();
+        }
+
+// 应用商城购买效果到当前游戏状态
+function applyShopEffects() {
+    // 重置为默认
+    shopEffects.maxBullets = 10;
+    shopEffects.initialBullets = 10;
+    shopEffects.infiniteBullets = false;
+    shopEffects.maxShieldCharges = MAX_SHIELD_CHARGES;
+    shopEffects.initialShieldCharges = 0;
+    shopEffects.maxTamedMonsters = MAX_TAMED_MONSTERS;
+    shopEffects.initialTameEnergy = 0;
+    fixedMaxHP = 0;
+    nearDamageMultiplier = 1;
+    rangedDamageMultiplier = 1;
+    shieldDuration = SHIELD_DURATION;
+
+    // 应用子弹购买
+    if (shopPurchases.bullet25) {
+        shopEffects.maxBullets = Math.max(shopEffects.maxBullets, 25);
+        shopEffects.initialBullets = Math.max(shopEffects.initialBullets, 25);
+    }
+    if (shopPurchases.bullet40) {
+        shopEffects.maxBullets = Math.max(shopEffects.maxBullets, 40);
+        shopEffects.initialBullets = Math.max(shopEffects.initialBullets, 40);
+    }
+if (shopPurchases.bullet65) {
+    shopEffects.maxBullets = Math.max(shopEffects.maxBullets, 65);
+    shopEffects.initialBullets = Math.max(shopEffects.initialBullets, 65);
+}
+    if (shopPurchases.bullet_inf) {
+        shopEffects.infiniteBullets = true;
+        shopEffects.initialBullets = Math.max(shopEffects.initialBullets, 40);
+    }
+
+    // 应用护盾购买
+    if (shopPurchases.shield3) {
+        shopEffects.maxShieldCharges = Math.max(shopEffects.maxShieldCharges, 3);
+        shopEffects.initialShieldCharges = Math.max(shopEffects.initialShieldCharges, 3);
+    }
+    if (shopPurchases.shield5) {
+        shopEffects.maxShieldCharges = Math.max(shopEffects.maxShieldCharges, 5);
+        shopEffects.initialShieldCharges = Math.max(shopEffects.initialShieldCharges, 5);
+    }
+    if (shopPurchases.shield8) {
+        shopEffects.maxShieldCharges = Math.max(shopEffects.maxShieldCharges, 8);
+        shopEffects.initialShieldCharges = Math.max(shopEffects.initialShieldCharges, 8);
+    }
+
+    // 应用驯服购买
+    if (shopPurchases.tame1) {
+        shopEffects.maxTamedMonsters = Math.max(shopEffects.maxTamedMonsters, 3);
+        shopEffects.initialTameEnergy = Math.max(shopEffects.initialTameEnergy, 1);
+    }
+    if (shopPurchases.tame2) {
+        shopEffects.maxTamedMonsters = Math.max(shopEffects.maxTamedMonsters, 6);
+        shopEffects.initialTameEnergy = Math.max(shopEffects.initialTameEnergy, 2);
+    }
+    if (shopPurchases.tame3) {
+        shopEffects.maxTamedMonsters = Math.max(shopEffects.maxTamedMonsters, 8);
+        shopEffects.initialTameEnergy = Math.max(shopEffects.initialTameEnergy, 3);
+    }
+
+    // 应用技能：近战伤害倍率
+    if (shopPurchases.nearMult12) nearDamageMultiplier = 1.2;
+    else if (shopPurchases.nearMult15) nearDamageMultiplier = 1.5;
+    else if (shopPurchases.nearMult18) nearDamageMultiplier = 1.8;
+    else if (shopPurchases.nearMult20) nearDamageMultiplier = 2.0;
+
+    // 应用技能：远程伤害倍率
+    if (shopPurchases.rangeMult15) rangedDamageMultiplier = 1.5;
+    else if (shopPurchases.rangeMult20) rangedDamageMultiplier = 2.0;
+    else if (shopPurchases.rangeMult25) rangedDamageMultiplier = 2.5;
+
+    // 应用生命上限
+    if (shopPurchases.hpMax70) fixedMaxHP = 70;
+    else if (shopPurchases.hpMax85) fixedMaxHP = 85;
+    else if (shopPurchases.hpMax100) fixedMaxHP = 100;
+
+    // 应用护盾持续时间
+    if (shopPurchases.shieldDur15) shieldDuration = 15;
+    else if (shopPurchases.shieldDur20) shieldDuration = 20;
+    else if (shopPurchases.shieldDur25) shieldDuration = 25;
+
+    // 更新当前上限
+    currentMaxShieldCharges = shopEffects.maxShieldCharges;
+    currentMaxTamedMonsters = shopEffects.maxTamedMonsters;
+
+    // 应用初始值
+    if (shopEffects.infiniteBullets) {
+        bullets = Infinity;   // 无限子弹时当前子弹数也为无限
+    } else {
+        bullets = shopEffects.initialBullets;
+    }
+    shieldCharges = shopEffects.initialShieldCharges;
+    shieldMushroomCounter = 0;
+    tameEnergy = shopEffects.initialTameEnergy;
+}
+
+function showShop() {
+    document.getElementById('shop-overlay').classList.add('active');
+    updateShopDisplay();
+}
+
+function showAchievements() {
+    document.getElementById('achievements-overlay').classList.add('active');
+    updateAchievementsDisplay();
+}
+
+function formatAchievementTime(timestamp) {
+    const date = new Date(timestamp);
+    const Y = date.getFullYear();
+    const M = String(date.getMonth() + 1).padStart(2, '0');
+    const D = String(date.getDate()).padStart(2, '0');
+    const h = String(date.getHours()).padStart(2, '0');
+    const min = String(date.getMinutes()).padStart(2, '0');
+    return `${Y}-${M}-${D} ${h}:${min}`;
+}
+
+function updateAchievementsDisplay() {
+    const container = document.getElementById('achievements-container');
+    container.innerHTML = '';
+
+    const unlockedList = [];
+    const lockedList = [];
+    for (const ach of ACHIEVEMENTS) {
+        if (unlockedAchievements[ach.id]) {
+            unlockedList.push({ ...ach, unlockTime: unlockedAchievements[ach.id] });
+        } else {
+            lockedList.push(ach);
+        }
+    }
+    unlockedList.sort((a, b) => a.unlockTime - b.unlockTime);
+
+    // 渲染已解锁成就（保持原有颜色和奖励位置）
+    for (const ach of unlockedList) {
+        const item = document.createElement('div');
+        item.className = 'achievement-item unlocked';
+        item.innerHTML = `
+            <div class="achievement-check">✔</div>
+            <div class="achievement-top">
+                <span class="achievement-name">${ach.name}</span>
+                <span class="achievement-reward">+${ach.reward} 金币</span>
+            </div>
+            <div class="achievement-bottom">
+                <span class="achievement-desc">${ach.desc} (${ach.target}/${ach.target})</span>
+                <span class="achievement-time">${formatAchievementTime(ach.unlockTime)}</span>
+            </div>
+            <div class="achievement-progress-bar">
+                <div class="achievement-progress-fill" style="width: 100%;"></div>
+            </div>
+        `;
+        container.appendChild(item);
+    }
+
+    // 对未解锁成就按完成百分比从高到低排序
+    const lockedWithProgress = lockedList.map(ach => {
+        const progress = Math.min(getAchievementProgress(ach), ach.target);
+        const percent = ach.target > 0 ? (progress / ach.target) * 100 : 0;
+        return { ach, progress, percent };
+    });
+    lockedWithProgress.sort((a, b) => b.percent - a.percent);
+
+    // 渲染未解锁成就（按进度降序）
+    for (const { ach, progress, percent } of lockedWithProgress) {
+        const item = document.createElement('div');
+        item.className = 'achievement-item locked';
+        // 根据完成百分比设置背景渐变
+        item.style.background = `linear-gradient(to right, rgba(0,255,204,0.25) 0%, rgba(0,255,204,0.25) ${percent}%, rgba(20,15,25,0.7) ${percent}%)`;
+        item.innerHTML = `
+            <div class="achievement-top">
+                <span class="achievement-name">${ach.name}</span>
+                <span class="achievement-reward" style="color:#666;">+${ach.reward} 金币</span>
+            </div>
+            <div class="achievement-bottom">
+                <span class="achievement-desc">${ach.desc} (${progress}/${ach.target})</span>
+                <span class="achievement-time">未解锁</span>
+            </div>
+            <div class="achievement-progress-bar">
+                <div class="achievement-progress-fill" style="width: ${percent}%;"></div>
+            </div>
+        `;
+        container.appendChild(item);
+    }
+}
+
+function hideAchievements() {
+    document.getElementById('achievements-overlay').classList.remove('active');
+}
+
+function hideShop() {
+    document.getElementById('shop-overlay').classList.remove('active');
+}
+
+function updateShopDisplay() {
+    document.getElementById('shop-stats').textContent = '金币: ' + playerCoins;
+
+    // 定义同类组
+    const groups = {
+        bullet: ['bullet25', 'bullet40', 'bullet65', 'bullet_inf'],
+        shield: ['shield3', 'shield5', 'shield8', 'shieldDur15', 'shieldDur20', 'shieldDur25'],
+        tame: ['tame1', 'tame2', 'tame3'],
+        near: ['nearMult12', 'nearMult15', 'nearMult18', 'nearMult20'],
+        range: ['rangeMult15', 'rangeMult20', 'rangeMult25'],
+        hp: ['hpMax70', 'hpMax85', 'hpMax100']
+    };
+
+    // 找出每个组中已购买的项
+    const purchasedInGroup = {};
+    for (const group in groups) {
+        purchasedInGroup[group] = groups[group].find(id => shopPurchases[id]) || null;
+    }
+
+    const buyButtons = document.querySelectorAll('.shop-buy-btn');
+    buyButtons.forEach(btn => {
+        const itemId = btn.dataset.item;
+        // 找到该按钮所属的组
+        let groupName = null;
+        for (const group in groups) {
+            if (groups[group].includes(itemId)) {
+                groupName = group;
+                break;
+            }
+        }
+
+        if (shopPurchases[itemId]) {
+            btn.disabled = true;
+            btn.textContent = '已购买';
+        } else if (groupName && purchasedInGroup[groupName]) {
+            // 同类已有其他购买，锁定该按钮
+            btn.disabled = true;
+            btn.textContent = '已售罄';
+        } else {
+            btn.disabled = false;
+            btn.textContent = '购买 ' + shopConfig[itemId].price;
+        }
+    });
+}
+
+function purchaseShopItem(itemId) {
+    if (shopPurchases[itemId]) return;
+
+    // 同类互斥检查
+    const groups = {
+        bullet: ['bullet25', 'bullet40', 'bullet65', 'bullet_inf'],
+        shield: ['shield3', 'shield5', 'shield8', 'shieldDur15', 'shieldDur20', 'shieldDur25'],
+        tame: ['tame1', 'tame2', 'tame3'],
+        near: ['nearMult12', 'nearMult15', 'nearMult18', 'nearMult20'],
+        range: ['rangeMult15', 'rangeMult20', 'rangeMult25'],
+        hp: ['hpMax70', 'hpMax85', 'hpMax100']
+    };
+    for (const group in groups) {
+        if (groups[group].includes(itemId)) {
+            const hasPurchasedInGroup = groups[group].some(id => shopPurchases[id]);
+            if (hasPurchasedInGroup) {
+                alert('同类道具只能购买一个');
+                return;
+            }
+            break;
+        }
+    }
+
+    const config = shopConfig[itemId];
+    if (!config) return;
+    if (playerCoins < config.price) {
+        alert('金币不足');
+        return;
+    }
+    playerCoins -= config.price;
+totalShopPurchases++;
+    shopPurchases[itemId] = true;
+    localStorage.setItem('abyssShopPurchases', JSON.stringify(shopPurchases));
+    localStorage.setItem('abyssPlayerCoins', playerCoins);
+applyShopEffects();
+    updateShopDisplay();
+    // 如果菜单可见，也更新菜单右上角
+    if (document.getElementById('menu-overlay').classList.contains('active')) {
+document.getElementById('menu-stats').textContent = '金币: ' + playerCoins;
+    }
+    alert('购买成功！');
+}
+
+// 游戏过程中点击菜单时调用：弹出保存确认框
+function requestShowMenu() {
+    if (!gameStarted || menuActive) return;
+    // 暂停游戏
+    isPaused = true;
+    updatePauseButton();
+    updatePauseHint();
+    // 显示确认弹窗
+    document.getElementById('save-confirm-overlay').style.display = 'flex';
+}
+
+// 显示菜单
+function showMenu() {
+    document.getElementById('game-over-overlay').classList.remove('active');
+    document.getElementById('save-confirm-overlay').style.display = 'none';
+
+    menuActive = true;
+    gameStarted = false;
+    isPaused = false;
+    updatePauseButton();
+    updatePauseHint();
+
+    document.getElementById('menu-overlay').classList.add('active');
+    document.getElementById('menu-stats').textContent = '金币: ' + playerCoins;
+    document.getElementById('bottom-left-buttons').style.display = 'none';
+
+    if (bgmAudio && !bgmAudio.paused) {
+        bgmAudio.pause();
+        bgmAudio.currentTime = 0;
+    }
+}
+
+// 隐藏菜单
+function hideMenu() {
+    menuActive = false;
+    document.getElementById('menu-overlay').classList.remove('active');
+}
+
+// 菜单内小提示
+function showMenuToast(msg) {
+    menuToast.textContent = msg;
+    menuToast.classList.add('active');
+    clearTimeout(menuToast._timer);
+    menuToast._timer = setTimeout(() => menuToast.classList.remove('active'), 1500);
+}
+
+// 点击"单人模式" - 开始游戏
+function startSinglePlayer() {
+    if (gameStarted) return;
+newAchievementsThisRun = [];
+
+    // ===== 重置本局变量 =====
+    coinsEarnedThisRun = 0;
+    mushroomEatenThisRun = 0;
+    maxConsecutiveHits = 0;
+    consecutiveHits = 0;
+    playTimeThisRun = 0;
+    runStartTime = 0;
+    gameSessionActive = false;
+    tamedSurviveStartTime = {};
+
+    if (gameOver) {
+        restartGame();   // 重置状态，删除存档，准备新游戏
+    }
+if (adminNextGame) {
+    invincible = true;
+    adminNextGame = false;
+    localStorage.removeItem('abyssAdminNextGame');
+} else {
+    invincible = false;
+}
+    gameStarted = true;
+    menuActive = false;
+    document.getElementById('menu-overlay').classList.remove('active');
+    document.getElementById('bottom-left-buttons').style.display = 'flex';
+    lastInputTime = performance.now();
+    const loaded = loadGame();
+    if (!loaded) {
+        // 新游戏状态已经在 init() 中初始化好了
+    }
+    // 关键：应用商城购买效果（会覆盖存档中的初始子弹/护盾/驯服值）
+    applyShopEffects();
+restartBgm();
+}
+
+let achievementToastMessage = '';
+let achievementToastTimer = 0;
+function showAchievementToast(name) {
+    achievementToastMessage = '达成成就 - ' + name;
+    achievementToastTimer = 2.5;
+}
+
+        function showToast(msg) { toastMessage = msg;
+            toastTimer = 1.5; }
+
+        function updatePauseButton() { document.getElementById('btn-pause').textContent = isPaused ? '▶ 继续' : '⏸ 暂停'; }
+
+        function updatePauseHint() { document.getElementById('pause-hint').classList.toggle('active', isPaused && !gameOver); }
+
+function hasThreeBuffs() {
+    // 检查商店已购买项中是否同时存在子弹、护盾、驯服三类增益
+    const hasBullet = ['bullet25', 'bullet40', 'bullet65', 'bullet_inf'].some(id => shopPurchases[id]);
+    const hasShield = ['shield3', 'shield5', 'shield8', 'shieldDur15', 'shieldDur20', 'shieldDur25'].some(id => shopPurchases[id]);
+    const hasTame = ['tame1', 'tame2', 'tame3'].some(id => shopPurchases[id]);
+    return hasBullet && hasShield && hasTame;
+}
+
+function getAchievementProgress(ach) {
+    switch (ach.type) {
+        case 'distance':
+            return maxDistanceEver;
+        case 'kill_total':
+            return totalKills;
+        case 'combo_total':
+            return totalComboUses;
+        case 'no_damage_kills':
+            return noDamageKillsThisRun;
+        case 'tamed_simultaneous':
+            return tamedMonsters.length;
+        case 'tamed_kills_total':
+            return tamedMonsterTotalKills;
+        case 'bones_picked_total':
+            return totalBonesPickedUp;
+        case 'amethysts_picked_total':
+            return totalAmethystsPickedUp;
+        case 'bullets_fired_total':
+            return totalBulletsFired;
+        case 'shop_purchases_total':
+            return totalShopPurchases;
+        case 'three_buffs':
+            return hasThreeBuffs() ? 1 : 0;
+        // ===== 新增成就进度 =====
+        case 'coins_in_run':
+            return coinsEarnedThisRun;
+        case 'tamed_survive_time': {
+            let maxTime = 0;
+            const now = Date.now() / 1000;
+            for (const pet of tamedMonsters) {
+                if (pet.dead) continue;
+                const id = pet.id || pet.x + '_' + pet.y;
+                if (tamedSurviveStartTime[id]) {
+                    const elapsed = now - tamedSurviveStartTime[id];
+                    if (elapsed > maxTime) maxTime = elapsed;
+                }
+            }
+            return maxTime;
+        }
+        case 'double_jump_total':
+            return doubleJumpCount;
+        case 'coins_total':
+            return totalCoinsEarned;
+        case 'damage_taken_total':
+            return damageTakenCount;
+        case 'play_time_in_run':
+            return playTimeThisRun;
+        case 'death_total':
+            return deathCount;
+        case 'consecutive_hits':
+            return maxConsecutiveHits;
+        case 'shield_and_tame':
+            return (shieldCharges >= 3 && tameEnergy >= 5) ? 1 : 0;
+        case 'no_mushroom_run':
+            return mushroomEatenThisRun > 0 ? 0 : distanceM;
+        case 'a_explode_kills_total':
+            return aExplodeKillsCount;
+        default:
+            return 0;
+    }
+}
+
+function checkAchievements() {
+    if (!gameStarted || gameOver) return;
+    for (const ach of ACHIEVEMENTS) {
+        if (unlockedAchievements[ach.id]) continue;
+        const progress = getAchievementProgress(ach);
+        if (progress >= ach.target) {
+            const now = new Date();
+            unlockedAchievements[ach.id] = now.getTime();
+            newAchievementsThisRun.push({ id: ach.id, name: ach.name, reward: ach.reward });
+            localStorage.setItem('abyssAchievements', JSON.stringify(unlockedAchievements));
+            showAchievementToast(ach.name);
+        }
+    }
+}
+
+        // ==================== 更新 ====================
+        function update(dt) {
+if (!gameStarted || menuActive) return;
+    // ===== 游戏计时（本局游戏时间） =====
+    if (gameSessionActive && !gameOver && !isPaused) {
+        playTimeThisRun += dt;
+    }
+            if (isPaused || gameOver) {
+                if (gameOver) {
+                    if (playerDeathTimer > 0) playerDeathTimer -= dt;
+                    updateParticles(dt);
+                    updateFloatingTexts(dt);
+                    updateDrops(dt);
+                    cameraTilt = Math.max(0, Math.abs(cameraTilt) - dt * 0.2) * (cameraTilt > 0 ? 1 : -1);
+                    shakeIntensity = Math.max(0, shakeIntensity - dt * 20);
+                    shakeX = (Math.random() - 0.5) * shakeIntensity;
+                    shakeY = (Math.random() - 0.5) * shakeIntensity;
+                }
+                return;
+            }
+            dt = Math.min(dt, 0.05);
+            // ===== 血量过渡动画（0.3秒内完成）=====
+            const HP_TRANSITION_TIME = 0.3;
+            const hpDiff = playerHP - displayHP;
+            if (Math.abs(hpDiff) > 0.01) {
+                displayHP += hpDiff * Math.min(1, dt / HP_TRANSITION_TIME);
+            } else {
+                displayHP = playerHP; // 差值很小时直接对齐
+            }
+
+            nearAttackTimer = Math.max(0, nearAttackTimer - dt);
+            rangedAttackTimer = Math.max(0, rangedAttackTimer - dt);
+            playerHurtTimer = Math.max(0, playerHurtTimer - dt);
+            damageCooldown = Math.max(0, damageCooldown - dt);
+            shakeIntensity = Math.max(0, shakeIntensity - dt * 22);
+            shakeX = (Math.random() - 0.5) * shakeIntensity;
+            shakeY = (Math.random() - 0.5) * shakeIntensity;
+            cameraTilt *= 0.9;
+            if (Math.abs(cameraTilt) < 0.001) cameraTilt = 0;
+            if (toastTimer > 0) toastTimer -= dt;
+if (achievementToastTimer > 0) achievementToastTimer -= dt;
+            if (shareClickTimer > 0) { shareClickTimer -= dt; if (shareClickTimer <= 0) shareClickCount = 0; }
+            if (shieldCooldownTimer > 0) shieldCooldownTimer -= dt;
+
+            // 自动回血
+            autoHealTimer -= dt;
+            if (autoHealTimer <= 0) {
+                autoHealTimer = getAutoHealInterval();
+                if (playerHP < getMaxHP()) {
+                    const healAmount = getAutoHealAmount();
+                    playerHP = Math.min(getMaxHP(), playerHP + healAmount);
+                    spawnFloatingText(playerX + PLAYER_WIDTH * 0.5, playerY - 25, '+' + healAmount, '#44dd44', 0.7);
+                }
+            }
+
+            updateShield(dt);
+            updateFloatingTexts(dt);
+            updateDrops(dt);
+
+            moveDir = 0;
+checkAchievements();
+            if (keys['d']) moveDir += 1;
+            if (keys['a']) moveDir -= 1;
+            let speed = NORMAL_SPEED;
+            if (keys['w']) speed = RUN_SPEED;
+            playerVX = moveDir * speed;
+            playerX += playerVX * dt;
+            if (playerX < -NO_MONSTER_ZONE) playerX = -NO_MONSTER_ZONE;
+
+if (playerX > maxProgressX) {
+    maxProgressX = playerX;
+    distanceM = Math.floor(maxProgressX / PX_PER_METER);
+
+if (distanceM > maxDistanceEver) {
+    maxDistanceEver = distanceM;
+    localStorage.setItem('abyssMaxDistanceEver', maxDistanceEver);
+}
+
+score = distanceM * 3 + killScore;
+                const newSkillLevel = distanceM >= 1800 ? 3 : distanceM >= 1200 ? 2 : distanceM >= 500 ? 1 : 0;
+                if (newSkillLevel > lastSkillLevel) {
+                    lastSkillLevel = newSkillLevel;
+                    const skill = getSkillLevel();
+                    spawnParticles(playerX + PLAYER_WIDTH * 0.5, playerY - 10, 40, '#ffd700', 50, 0.8, 5, 150);
+                    spawnFloatingText(playerX + PLAYER_WIDTH * 0.5, playerY - 30, '技能升级! 近战:' + skill.near + ' 远程:' + skill.ranged, '#ffd700', 1.0);
+                }
+                const milestone = Math.floor(distanceM / 300);
+                if (milestone > lastMilestone) {
+                    lastMilestone = milestone;
+                    showToast('里程碑: ' + milestone * 300 + '米! 继续前进!');
+                    spawnFloatingText(playerX + PLAYER_WIDTH * 0.5, playerY - 40, milestone * 300 + '米', '#00ffcc', 1.2);
+                }
+            }
+            if (!isOnGround) playerVY += GRAVITY * dt;
+            playerY += playerVY * dt;
+            const gyNow = groundYAt(playerX + PLAYER_WIDTH * 0.5),
+                cyNow = ceilingYAt(playerX + PLAYER_WIDTH * 0.5);
+            if (playerY + PLAYER_HEIGHT >= gyNow) { playerY = gyNow - PLAYER_HEIGHT;
+                playerVY = 0;
+                isOnGround = true;
+                jumpCount = 0; } else { isOnGround = false; }
+            if (playerY <= cyNow) { playerY = cyNow; if (playerVY < 0) playerVY = 0; }
+            if (isOnGround && Math.abs(moveDir) > 0 && Math.random() < 0.25) {
+                spawnParticles(playerX + PLAYER_WIDTH * 0.5 + (moveDir > 0 ? -8 : 8), playerY + PLAYER_HEIGHT - 2, 1, '#887766', 8, 0.3, 2.5);
+            }
+
+            // 视角缩放：玩家周围4米内怪物>=4时放大视野
+            const swarmCount = countMonstersNearPlayer(SWARM_RADIUS);
+            cameraTargetZoom = (swarmCount >= SWARM_THRESHOLD) ? 1.6 : 1.0;
+            cameraZoom += (cameraTargetZoom - cameraZoom) * 0.1;
+
+            // 怪物生成
+            const visibleMonsters = countVisibleMonsters();
+            if (visibleMonsters < MAX_VISIBLE_MONSTERS) {
+                while (nextMonsterGroupX < maxProgressX + MONSTER_SPAWN_AHEAD) {
+                    if (countVisibleMonsters() >= MAX_VISIBLE_MONSTERS) break;
+                    spawnMonsterGroup();
+                }
+            }
+if (nextMushroomX < maxProgressX + 80 * PX_PER_METER) spawnMushroom();
+if (nextAmethystX < maxProgressX + 90 * PX_PER_METER) spawnAmethyst();
+
+// 强制清理：如果怪物总数超出上限，移除离玩家最远的怪物
+if (monsters.length > MAX_TOTAL_MONSTERS) {
+    while (monsters.length > MAX_TOTAL_MONSTERS) {
+        let farIdx = 0;
+        let maxDist = -1;
+        for (let i = 0; i < monsters.length; i++) {
+            const dist = Math.abs(monsters[i].x - playerX);
+            if (dist > maxDist) { maxDist = dist; farIdx = i; }
+        }
+        monsters.splice(farIdx, 1);
+    }
+}
+let nearbyPlayerCount = 0;
+for (const mon of monsters) {
+    if (mon.dead || mon.isDropping || mon.tamed) continue;
+    const dx = (mon.x + mon.width * 0.5) - (playerX + PLAYER_WIDTH * 0.5);
+    if (dx > -4 * PX_PER_METER && dx < 4 * PX_PER_METER) nearbyPlayerCount++;
+}
+
+for (let i = monsters.length - 1; i >= 0; i--) {
+    const m = monsters[i];
+    m.update(dt, playerX, playerY, nearbyPlayerCount);
+    if (m.dead && m.deathTimer <= 0) { monsters.splice(i, 1); continue; }
+    if (m.dead || m.isDropping) continue;
+    if (m.tamed) { continue; }
+    if (m.x < playerX - 50 * PX_PER_METER || Math.abs(m.x - playerX) > CLEANUP_DISTANCE) { monsters.splice(i, 1); continue; }
+    const dx = (m.x + m.width * 0.5) - (playerX + PLAYER_WIDTH * 0.5),
+        dy = (m.y + m.height * 0.5) - (playerY + PLAYER_HEIGHT * 0.5);
+    if (Math.sqrt(dx * dx + dy * dy) < (m.width + PLAYER_WIDTH) * 0.42 && damageCooldown <= 0 && playerHurtTimer <= 0) {
+        if (shieldActive) {
+            spawnParticles(playerX + PLAYER_WIDTH * 0.5, playerY + PLAYER_HEIGHT * 0.5, 5, '#00ffcc', 20, 0.2, 2, 50);
+        } else if (!invincible) {
+            playerHP -= getMonsterDamage(m.damage);
+hasBeenHurtThisRun = true;
+            playerHP = Math.floor(playerHP);
+            damageCooldown = 0.9;
+            playerHurtTimer = 0.35;
+            shakeIntensity = Math.min(8, shakeIntensity + 5);
+            spawnParticles(playerX + PLAYER_WIDTH * 0.5, playerY + PLAYER_HEIGHT * 0.5, 14, '#ff4444', 30, 0.5, 4);
+        // ===== 受伤计数 =====
+        damageTakenCount++;
+        localStorage.setItem('abyssDamageTakenCount', damageTakenCount);
+            if (playerHP <= 0) { playerHP = 0; triggerGameOver(); }
+        }
+    }
+}
+            // 金蘑菇
+            for (let i = mushrooms.length - 1; i >= 0; i--) {
+                const m = mushrooms[i];
+                m.update(dt);
+                const dx = m.x - (playerX + PLAYER_WIDTH * 0.5),
+                    dy = m.y - (playerY + PLAYER_HEIGHT * 0.5);
+                if (Math.sqrt(dx * dx + dy * dy) < 30) {
+                    const heal = getMushroomHeal();
+                // ===== 吃蘑菇计数 =====
+                mushroomEatenThisRun++;
+                    playerHP = Math.min(getMaxHP(), playerHP + heal);
+                    playerHP = Math.floor(playerHP);
+shieldMushroomCounter++;
+if (shieldMushroomCounter >= SHIELD_REQUIRED_MUSHROOMS) {
+    shieldMushroomCounter = 0;
+    if (shieldCharges < currentMaxShieldCharges) {
+        shieldCharges++;
+        showToast('护盾+1');
+    } else showToast('护盾已满');
+}
+                    spawnParticles(m.x, m.y, 18, '#ffd700', 30, 0.6, 4);
+                    spawnParticles(m.x, m.y, 10, '#fffacd', 22, 0.35, 2.5);
+                    spawnFloatingText(playerX + PLAYER_WIDTH * 0.5, playerY - 20, '+' + heal, '#ffd700', 0.8);
+                    mushrooms.splice(i, 1);
+                }
+            }
+
+            // 紫水晶
+            for (let i = amethysts.length - 1; i >= 0; i--) {
+                const a = amethysts[i];
+                a.update(dt);
+                const dx = a.x - (playerX + PLAYER_WIDTH * 0.5),
+                    dy = a.y - (playerY + PLAYER_HEIGHT * 0.5);
+                if (Math.sqrt(dx * dx + dy * dy) < 30) {
+                    amethystCount++;
+totalAmethystsPickedUp++;
+                    spawnParticles(a.x, a.y, 16, '#b266ff', 22, 0.5, 3);
+                    spawnFloatingText(playerX + PLAYER_WIDTH * 0.5, playerY - 20, '+1紫水晶', '#b266ff', 0.8);
+                    amethysts.splice(i, 1);
+                    // 当紫水晶达到7时，充能+1，紫水晶归零
+                    if (amethystCount >= AMETHYST_REQUIRED) {
+if (tameEnergy < currentMaxTamedMonsters)
+ {
+                            tameEnergy++;
+                            showToast('驯服充能+1');
+                        } else {
+                            showToast('驯服充能已满，紫水晶溢出');
+                        }
+                        amethystCount = 0;
+                    }
+                }
+            }
+
+            // 白骨头
+            for (let i = bones.length - 1; i >= 0; i--) {
+                const b = bones[i];
+                b.update(dt);
+                const dx = b.x - (playerX + PLAYER_WIDTH * 0.5),
+                    dy = b.y - (playerY + PLAYER_HEIGHT * 0.5);
+                if (Math.sqrt(dx * dx + dy * dy) < 25) {
+                    if (bullets < getMaxBullets()) {
+                        bullets++;
+                        spawnParticles(b.x, b.y, 6, '#ffffff', 12, 0.25, 2);
+                        spawnFloatingText(b.x, b.y, '+1子弹', '#88ccff', 0.5);
+                        bones.splice(i, 1);
+totalBonesPickedUp++;
+                    }
+                }
+            }
+
+            // 子弹
+            for (let i = bulletsList.length - 1; i >= 0; i--) { if (bulletsList[i].update(dt)) bulletsList.splice(i, 1); }
+
+            // 水滴/岩浆概率增加50%
+            if (Math.random() < WATER_DROP_PROB && waterDrops.length < 7) spawnWaterDrop();
+            if (Math.random() < LAVA_DROP_PROB && lavaDrops.length < 7) spawnLavaDrop();
+
+            // 怪物攻击被驯服怪物（野怪围殴宠物）
+            for (let i = monsters.length - 1; i >= 0; i--) {
+                const m = monsters[i];
+                if (m.dead || m.isDropping || m.tamed) continue;
+                // 寻找最近的宠物
+                let nearestPet = null;
+                let nearestPetDist = Infinity;
+                for (const pet of tamedMonsters) {
+                    if (pet.dead) continue;
+                    const dx = pet.x - m.x, dy = pet.y - m.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < nearestPetDist) { nearestPetDist = dist; nearestPet = pet; }
+                }
+                if (nearestPet && nearestPetDist < 10 * PX_PER_METER) {
+                    // 冲向宠物
+                    const dx = nearestPet.x - m.x, dy = nearestPet.y - m.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    const moveSpeed = m.speed * dt * 1.0;
+                    m.x += (dx / dist) * moveSpeed;
+                    m.y += (dy / dist) * moveSpeed;
+                    // 攻击
+                    if (m.petAttackCooldown <= 0 && dist < (m.width + nearestPet.width) * 0.5 + 10) {
+                        m.petAttackCooldown = 0.8;
+                        const dmgDealt = getMonsterDamage(m.damage);
+                        nearestPet.hp -= dmgDealt;
+                        spawnParticles(nearestPet.x + nearestPet.width*0.5, nearestPet.y, 6, '#ff4444', 15, 0.4, 3);
+                        spawnFloatingText(nearestPet.x + nearestPet.width*0.5, nearestPet.y - 10, '-' + dmgDealt, '#ff4444', 0.6);
+                        if (nearestPet.hp <= 0) {
+                            nearestPet.dead = true;
+                            spawnParticles(nearestPet.x + nearestPet.width*0.5, nearestPet.y + nearestPet.height*0.5, 30, '#5cb3cc', 40, 0.7, 4);
+                        }
+                    }
+                }
+            }
+
+// 驯服怪物 AI（跟随+攻击）
+for (let i = tamedMonsters.length - 1; i >= 0; i--) {
+    const pet = tamedMonsters[i];
+        if (pet.dead) {
+            // ===== 移除存活时间记录 =====
+            if (pet.id && tamedSurviveStartTime[pet.id]) {
+                delete tamedSurviveStartTime[pet.id];
+            }
+            tamedMonsters.splice(i, 1);
+            continue;
+        }
+    // ===== 驯服怪物技能处理 =====
+    // A级爆炸：血量低于10时启动，爆炸圈为蓝色，不伤害友方
+    if (pet.level === 'A' && pet.hp < 10 && !pet.blinkExplode && !pet.exploding) {
+        pet.blinkExplode = true;
+        pet.explodeTimer = 2.0;
+        pet.exploding = true;
+    }
+    if (pet.blinkExplode && pet.exploding) {
+        pet.explodeTimer -= dt;
+        if (pet.explodeTimer <= 0) {
+            pet.dead = true;
+            pet.exploding = false;
+            pet.deathTimer = 0.3;
+            explodeA(pet);
+            tamedMonsters.splice(i, 1); // 立即移除
+            continue;
+        }
+    }
+
+    // S/SS召唤：玩家周围10米内敌对怪物≥4时触发，最多3次
+    if (pet.level === 'S' || pet.level === 'SS') {
+        // 统计玩家周围10米内敌对怪物数量
+        let hostileCount = 0;
+        for (const m of monsters) {
+            if (m.dead || m.isDropping || m.tamed) continue;
+            const dx = m.x - playerX;
+            if (dx * dx <= (10 * PX_PER_METER) * (10 * PX_PER_METER)) {
+                hostileCount++;
+            }
+        }
+        // 冷却递减
+        if (pet.summonTimer > 0) pet.summonTimer -= dt;
+        // 触发条件
+        if (hostileCount >= 4 && pet.summonCount < 3 && pet.summonTimer <= 0) {
+            pet.summonCount++;
+            pet.summonTimer = S_SUMMON_INTERVAL;
+            if (pet.level === 'S') summonCByS(pet);
+            else summonCBBySS(pet);
+        }
+    }
+
+    // 强制贴地（防止飞行或下沉）
+    pet.groundY = groundYAt(pet.x);
+    pet.y = Math.max(ceilingYAt(pet.x) + 4, Math.min(pet.groundY - pet.height, pet.groundY - pet.height));
+
+    // 与玩家的距离
+    const dxToPlayer = playerX + PLAYER_WIDTH*0.5 - (pet.x + pet.width*0.5);
+    const dyToPlayer = playerY + PLAYER_HEIGHT*0.5 - (pet.y + pet.height*0.5);
+    const distToPlayer = Math.sqrt(dxToPlayer*dxToPlayer + dyToPlayer*dyToPlayer);
+    const COMPANION_MIN_DISTANCE = 2 * PX_PER_METER;
+    const TELEPORT_DIST = 20 * PX_PER_METER;
+
+    // === 召回机制：距离>20米时2秒内平移到3米处 ===
+    if (pet.recallActive && distToPlayer <= TELEPORT_DIST) {
+        pet.recallActive = false;
+        pet.recallT = 0;
+    }
+    if (!pet.recallActive && distToPlayer > TELEPORT_DIST) {
+        pet.recallActive = true;
+        pet.recallT = 0;
+        pet.recallStartX = pet.x;
+        pet.recallStartY = pet.y;
+        const targetDist = 3 * PX_PER_METER;
+        const dist = Math.max(1, distToPlayer);
+        pet.recallTargetX = playerX + (dxToPlayer / dist) * targetDist;
+        let targetGroundY = groundYAt(pet.recallTargetX);
+        let targetCeilY = ceilingYAt(pet.recallTargetX);
+        pet.recallTargetY = Math.max(targetCeilY + 4, targetGroundY - pet.height);
+    }
+
+    if (pet.recallActive) {
+        pet.recallT += dt / 0.5;
+        const t = Math.min(1, pet.recallT);
+        pet.x = pet.recallStartX + (pet.recallTargetX - pet.recallStartX) * t;
+        pet.y = pet.recallStartY + (pet.recallTargetY - pet.recallStartY) * t;
+        pet.groundY = groundYAt(pet.x);
+        pet.y = Math.max(ceilingYAt(pet.x) + 4, Math.min(pet.groundY - pet.height, pet.groundY - pet.height));
+        // 召回中不攻击不跟随，直接进入回血
+    } else {
+        // 寻找最近的敌人
+        let targetEnemy = null;
+        let targetDist = 14 * PX_PER_METER;
+        for (const m of monsters) {
+            if (m.dead || m.tamed) continue;
+            const dx = m.x - pet.x, dy = m.y - pet.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < targetDist) { targetDist = dist; targetEnemy = m; }
+        }
+
+        if (targetEnemy) {
+            // 攻击敌人
+            const dx = targetEnemy.x - pet.x, dy = targetEnemy.y - pet.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            const moveSpeed = pet.speed * 1.1 * dt;
+            if (dist > 30) {
+                pet.x += (dx / dist) * moveSpeed;
+                pet.y += (dy / dist) * moveSpeed;
+            } else {
+                if (Math.random() < 0.15) {
+const died = targetEnemy.takeDamage(pet.damage * getDamageMultiplier());
+if (died) {
+    tamedMonsterTotalKills++;
+}
+                    spawnParticles(targetEnemy.x + targetEnemy.width*0.5, targetEnemy.y, 6, '#ffdd44', 15, 0.3, 3);
+                }
+            }
+            // 攻击敌人时不能贴近玩家2米内
+            if (distToPlayer < COMPANION_MIN_DISTANCE) {
+                pet.x -= Math.cos(Math.atan2(dyToPlayer, dxToPlayer)) * 2 * pet.speed * dt;
+                pet.y -= Math.sin(Math.atan2(dyToPlayer, dxToPlayer)) * 2 * pet.speed * dt;
+            }
+        } else {
+            // 跟随玩家，保持2米以上
+            const angle = Math.atan2(dyToPlayer, dxToPlayer);
+            if (distToPlayer > COMPANION_MIN_DISTANCE + 20) {
+                const moveSpeed = pet.speed * 1.0 * dt;
+                pet.x += Math.cos(angle) * moveSpeed;
+                pet.y += Math.sin(angle) * moveSpeed;
+            } else if (distToPlayer < COMPANION_MIN_DISTANCE) {
+                pet.x -= Math.cos(angle) * 1.5 * pet.speed * dt;
+                pet.y -= Math.sin(angle) * 1.5 * pet.speed * dt;
+            }
+        }
+
+        // 再次强制贴地
+        pet.groundY = groundYAt(pet.x);
+        pet.y = Math.max(ceilingYAt(pet.x) + 4, Math.min(pet.groundY - pet.height, pet.groundY - pet.height));
+    }
+
+    // 固定回血速度：15秒一滴血（不受玩家影响）
+    pet.hp = Math.min(pet.maxHP, pet.hp + dt / TAMED_HEAL_INTERVAL);
+}
+
+            updateParticles(dt);
+
+            const targetCamX = playerX - canvasW * 0.35 / cameraZoom;
+            const targetCamY = playerY - canvasH * 0.5 / cameraZoom;
+            cameraX += (targetCamX - cameraX) * 0.08;
+            cameraY += (targetCamY - cameraY) * 0.08;
+        }
+
+        // ==================== 渲染 ====================
+        function drawPixelRect(x, y, w, h, c) { ctx.fillStyle = c;
+            ctx.fillRect(Math.floor(x), Math.floor(y), Math.ceil(w), Math.ceil(h)); }
+
+        function drawRock(sx, sy, wx) {
+            const bg = getBackgroundRGB(maxProgressX / PX_PER_METER);
+            const gx = Math.floor(wx / 12),
+                gy = Math.floor((sy + cameraY) / 12);
+            const h1 = hash(gx * 31.7 + gy * 71.3 + 5.2),
+                h2 = hash(gx * 13.1 + gy * 47.9 + 9.8);
+            const bc = 20 + h1 * 14;
+            const r = Math.min(255, bc + bg.r * 0.5),
+                g = Math.min(255, bc * 0.6 + 4 + bg.g * 0.4),
+                b = Math.min(255, bc * 1.5 + 12 + bg.b * 0.6);
+            drawPixelRect(sx, sy, 12, 12, `rgb(${Math.floor(r)},${Math.floor(g)},${Math.floor(b)})`);
+            if (h2 > 0.72) drawPixelRect(sx + 2, sy + 2, 4, 4, `rgb(${Math.floor(Math.min(255,r+25))},${Math.floor(Math.min(255,g+20))},${Math.floor(Math.min(255,b+35))})`);
+            if (h1 < 0.12) drawPixelRect(sx + 5, sy + 6, 3, 3, `rgb(${Math.floor(r*0.5)},${Math.floor(g*0.5)},${Math.floor(b*0.6)})`);
+        }
+
+        function drawMonster(m, sx, sy) {
+            if (m.dead) {
+                const prog = m.deathTimer > 0 ? 1 - m.deathTimer / 0.55 : 1,
+                    alpha = Math.max(0, 1 - prog * 1.3);
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.translate(sx + m.width * 0.5, sy + m.height * 0.5);
+                ctx.rotate(prog * Math.PI * 1.6);
+                ctx.translate(-m.width * 0.5, -m.height * 0.5);
+                drawPixelRect(0, 0, m.width, m.height, m.color);
+                drawPixelRect(3, 3, m.width - 6, m.height - 6, m.dark);
+                ctx.restore();
+                return;
+            }
+            if (m.blinkExplode && m.exploding) {
+                const cx = sx + m.width * 0.5,
+                    cy = sy + m.height * 0.5,
+                    visible = Math.floor(m.explodeTimer * 10) % 2 === 0;
+if (!visible) {
+    ctx.fillStyle = m.tamed ? 'rgba(0,150,255,0.35)' : 'rgba(255,80,80,0.35)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, m.width * 0.7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = m.tamed ? 'rgba(0,100,255,0.8)' : 'rgba(255,50,50,0.8)';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([12, 8]);
+    ctx.beginPath();
+    ctx.arc(cx, cy, A_EXPLODE_RADIUS, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = m.tamed ? 'rgba(150,200,255,0.7)' : 'rgba(255,200,200,0.7)';
+    ctx.font = 'bold 10px "Courier New",monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('爆炸范围', cx, cy - A_EXPLODE_RADIUS - 8);
+    return;
+} else {
+    ctx.strokeStyle = m.tamed ? 'rgba(0,100,255,0.5)' : 'rgba(255,50,50,0.5)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([10, 6]);
+    ctx.beginPath();
+    ctx.arc(cx, cy, A_EXPLODE_RADIUS, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+}
+            }
+            const bodyC = m.hitFlashTimer > 0 ? '#ffffff' : m.color,
+                darkC = m.hitFlashTimer > 0 ? '#ddd' : m.dark,
+                accC = m.hitFlashTimer > 0 ? '#fff' : m.accent;
+            drawPixelRect(sx, sy + 10, m.width, m.height - 10, bodyC);
+            drawPixelRect(sx + 3, sy + 16, m.width - 6, m.height - 22, darkC);
+            if (m.level === 'SS') { for (let i = 0; i < m.height - 22; i += 8) drawPixelRect(sx + 3, sy + 16 + i, m.width - 6, 4, '#4a235a'); }
+            drawPixelRect(sx + 3, sy, m.width - 6, 12, bodyC);
+            drawPixelRect(sx + m.width - 11, sy + 4, 4, 4, '#111');
+            drawPixelRect(sx + 5, sy + 4, 4, 4, '#111');
+            drawPixelRect(sx + m.width - 10, sy + 5, 2, 2, '#ff4444');
+            drawPixelRect(sx + 6, sy + 5, 2, 2, '#ff4444');
+            drawPixelRect(sx + 1, sy - 3, 4, 5, accC);
+            drawPixelRect(sx + m.width - 5, sy - 3, 4, 5, accC);
+            if (m.level === 'SS') { drawPixelRect(sx + 1, sy - 6, 4, 4, '#5dade2');
+                drawPixelRect(sx + m.width - 5, sy - 6, 4, 4, '#4a235a'); }
+            drawPixelRect(sx + 2, sy + m.height - 7, 6, 7, darkC);
+            drawPixelRect(sx + m.width - 8, sy + m.height - 7, 6, 7, darkC);
+            const bw = 42,          // 28 × 1.5
+                bh = 6,             // 4 × 1.5
+                bx = sx + (m.width - bw) / 2,
+                by = sy - 12;       // 向上移动
+            drawPixelRect(bx - 1, by - 1, bw + 2, bh + 2, '#1a0a08');
+            const ratio = Math.max(0, m.hp / m.maxHP),
+                hc = ratio > 0.5 ? '#44dd44' : ratio > 0.25 ? '#ffcc00' : '#ff3333';
+            drawPixelRect(bx, by, bw * ratio, bh, hc);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 8px "Courier New",monospace';   // 字体略增
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(Math.ceil(m.hp) + '/' + m.maxHP, sx + m.width / 2, by - 2);
+        }
+
+        function drawPlayer(sx, sy) {
+            if (gameOver) {
+                const prog = playerDeathTimer > 0 ? 1 - playerDeathTimer / 1.0 : 1,
+                    alpha = Math.max(0, 1 - prog * 1.5);
+                ctx.save();
+                ctx.globalAlpha = alpha;
+                ctx.translate(sx + PLAYER_WIDTH * 0.5, sy + PLAYER_HEIGHT * 0.5);
+                ctx.rotate(prog * Math.PI * 1.8);
+                ctx.translate(-PLAYER_WIDTH * 0.5, -PLAYER_HEIGHT * 0.5);
+                drawPixelRect(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT, '#4dc9f6');
+                drawPixelRect(6, 3, PLAYER_WIDTH - 12, PLAYER_HEIGHT - 6, '#2a7aa8');
+                ctx.restore();
+                return;
+            }
+            const hurt = playerHurtTimer > 0.15,
+                bC = hurt ? '#ff6666' : '#5cb3cc',
+                dC = hurt ? '#cc4444' : '#3a7ca5';
+            drawPixelRect(sx + 3, sy - 4, PLAYER_WIDTH - 6, 6, '#4a2a1a');
+            drawPixelRect(sx + 4, sy + 2, PLAYER_WIDTH - 8, 12, '#f0c8a0');
+            drawPixelRect(sx + 6, sy + 7, 5, 3, '#d4a87a');
+            drawPixelRect(sx + PLAYER_WIDTH - 11, sy + 7, 5, 3, '#d4a87a');
+            drawPixelRect(sx + 6, sy + 5, 4, 3, '#ffd700');
+            drawPixelRect(sx + PLAYER_WIDTH - 10, sy + 5, 4, 3, '#ffd700');
+            drawPixelRect(sx + 8, sy + 5, 2, 1, '#fff');
+            drawPixelRect(sx + PLAYER_WIDTH - 10, sy + 5, 2, 1, '#fff');
+            drawPixelRect(sx + 5, sy + 16, PLAYER_WIDTH - 10, PLAYER_HEIGHT - 22, bC);
+            drawPixelRect(sx + 7, sy + 22, PLAYER_WIDTH - 14, PLAYER_HEIGHT - 30, dC);
+            drawPixelRect(sx + 6, sy + 28, PLAYER_WIDTH - 12, 3, '#ffffff');
+            drawPixelRect(sx + 1, sy + 16, 4, 14, '#8c6e2a');
+            drawPixelRect(sx + 6, sy + PLAYER_HEIGHT - 18, 6, 18, dC);
+            drawPixelRect(sx + PLAYER_WIDTH - 12, sy + PLAYER_HEIGHT - 18, 6, 18, dC);
+            drawPixelRect(sx + 4, sy + PLAYER_HEIGHT - 4, 8, 4, '#5a4a3a');
+            drawPixelRect(sx + PLAYER_WIDTH - 12, sy + PLAYER_HEIGHT - 4, 8, 4, '#5a4a3a');
+            const lp = 0.6 + Math.sin(Date.now() * 0.006) * 0.4;
+            ctx.fillStyle = `rgba(255,220,100,${lp*0.7})`;
+            ctx.beginPath();
+            ctx.arc(sx + PLAYER_WIDTH / 2, sy - 6, 5, 0, Math.PI * 2);
+            ctx.fill();
+            const pw = 54,          // 36 × 1.5
+                ph = 6,             // 4 × 1.5
+                px = sx + (PLAYER_WIDTH - pw) / 2,
+                py = sy - 22;       // 向上移动，避免遮挡
+            drawPixelRect(px - 1, py - 1, pw + 2, ph + 2, '#1a0a08');
+            const pratio = Math.max(0, playerHP / getMaxHP()),
+                pc = pratio > 0.5 ? '#44dd44' : pratio > 0.25 ? '#ffcc00' : '#ff3333';
+            drawPixelRect(px, py, pw * pratio, ph, pc);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 7px "Courier New",monospace';   // 字体略增
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(Math.floor(playerHP) + '/' + getMaxHP(), sx + PLAYER_WIDTH / 2, py - 2);
+            if (shieldActive) {
+                const blink = shieldTimer <= SHIELD_BLINK_START && Math.floor(shieldBlinkTimer * 6) % 2 === 0;
+                ctx.strokeStyle = blink ? `rgba(255,255,255,${0.4+Math.sin(Date.now()*0.01)*0.3})` : `rgba(0,255,204,${0.5+Math.sin(Date.now()*0.005)*0.3})`;
+                ctx.lineWidth = 2.5;
+                ctx.setLineDash(blink ? [] : [8, 6]);
+                ctx.beginPath();
+                ctx.arc(sx + PLAYER_WIDTH / 2, sy + PLAYER_HEIGHT * 0.4, SHIELD_RADIUS, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        function drawMushroom(m, sx, sy) {
+            ctx.fillStyle = `rgba(255,215,0,${m.glow*0.3})`;
+            ctx.beginPath();
+            ctx.arc(sx, sy, 14 + m.glow * 4, 0, Math.PI * 2);
+            ctx.fill();
+            drawPixelRect(sx - 8, sy - 8, 16, 8, '#ffd700');
+            drawPixelRect(sx - 6, sy - 10, 12, 3, '#ffed4a');
+            drawPixelRect(sx - 3, sy - 11, 6, 2, '#fffacd');
+            drawPixelRect(sx - 4, sy - 6, 3, 3, '#fff8dc');
+            drawPixelRect(sx + 3, sy - 7, 2, 2, '#ffec99');
+            drawPixelRect(sx - 3, sy, 6, 7, '#f0e6c8');
+            drawPixelRect(sx - 2, sy + 2, 4, 5, '#e8d8b0');
+            drawPixelRect(sx - 4, sy + 6, 8, 2, '#d4c49a');
+        }
+
+        function drawAmethyst(a, sx, sy) {
+            ctx.fillStyle = `rgba(150,80,255,${a.glow*0.3})`;
+            ctx.beginPath();
+            ctx.arc(sx, sy, 10 + a.glow * 3, 0, Math.PI * 2);
+            ctx.fill();
+            drawPixelRect(sx - 4, sy - 6, 8, 8, '#b266ff');
+            drawPixelRect(sx - 2, sy - 4, 4, 4, '#d4b2ff');
+            drawPixelRect(sx - 3, sy + 2, 6, 3, '#8a44cc');
+        }
+
+        function drawBone(b, sx, sy) {
+            drawPixelRect(sx - 5, sy - 2, 10, 4, '#e8dcc8');
+            drawPixelRect(sx - 7, sy - 4, 4, 3, '#e8dcc8');
+            drawPixelRect(sx + 3, sy - 4, 4, 3, '#e8dcc8');
+            drawPixelRect(sx - 3, sy + 2, 6, 2, '#c8b89a');
+        }
+
+        function drawBullet(b, sx, sy) {
+            for (let i = 0; i < b.trail.length; i++) {
+                const t = b.trail[i],
+                    alpha = (i + 1) / b.trail.length * 0.45;
+                ctx.fillStyle = `rgba(136,204,255,${alpha})`;
+                ctx.beginPath();
+                ctx.arc(t.x - cameraX - shakeX, t.y - cameraY - shakeY, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.fillStyle = '#88ccff';
+            ctx.beginPath();
+            ctx.arc(sx, sy, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawFloatingTexts() {
+            for (const ft of floatingTexts) {
+                const alpha = Math.max(0, Math.min(1, ft.life / ft.maxLife));
+                ctx.fillStyle = ft.color;
+                ctx.globalAlpha = alpha;
+                ctx.font = 'bold 12px "Courier New",monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(ft.text, ft.x - cameraX, ft.y - cameraY);
+                ctx.globalAlpha = 1;
+            }
+        }
+
+function drawUI() {
+    const skill = getSkillLevel();
+
+    // 文字描边辅助函数
+    function drawTextWithOutline(text, x, y, fillColor, font, align = 'left', outlineColor = '#000000') {
+        ctx.font = font;
+        ctx.textAlign = align;
+        ctx.textBaseline = 'middle';
+        // 描边（四个方向偏移绘制黑色文字）
+        ctx.fillStyle = outlineColor;
+        ctx.fillText(text, x + 1, y);
+        ctx.fillText(text, x - 1, y);
+        ctx.fillText(text, x, y + 1);
+        ctx.fillText(text, x, y - 1);
+        // 主体文字
+        ctx.fillStyle = fillColor;
+        ctx.fillText(text, x, y);
+    }
+
+    // ==================== 左上角信息 ====================
+    const leftX = 16;
+    const leftY = 20;
+    const lineH = 24;
+    ctx.textBaseline = 'middle';
+
+    // 第一行：近战 + 远程（合并）
+const meleeDisplay = (skill.near * nearDamageMultiplier).toFixed(1);
+const rangedDisplay = (skill.ranged * rangedDamageMultiplier).toFixed(1);
+drawTextWithOutline(
+    '近战 ' + meleeDisplay + '  |  远程 ' + rangedDisplay,
+    leftX,
+    leftY,
+    '#ffd700',
+    'bold 18px "Courier New",monospace'
+);
+
+    // 第二行：子弹
+const maxBulletsDisplay = shopEffects.infiniteBullets ? '∞' : getMaxBullets();
+const currentBulletsDisplay = shopEffects.infiniteBullets ? '∞' : bullets;
+drawTextWithOutline(
+    '子弹 ' + currentBulletsDisplay + ' / ' + maxBulletsDisplay,
+    leftX,
+    leftY + lineH,
+    '#88ccff',
+    'bold 16px "Courier New",monospace'
+);
+    // 第三行：护盾
+let shieldInfo = '护盾 ' + shieldMushroomCounter + '/15 充能:' + shieldCharges + '/' + currentMaxShieldCharges;
+    if (shieldActive) {
+        shieldInfo += ' [' + Math.max(0, shieldTimer).toFixed(1) + 's]';
+    }
+    drawTextWithOutline(
+        shieldInfo,
+        leftX,
+        leftY + lineH * 2,
+        '#00ffcc',
+        'bold 16px "Courier New",monospace'
+    );
+
+    // 第四行：紫水晶（驯服进度与充能）
+    drawTextWithOutline(
+        '驯服 ' + amethystCount + '/' + AMETHYST_REQUIRED + '  充能：' + tameEnergy + '/' + currentMaxTamedMonsters,
+        leftX,
+        leftY + lineH * 3,
+        '#b266ff',
+        'bold 16px "Courier New",monospace'
+    );
+
+    // ==================== 右上角信息 ====================
+    const rightX = canvasW - 16;
+    const rightY = 20;
+    const hpRatio = Math.max(0, playerHP / getMaxHP());
+    const hpColor = hpRatio > 0.5 ? '#44dd44' : hpRatio > 0.25 ? '#ffcc00' : '#ff3333';
+
+    // 血量（右对齐）
+    drawTextWithOutline(
+        '♥ ' + Math.floor(playerHP) + '/' + getMaxHP(),
+        rightX,
+        rightY,
+        hpColor,
+        'bold 20px "Courier New",monospace',
+        'right'
+    );
+
+    // 距离（居中，往下移一行）
+    drawTextWithOutline(
+        distanceM + 'm',
+        canvasW / 2,
+        rightY + 30,                      // 原为 rightY，现下移 30px
+        '#ffd700',
+        'bold 22px "Courier New",monospace',
+        'center'
+    );
+
+const displayedScore = distanceM * 3 + killScore;   // 实时计算总分
+drawTextWithOutline(
+    '分数 ' + displayedScore + '  金币 +' + Math.ceil(displayedScore / 9),
+    rightX,
+    rightY + 30,
+    '#ffffff',
+    'bold 18px "Courier New",monospace',
+    'right'
+);
+
+    // 血条（直接绘制，无背景框）
+    const hbX = rightX - 200;
+    const hbY = rightY + 45;
+    const hbW = 200;
+    const hbH = 12;
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(hbX, hbY, hbW, hbH);
+    ctx.fillStyle = hpColor;
+    ctx.fillRect(hbX + 1, hbY + 1, (hbW - 2) * hpRatio, hbH - 2);
+    // 血条边框（细线，不占太大视觉）
+    ctx.strokeStyle = '#ffffff66';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(hbX, hbY, hbW, hbH);
+
+            if (toastTimer > 0) {
+                ctx.fillStyle = `rgba(255,255,255,${Math.min(0.8,toastTimer)})`;
+                ctx.font = 'bold 21px "Courier New",monospace';   // 改为初始的1.5倍（14px * 1.5 = 21px）
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(toastMessage, canvasW / 2, 100);     // 下移一行（原70 -> 100）
+            }
+
+if (achievementToastTimer > 0) {
+    ctx.fillStyle = 'rgba(0, 255, 0, 0.9)';
+    ctx.font = 'bold 24px "Courier New",monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(achievementToastMessage, canvasW / 2, 140);
+}
+
+            if (isPaused && !gameOver) {
+                ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                ctx.fillRect(0, 0, canvasW, canvasH);
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 36px "Courier New",monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('⏸ 暂停中', canvasW / 2, canvasH / 2);
+            }
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvasW, canvasH);
+            ctx.setTransform(dpr * cameraZoom, 0, 0, dpr * cameraZoom, 0, 0);
+            const bg = getBackgroundRGB(distanceM);
+            ctx.fillStyle = `rgb(${Math.floor(bg.r)},${Math.floor(bg.g)},${Math.floor(bg.b)})`;
+            ctx.fillRect(0, 0, canvasW / cameraZoom, canvasH / cameraZoom);
+            const camX = cameraX + shakeX,
+                camY = cameraY + shakeY;
+for (let sx = 0; sx < canvasW / cameraZoom; sx += 8) {
+    const wx = camX + sx,
+        gy = groundYAt(wx),
+        cy = ceilingYAt(wx);
+    const sGy = gy - camY,
+        sCy = cy - camY;
+    const maxRow = canvasH / cameraZoom + 20;
+    // 天花板岩石（增加范围限制，避免大隧道时绘制大量无意义的行）
+    if (sCy > -20) {
+        for (let ry = -20; ry < Math.min(sCy, maxRow); ry += 12) drawRock(sx, ry, wx);
+    }
+    // 地面岩石（同样限制）
+    if (sGy < maxRow) {
+        for (let ry = Math.max(sGy, -20); ry < maxRow; ry += 12) drawRock(sx, ry, wx);
+    }
+    if (sCy > -30 && sCy < maxRow + 10) { ctx.fillStyle = 'rgba(0,255,204,0.5)';
+        ctx.fillRect(sx, sCy - 3, 8, 2); }
+    if (sGy > -30 && sGy < maxRow + 10) { ctx.fillStyle = 'rgba(0,255,204,0.5)';
+        ctx.fillRect(sx, sGy, 8, 2); }
+}
+     if (menuActive) {
+    // 菜单显示时只绘制墙壁，重置变换后返回，不绘制游戏实体和UI
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return;
+}   
+    for (const b of bones) { const sx = b.x - camX,
+                    sy = b.y - camY; if (sx > -30 && sx < canvasW / cameraZoom + 30 && sy > -30 && sy < canvasH / cameraZoom + 30) drawBone(b, sx, sy); }
+            for (const m of mushrooms) { const sx = m.x - camX,
+                    sy = m.y - camY; if (sx > -40 && sx < canvasW / cameraZoom + 40 && sy > -40 && sy < canvasH / cameraZoom + 40) drawMushroom(m, sx, sy); }
+            for (const a of amethysts) { const sx = a.x - camX,
+                    sy = a.y - camY; if (sx > -30 && sx < canvasW / cameraZoom + 30 && sy > -30 && sy < canvasH / cameraZoom + 30) drawAmethyst(a, sx, sy); }
+            for (const m of monsters) { const sx = m.x - camX,
+                    sy = m.y - camY; if (sx > -120 && sx < canvasW / cameraZoom + 120 && sy > -120 && sy < canvasH / cameraZoom + 120) drawMonster(m, sx, sy); }
+            for (const b of bulletsList) { const sx = b.x - camX,
+                    sy = b.y - camY; if (sx > -20 && sx < canvasW / cameraZoom + 20 && sy > -20 && sy < canvasH / cameraZoom + 20) drawBullet(b, sx, sy); }
+            drawPlayer(playerX - camX, playerY - camY);
+            for (const p of particles) { const sx = p.x - camX,
+                    sy = p.y - camY; if (sx > -20 && sx < canvasW / cameraZoom + 20 && sy > -20 && sy < canvasH / cameraZoom + 20) { const alpha = Math.max(0, Math.min(1, p.life / p.maxLife));
+                    ctx.globalAlpha = alpha;
+                    ctx.fillStyle = p.color;
+                    const sz = Math.max(1, Math.ceil(p.size));
+                    ctx.fillRect(sx, sy, sz, sz);
+                    ctx.globalAlpha = 1; } }
+            drawFloatingTexts();
+            for (const wd of waterDrops) { const sx = wd.x - camX,
+                    sy = wd.y - camY; if (sx > -10 && sx < canvasW / cameraZoom + 10 && sy > -10 && sy < canvasH / cameraZoom + 10) { ctx.fillStyle = '#88ccff';
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, wd.size, 0, Math.PI * 2);
+                    ctx.fill(); } }
+            for (const ld of lavaDrops) { const sx = ld.x - camX,
+                    sy = ld.y - camY; if (sx > -10 && sx < canvasW / cameraZoom + 10 && sy > -10 && sy < canvasH / cameraZoom + 10) { ctx.fillStyle = '#ff5522';
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, ld.size, 0, Math.PI * 2);
+                    ctx.fill(); } }
+            // 绘制被驯服怪物（蓝色）
+            for (const pet of tamedMonsters) {
+                const sx = pet.x - camX,
+                    sy = pet.y - camY;
+                if (sx > -50 && sx < canvasW / cameraZoom + 50 && sy > -50 && sy < canvasH / cameraZoom + 50) {
+                    ctx.fillStyle = '#5cb3cc';
+                    ctx.fillRect(sx, sy, pet.width, pet.height);
+                    ctx.fillStyle = '#2a7aa8';
+                    ctx.fillRect(sx + 2, sy + 4, pet.width - 4, pet.height - 8);
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(sx + pet.width - 10, sy + 6, 4, 4);
+                    ctx.fillRect(sx + 4, sy + 6, 4, 4);
+                    ctx.fillStyle = '#111';
+                    ctx.fillRect(sx + pet.width - 9, sy + 7, 2, 2);
+                    ctx.fillRect(sx + 5, sy + 7, 2, 2);
+                    // 血条
+                    // 血条（1.5倍大小）
+                    const bw = pet.width,
+                        bh = 6,             // 4 × 1.5
+                        bx = sx,
+                        by = sy - 10;       // 向上移动
+                    ctx.fillStyle = '#333';
+                    ctx.fillRect(bx, by, bw, bh);
+                    ctx.fillStyle = '#44dd44';
+                    ctx.fillRect(bx, by, bw * Math.max(0, pet.hp / pet.maxHP), bh);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '7px "Courier New"';   // 字体略增
+                    ctx.textAlign = 'center';
+                    ctx.fillText(Math.ceil(pet.hp) + '/' + pet.maxHP, sx + pet.width / 2, by - 2);
+                }
+            }
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+if (!menuActive) drawUI();   // 菜单显示时不绘制游戏 UI，只显示墙壁背景
+            if (playerHurtTimer > 0.08) { ctx.fillStyle = `rgba(255,0,0,${Math.min(0.3,playerHurtTimer*1.2)})`;
+                ctx.fillRect(0, 0, canvasW, canvasH); }
+            if (playerHP <= 5 && playerHP > 0) { ctx.fillStyle = `rgba(255,30,30,${0.08+Math.sin(Date.now()*0.006)*0.06})`;
+                ctx.fillRect(0, 0, canvasW, canvasH); }
+        }
+
+        // ==================== 游戏循环 ====================
+        let lastTime = 0;
+let stallCount = 0;
+let stallDialogClosedTime = 0;
+let stallDialogVisible = false;
+
+function gameLoop(ts) {
+    const now = performance.now();
+if (gameStarted && !isPaused && !gameOver && gameRunning && now - lastInputTime > AUTO_PAUSE_DELAY * 1000) {
+        isPaused = true;
+        updatePauseButton();
+        updatePauseHint();
+    }
+    // ===== 卡顿检测 =====
+    if (lastTime) {
+        const gap = ts - lastTime;
+        // 单帧耗时超过500ms视为一次卡顿
+        if (gap > 500) {
+            stallCount++;
+        } else {
+            if (stallCount > 0) stallCount--;
+        }
+        if (stallCount >= 3 && !stallDialogVisible && (now - stallDialogClosedTime > 10000)) {
+            showStallDialog();
+        }
+    }
+    const dt = lastTime ? (ts - lastTime) / 1000 : 0.016;
+    lastTime = ts;
+    update(dt);
+    render();
+    requestAnimationFrame(gameLoop);
+}
+
+function showStallDialog() {
+    stallDialogVisible = true;
+    document.getElementById('stall-overlay').style.display = 'flex';
+}
+
+function closeStallDialog() {
+    stallDialogVisible = false;
+    document.getElementById('stall-overlay').style.display = 'none';
+    stallCount = 0;
+    stallDialogClosedTime = performance.now();
+}
+
+// 点击“是” = 重新加载页面（回档，进度已自动保存）
+document.getElementById('stall-yes').addEventListener('click', function() {
+    saveGame(); // 确保保存最近进度
+    location.reload();
+});
+
+// 点击“否” = 关闭弹窗，继续等10秒后再弹
+document.getElementById('stall-no').addEventListener('click', function() {
+    closeStallDialog();
+});
+
+        // ==================== 按钮事件 ====================
+// ========== 菜单按钮事件 ==========
+document.getElementById('btn-single-player').addEventListener('click', () => {
+    lastInputTime = performance.now();
+    // 不需要额外调用，startSinglePlayer 内部会调用 restartBgm
+    startSinglePlayer();
+});
+document.getElementById('btn-shop').addEventListener('click', () => {
+    lastInputTime = performance.now();
+    hideMenu();
+    showShop();
+});
+
+document.getElementById('btn-achievements').addEventListener('click', () => {
+    lastInputTime = performance.now();
+    hideMenu();
+    showAchievements();
+});
+document.getElementById('btn-settings').addEventListener('click', () => {
+    showMenuToast('设置功能正在开发中...');
+});
+
+document.getElementById('btn-achievements-back').addEventListener('click', () => {
+    lastInputTime = performance.now();
+    hideAchievements();
+    showMenu();
+});
+
+        document.getElementById('btn-pause').addEventListener('click', () => { lastInputTime = performance.now();
+            isPaused = !isPaused;
+            updatePauseButton();
+            updatePauseHint(); });
+        document.getElementById('btn-restart').addEventListener('click', () => { lastInputTime = performance.now();
+            restartGame(); });
+document.getElementById('btn-menu').addEventListener('click', () => {
+    lastInputTime = performance.now();
+    if (!gameStarted || menuActive) return;   // 确保游戏进行中且菜单未激活
+    isPaused = true;                          // 暂停游戏
+    updatePauseButton();
+    updatePauseHint();
+    document.getElementById('save-confirm-overlay').style.display = 'flex';  // 显示确认弹窗
+});
+
+document.getElementById('btn-stall').addEventListener('click', function() {
+    showStallDialog();
+});
+document.getElementById('stall-yes').addEventListener('click', function() {
+    saveGame();
+    location.reload();
+});
+document.getElementById('stall-no').addEventListener('click', function() {
+    closeStallDialog();
+});
+
+document.getElementById('btn-overlay-menu').addEventListener('click', () => {
+    lastInputTime = performance.now();
+    document.getElementById('game-over-overlay').classList.remove('active');
+    showMenu();
+});
+        // 教程
+        const tutorialOverlay = document.getElementById('tutorial-overlay');
+        const closeTutorialBtn = document.getElementById('btn-close-tutorial');
+        // 注意：btn-tutorial 已删除，事件绑定移至菜单中的 btn-menu-tutorial
+        closeTutorialBtn.addEventListener('click', () => {
+            lastInputTime = performance.now();
+            tutorialOverlay.classList.remove('active');
+        });
+
+        tutorialOverlay.addEventListener('click', (e) => {
+            if (e.target === tutorialOverlay) {
+                lastInputTime = performance.now();
+                tutorialOverlay.classList.remove('active');
+            }
+        });
+
+        // 菜单中的教程按钮
+        document.getElementById('btn-menu-tutorial').addEventListener('click', () => {
+            lastInputTime = performance.now();
+            tutorialOverlay.classList.add('active');
+        });
+
+// 商城返回按钮
+document.getElementById('btn-shop-back').addEventListener('click', () => {
+    lastInputTime = performance.now();
+    hideShop();
+    showMenu();
+});
+
+// 商城购买按钮
+document.querySelectorAll('.shop-buy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        purchaseShopItem(btn.dataset.item);
+    });
+});
+
+// 保存确认：点击"是"
+document.getElementById('save-yes').addEventListener('click', () => {
+    saveGame();   // 保存当前进度
+    document.getElementById('save-confirm-overlay').style.display = 'none';
+    showMenu();   // 返回菜单（存档存在，商店锁定）
+});
+
+// 保存确认：点击"否"
+document.getElementById('save-no').addEventListener('click', () => {
+    document.getElementById('save-confirm-overlay').style.display = 'none';
+    gameStarted = false;
+    isPaused = false;
+    updatePauseButton();
+    updatePauseHint();
+    triggerGameOver();   // 结算金币并跳转游戏结束界面
+});
+
+// 金币修改器：点击右上角金币10次
+let coinClickCount = 0;
+let coinClickTimer = null;
+
+function handleCoinClick() {
+    coinClickCount++;
+    clearTimeout(coinClickTimer);
+    coinClickTimer = setTimeout(() => { coinClickCount = 0; }, 2000);
+    if (coinClickCount >= 10) {
+        coinClickCount = 0;
+        document.getElementById('coin-editor-input').value = playerCoins;
+        document.getElementById('coin-editor-overlay').style.display = 'flex';
+    }
+}
+
+document.getElementById('menu-stats').addEventListener('click', handleCoinClick);
+document.getElementById('shop-stats').addEventListener('click', handleCoinClick);
+
+// 修改器确认按钮
+document.getElementById('coin-editor-confirm').addEventListener('click', () => {
+    const newCoins = parseInt(document.getElementById('coin-editor-input').value, 10);
+    if (!isNaN(newCoins) && newCoins >= 0) {
+        playerCoins = newCoins;
+        localStorage.setItem('abyssPlayerCoins', playerCoins);
+        document.getElementById('menu-stats').textContent = '金币: ' + playerCoins;
+        document.getElementById('shop-stats').textContent = '金币: ' + playerCoins;
+    }
+    document.getElementById('coin-editor-overlay').style.display = 'none';
+});
+
+// 修改器取消按钮
+document.getElementById('coin-editor-cancel').addEventListener('click', () => {
+    document.getElementById('coin-editor-overlay').style.display = 'none';
+});
+
+// 管理员按钮：下一局无限生命
+document.getElementById('coin-editor-admin').addEventListener('click', () => {
+    adminNextGame = true;
+    localStorage.setItem('abyssAdminNextGame', 'true');
+    alert('下一局无限生命已激活！\n点击"单人模式"开始游戏即可生效。');
+});
+
+// 重置所有数据按钮：清除所有存档
+document.getElementById('coin-editor-reset-all').addEventListener('click', () => {
+    // 弹出二次确认框，防止误触
+    if (confirm('⚠️ 确定要重置所有数据吗？\n这将清除：\n• 所有金币\n• 所有商城购买记录\n• 所有成就进度\n• 所有游戏存档\n\n此操作不可恢复！')) {
+        if (confirm('再次确认：你真的要删除所有数据吗？')) {
+            // 获取所有以 abyss 开头的本地存储键名
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('abyss')) {
+                    keysToRemove.push(key);
+                }
+            }
+            // 删除所有匹配的键
+            for (const key of keysToRemove) {
+                localStorage.removeItem(key);
+            }
+            
+            // 重置内存中的变量
+            playerCoins = 0;
+            shopPurchases = {};
+            unlockedAchievements = {};
+            totalKills = 0;
+            totalComboUses = 0;
+            tamedMonsterTotalKills = 0;
+            totalBonesPickedUp = 0;
+            totalAmethystsPickedUp = 0;
+            totalBulletsFired = 0;
+            totalShopPurchases = 0;
+            maxDistanceEver = 0;
+            totalScore = 0;
+            adminNextGame = false;
+            
+            // 更新界面显示
+            document.getElementById('menu-stats').textContent = '金币: 0';
+            document.getElementById('shop-stats').textContent = '金币: 0';
+            
+            // 关闭弹窗
+            document.getElementById('coin-editor-overlay').style.display = 'none';
+            
+            // 提示用户并刷新页面
+            alert('✅ 所有数据已重置！\n页面将自动刷新。');
+            location.reload();
+        }
+    }
+});
+
+
+        // ==================== 存档系统 ====================
+function saveGame() {
+if (gameOver || !gameStarted) return;
+    try {
+        const data = {
+            playerX: playerX,
+            maxProgressX: maxProgressX,
+            score: score,
+            distanceM: distanceM,
+killScore: killScore,
+            playerHP: playerHP,
+            bullets: bullets,
+            shieldCharges: shieldCharges,
+shieldMushroomCounter: shieldMushroomCounter, 
+            amethystCount: amethystCount,
+       tameEnergy: tameEnergy,
+            tamed: tamedMonsters.length,
+            // 新增：保存驯服怪物详细数据
+            tamedDetails: tamedMonsters.map(function(m) {
+                return {
+                    level: m.level,
+                    x: m.x,
+                    hp: m.hp
+                };
+            })
+        };
+        localStorage.setItem('abyssSaveData', JSON.stringify(data));
+localStorage.setItem('abyssTotalScore', totalScore);
+
+        localStorage.setItem('abyssPlayerCoins', playerCoins);
+        localStorage.setItem('abyssShopPurchases', JSON.stringify(shopPurchases));
+localStorage.setItem('abyssAchievements', JSON.stringify(unlockedAchievements));
+localStorage.setItem('abyssTotalKills', totalKills);
+
+localStorage.setItem('abyssTotalComboUses', totalComboUses);
+localStorage.setItem('abyssTamedMonsterTotalKills', tamedMonsterTotalKills);
+localStorage.setItem('abyssTotalBonesPickedUp', totalBonesPickedUp);
+localStorage.setItem('abyssTotalAmethystsPickedUp', totalAmethystsPickedUp);
+localStorage.setItem('abyssTotalBulletsFired', totalBulletsFired);
+localStorage.setItem('abyssTotalShopPurchases', totalShopPurchases);
+
+localStorage.setItem('abyssMaxDistanceEver', maxDistanceEver);
+
+    } catch (e) {}
+}
+
+function loadGame() {
+totalScore = Math.max(0, Number(localStorage.getItem('abyssTotalScore') || 0));
+    const savedData = localStorage.getItem('abyssSaveData');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+            playerX = data.playerX;
+            maxProgressX = data.maxProgressX;
+            score = data.score;
+            distanceM = data.distanceM;
+// 恢复击杀分数（兼容旧存档）
+killScore = data.killScore !== undefined ? data.killScore : Math.max(0, (data.score || 0) - (data.distanceM || 0) * 3);
+            playerHP = data.playerHP;
+            bullets = data.bullets;
+            shieldCharges = data.shieldCharges;
+shieldMushroomCounter = data.shieldMushroomCounter || 0; 
+            amethystCount = data.amethystCount || 0;
+            tameEnergy = data.tameEnergy || 0;
+            
+            // 新增：恢复驯服怪物
+            if (data.tamedDetails) {
+                for (const td of data.tamedDetails) {
+                    // 重新创建怪物并设为驯服状态
+                    const pet = new Monster(td.x, td.level, false);
+                    pet.tamed = true;
+                    pet.color = '#5cb3cc';
+                    pet.dark = '#2a7aa8';
+                    pet.hp = td.hp;
+                    pet.dropChance = 0;
+                    pet.healDropChance = 0;
+                    tamedMonsters.push(pet);
+                    // 防止与野怪数组中的怪物冲突
+                }
+            }
+            
+            return true;
+          }
+    return false;
+}
+
+        // ==================== 初始化 ====================
+        function init() {
+totalScore = Math.max(0, Number(localStorage.getItem('abyssTotalScore') || 0));
+// 读取金币（初始金币 = ceil(totalScore / 9)）
+playerCoins = Number(localStorage.getItem('abyssPlayerCoins') || Math.ceil(totalScore / 9));
+// 读取购买状态
+shopPurchases = JSON.parse(localStorage.getItem('abyssShopPurchases') || '{}');
+ adminNextGame = localStorage.getItem('abyssAdminNextGame') === 'true';
+            resizeCanvas();
+            playerX = 0;
+            playerY = groundYAt(0) - PLAYER_HEIGHT;
+            cameraX = 0;
+            cameraY = groundYAt(0) - canvasH * 0.45;
+            maxProgressX = 0;
+            score = 0;
+killScore = 0;
+            distanceM = 0;
+            bullets = 10;
+            shieldCharges = 0;
+shieldMushroomCounter = 0;
+            monsters = [];
+            mushrooms = [];
+            amethysts = [];
+            bones = [];
+            bulletsList = [];
+            particles = [];
+            waterDrops = [];
+            lavaDrops = [];
+            floatingTexts = [];
+            tamedMonsters = [];
+            nextMonsterGroupX = MONSTER_SPAWN_AHEAD;
+nextMushroomX = 60 * PX_PER_METER;
+nextAmethystX = 180 * PX_PER_METER;
+            invincible = false;
+            shareClickCount = 0;
+            shareClickTimer = 0;
+            lastSkillLevel = 0;
+            lastMilestone = 0;
+            cameraTilt = 0;
+            autoHealTimer = getAutoHealInterval();
+            isPaused = false;
+            updatePauseButton();
+            updatePauseHint();
+            lastInputTime = performance.now();
+// 加载成就数据
+const savedAchievements = localStorage.getItem('abyssAchievements');
+if (savedAchievements) {
+    unlockedAchievements = JSON.parse(savedAchievements);
+} else {
+    unlockedAchievements = {};
+}
+const savedTotalKills = localStorage.getItem('abyssTotalKills');
+
+const savedComboUses = localStorage.getItem('abyssTotalComboUses');
+if (savedComboUses) totalComboUses = parseInt(savedComboUses, 10) || 0;
+
+const savedTamedKills = localStorage.getItem('abyssTamedMonsterTotalKills');
+if (savedTamedKills) tamedMonsterTotalKills = parseInt(savedTamedKills, 10) || 0;
+
+const savedBones = localStorage.getItem('abyssTotalBonesPickedUp');
+if (savedBones) totalBonesPickedUp = parseInt(savedBones, 10) || 0;
+
+const savedAmethysts = localStorage.getItem('abyssTotalAmethystsPickedUp');
+if (savedAmethysts) totalAmethystsPickedUp = parseInt(savedAmethysts, 10) || 0;
+
+const savedBullets = localStorage.getItem('abyssTotalBulletsFired');
+if (savedBullets) totalBulletsFired = parseInt(savedBullets, 10) || 0;
+
+const savedShop = localStorage.getItem('abyssTotalShopPurchases');
+if (savedShop) totalShopPurchases = parseInt(savedShop, 10) || 0;
+
+if (savedTotalKills) {
+    totalKills = parseInt(savedTotalKills, 10) || 0;
+} else {
+    totalKills = 0;
+}
+
+const savedMaxDistance = localStorage.getItem('abyssMaxDistanceEver');
+if (savedMaxDistance) {
+    maxDistanceEver = Number(savedMaxDistance) || 0;
+} else {
+    maxDistanceEver = 0;
+}
+
+    // ===== 加载新增累计数据 =====
+    const savedDoubleJump = localStorage.getItem('abyssDoubleJumpCount');
+    if (savedDoubleJump) doubleJumpCount = parseInt(savedDoubleJump, 10) || 0;
+    
+    const savedTotalCoins = localStorage.getItem('abyssTotalCoinsEarned');
+    if (savedTotalCoins) totalCoinsEarned = parseInt(savedTotalCoins, 10) || 0;
+    
+    const savedDamageTaken = localStorage.getItem('abyssDamageTakenCount');
+    if (savedDamageTaken) damageTakenCount = parseInt(savedDamageTaken, 10) || 0;
+    
+    const savedDeathCount = localStorage.getItem('abyssDeathCount');
+    if (savedDeathCount) deathCount = parseInt(savedDeathCount, 10) || 0;
+    
+    const savedAExplodeKills = localStorage.getItem('abyssAExplodeKillsCount');
+    if (savedAExplodeKills) aExplodeKillsCount = parseInt(savedAExplodeKills, 10) || 0;
+
+            // 加载存档
+// 游戏未开始，先显示菜单
+gameStarted = false;
+menuActive = true;
+document.getElementById('menu-overlay').classList.add('active');
+document.getElementById('menu-stats').textContent = '金币: ' + playerCoins;
+            // 生成初始世界（如果没有存档，则使用默认）
+            for (let i = 0; i < 3; i++) {
+                mushrooms.push(new Mushroom(20 * PX_PER_METER + i * 50 * PX_PER_METER));
+                amethysts.push(new Amethyst(40 * PX_PER_METER + i * 60 * PX_PER_METER));
+            }
+            for (let i = 0; i < 5; i++) spawnWaterDrop();
+            for (let i = 0; i < 4; i++) spawnLavaDrop();
+            gameRunning = true;
+            gameOver = false;
+            // 自动存档计时器
+            setInterval(() => { if (!gameOver && gameRunning) saveGame(); }, 5000);
+// 启动背景音乐（回档选择后自动播放）
+ensureBgmStarted();
+            requestAnimationFrame(gameLoop);
+        }
+
+        init();
+        window.addEventListener('resize', () => { resizeCanvas();
+            cameraY = playerY - canvasH * 0.5; });
+        document.addEventListener('touchmove', (e) => { if (e.target === canvas) e.preventDefault(); }, { passive: false });
+
+// ===== 商城滚动公告轮播 =====
+(function() {
+    const wrapper = document.getElementById('shop-scroll-wrapper');
+    if (!wrapper) return;
+    const list = document.getElementById('shop-scroll-list');
+    const items = list.querySelectorAll('.shop-scroll-item');
+    if (items.length === 0) return;
+
+    let currentIndex = 0;
+    const itemHeight = 36;          // 与容器高度一致
+    const displayTime = 1500;       // 每行停留时间（毫秒）
+    const animDuration = 500;       // 切换动画时长（毫秒）
+
+    // 复制第一行并追加到末尾，实现无缝循环
+    const firstClone = items[0].cloneNode(true);
+    list.appendChild(firstClone);
+
+    // 设置初始位置
+    list.style.top = '0px';
+
+    function goToNext() {
+        currentIndex++;
+        // 移动一行的高度
+        list.style.transition = 'top ' + animDuration + 'ms ease';
+        list.style.top = (-currentIndex * itemHeight) + 'px';
+
+        // 判断是否到了克隆行（即最后一行）
+        if (currentIndex === items.length) {
+            // 瞬间跳回真正的第一行（无动画）
+            setTimeout(function() {
+                list.style.transition = 'none';
+                list.style.top = '0px';
+                currentIndex = 0;
+                // 强制重绘后恢复过渡
+                void list.offsetHeight;
+                list.style.transition = 'top ' + animDuration + 'ms ease';
+            }, animDuration + 50);
+        }
+    }
+
+    // 启动定时器
+    let timer = setInterval(goToNext, displayTime + animDuration);
+
+    // 可选：鼠标悬停时暂停轮播（提升体验）
+    wrapper.addEventListener('mouseenter', function() {
+        clearInterval(timer);
+    });
+    wrapper.addEventListener('mouseleave', function() {
+        timer = setInterval(goToNext, displayTime + animDuration);
+    });
+})();
+
+    </script>
+
+<script>
+// 定时把本地数据同步到服务器
+(function() {
+  let syncTimer = null;
+  function syncToServer() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!user.email) return;
+    const data = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('abyss')) {
+        data[key] = localStorage.getItem(key);
+      }
+    }
+    fetch('/api/game/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: user.email, data })
+    }).catch(function(){});
+  }
+  // 每 3 秒同步一次
+  setInterval(syncToServer, 3000);
+  // 页面关闭前同步一次
+  window.addEventListener('beforeunload', syncToServer);
+})();
+</script>
+
+</body>
+</html>
