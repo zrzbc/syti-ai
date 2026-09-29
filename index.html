@@ -644,7 +644,12 @@ body.page-leaving {
 .level-tooltip .lv-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
+  margin-bottom: 8px;
+}
+.level-tooltip .lv-row:last-child {
+  margin-bottom: 0;
 }
 .level-tooltip .lv-badge {
   display: inline-block;
@@ -658,6 +663,8 @@ body.page-leaving {
 }
 .level-tooltip .lv-exp {
   color: #172033;
+  margin-left: auto;
+  text-align: right;
 }
 .popover-level-wrap:hover .level-tooltip {
   opacity: 1;
