@@ -584,10 +584,16 @@ body.page-leaving {
   background: #fff;
   font-size: 13px;
   gap: 10px;
+  border: 2px solid #000;
 }
 .leaderboard-row.rank-1 { background: linear-gradient(135deg, #ffd700, #ffb800); }
 .leaderboard-row.rank-2 { background: linear-gradient(135deg, #a0c4ff, #6b9bff); }
 .leaderboard-row.rank-3 { background: linear-gradient(135deg, #d2a679, #b8864a); }
+.leaderboard-row.rank-1,
+.leaderboard-row.rank-2,
+.leaderboard-row.rank-3 {
+  border: none;
+}
 .leaderboard-row.rank-2, .leaderboard-row.rank-3 { color: #fff; }
 .leaderboard-row.rank-1 { color: #000; }
 .leaderboard-row.current-user {
