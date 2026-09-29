@@ -307,6 +307,50 @@ body.page-leaving{opacity:0}
 #resetFormContainer h3 { color: #172033; }
 #backToLoginLink, #forgotPasswordLink { color: #8a5cf6; font-size: 13px; }
 #userNickname { font-size: 24px; margin-top: 10px; }
+
+/* ===== 等级门槛浮窗 ===== */
+.popover-level-wrap { position: relative; display: inline-block; }
+.level-tooltip {
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%) translateX(-6px);
+  background: rgba(23, 32, 51, 0.95);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.8;
+  padding: 10px 14px;
+  border-radius: 10px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 9999;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.level-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent;
+  border-left-color: rgba(23, 32, 51, 0.95);
+}
+.level-tooltip .lv-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+}
+.level-tooltip .lv-name {
+  font-weight: bold;
+  color: #ffd700;
+}
+.popover-level-wrap:hover .level-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(-12px);
+}
+
 </style>
 </head>
 <body>
@@ -356,7 +400,18 @@ body.page-leaving{opacity:0}
           <div style="font-size: 12px; color: #6f7890;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <span>经验值：<span id="popoverExpText">0/200</span></span>
-              <span id="popoverLevelText" style="font-weight: bold; padding: 1px 8px; border-radius: 6px; color: #fff; background: #4ade80;">Lv1</span>
+              <div class="popover-level-wrap">
+                <span id="popoverLevelText" style="font-weight: bold; padding: 1px 8px; border-radius: 6px; color: #fff; background: #4ade80;">Lv1</span>
+                <div class="level-tooltip">
+                  <div class="lv-row"><span class="lv-name">Lv1</span><span>0 经验</span></div>
+                  <div class="lv-row"><span class="lv-name">Lv2</span><span>200 经验</span></div>
+                  <div class="lv-row"><span class="lv-name">Lv3</span><span>500 经验</span></div>
+                  <div class="lv-row"><span class="lv-name">Lv4</span><span>1200 经验</span></div>
+                  <div class="lv-row"><span class="lv-name">Lv5</span><span>2800 经验</span></div>
+                  <div class="lv-row"><span class="lv-name">Lv6</span><span>6200 经验</span></div>
+                  <div class="lv-row"><span class="lv-name">Lv7</span><span>13200 经验</span></div>
+                </div>
+              </div>
             </div>
             <div style="width: 100%; height: 8px; background: #fff; border: 1px solid #e8ebf5; border-radius: 4px; overflow: hidden;">
               <div id="popoverExpBarFill" style="height: 100%; width: 0%; background: #4ade80; border-radius: 4px; transition: all 0.3s;"></div>
@@ -602,12 +657,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let level = 1, nextExp = 200;
     let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
 
-    if (expNum >= 6400) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
-    else if (expNum >= 3200) { level = 6; nextExp = 6400; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
-    else if (expNum >= 1600) { level = 5; nextExp = 3200; baseColor = '#f97316'; darkColor = '#c2410c'; }
-    else if (expNum >= 800) { level = 4; nextExp = 1600; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
-    else if (expNum >= 400) { level = 3; nextExp = 800; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
-    else if (expNum >= 200) { level = 2; nextExp = 400; baseColor = '#22c55e'; darkColor = '#15803d'; }
+    if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
+    else if (expNum >= 6200) { level = 6; nextExp = 13200; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
+    else if (expNum >= 2800) { level = 5; nextExp = 6200; baseColor = '#f97316'; darkColor = '#c2410c'; }
+    else if (expNum >= 1200) { level = 4; nextExp = 2800; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
+    else if (expNum >= 500) { level = 3; nextExp = 1200; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
+    else if (expNum >= 200) { level = 2; nextExp = 500; baseColor = '#22c55e'; darkColor = '#15803d'; }
 
     if (nextExp === Infinity) { userExpText.textContent = `${expNum}/∞`; expBarFill.style.width = '100%'; }
     else { userExpText.textContent = `${expNum}/${nextExp}`; expBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
@@ -843,12 +898,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let level = 1, nextExp = 200;
     let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
 
-    if (expNum >= 6400) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
-    else if (expNum >= 3200) { level = 6; nextExp = 6400; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
-    else if (expNum >= 1600) { level = 5; nextExp = 3200; baseColor = '#f97316'; darkColor = '#c2410c'; }
-    else if (expNum >= 800) { level = 4; nextExp = 1600; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
-    else if (expNum >= 400) { level = 3; nextExp = 800; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
-    else if (expNum >= 200) { level = 2; nextExp = 400; baseColor = '#22c55e'; darkColor = '#15803d'; }
+    if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
+    else if (expNum >= 6200) { level = 6; nextExp = 13200; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
+    else if (expNum >= 2800) { level = 5; nextExp = 6200; baseColor = '#f97316'; darkColor = '#c2410c'; }
+    else if (expNum >= 1200) { level = 4; nextExp = 2800; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
+    else if (expNum >= 500) { level = 3; nextExp = 1200; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
+    else if (expNum >= 200) { level = 2; nextExp = 500; baseColor = '#22c55e'; darkColor = '#15803d'; }
 
     if (nextExp === Infinity) { popoverExpText.textContent = `${expNum}/∞`; popoverExpBarFill.style.width = '100%'; }
     else { popoverExpText.textContent = `${expNum}/${nextExp}`; popoverExpBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
