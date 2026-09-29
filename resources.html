@@ -87,6 +87,125 @@ footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
 
 #resources .card{transition:transform .25s ease,box-shadow .25s ease}
 #resources .card:hover{transform:scale(1.02);box-shadow:0 20px 50px rgba(60,70,120,.15)}
+.card-body { position: relative; }
+.card-text { transition: opacity 0.3s ease; }
+.card-text p { margin-bottom: 0; }
+
+.content-stack {
+  position: relative;
+}
+.card-text {
+  transition: opacity 0.3s ease;
+}
+.download-buttons {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  gap: 10px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.download-buttons a {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  border-radius: 10px;
+  background: linear-gradient(110deg, #4f7cff, #8a5cf6);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+.download-buttons a:hover {
+  transform: translateY(-2px);
+}
+#resources .card:hover .card-text {
+  opacity: 0;
+}
+#resources .card:hover .download-buttons {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ===== 搜索框 ===== */
+.search-box input {
+  width: 260px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  font-size: 14px;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-box input:focus {
+  border-color: #4f7cff;
+  box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.12);
+}
+
+/* ===== 右侧类型导航 ===== */
+.type-nav {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 100;
+}
+.type-dot {
+  display: block; /* 👈 加这一行 */
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #c9d1e4;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+.type-dot:hover {
+  background: linear-gradient(135deg, #4f7cff, #8a5cf6);
+  transform: scale(1.3);
+}
+.type-dot::after {
+  content: attr(data-name);
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(23, 32, 51, 0.85);
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.type-dot:hover::after {
+  opacity: 1;
+}
+
+/* ===== 类型分区 ===== */
+.type-section {
+  margin-top: 50px;
+  scroll-margin-top: 100px;
+}
+.type-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  padding-left: 12px;
+  border-left: 4px solid #4f7cff;
+  color: var(--ink);
+}
 
 /* 页面切换淡入淡出 */
 body{opacity:1;transition:opacity .2s ease}
@@ -255,35 +374,114 @@ body.page-leaving{opacity:0}
 <div class="container">
   <div class="section-head">
     <div><div class="kicker">Resources</div><h2>资源分享</h2></div>
-    <div class="section-desc">冰點的资源仓库。</div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜索资源的标题或简介...">
+    </div>
   </div>
 
-<div class="grid grid-resources">
-  <a class="card feature" href="https://afdian.com/p/e0a9c654946e11f19b8952540025c377?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener">
-    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/r1.jpg') center/cover no-repeat;"></div>
-    <div class="card-body"><span class="tag">游戏</span>&nbsp;<span class="tag">我的世界</span>&nbsp;<span class="tag">闯关</span>&nbsp;<span class="tag">解密</span>&nbsp;<span class="tag">联机</span><h3>【地图】只要能...到达...那个地方...</h3><p>人数  |  4人<br>
-版本  |  JAVA 1.21.1<br>
-用时  |  约25分钟<br><br>
-【游戏规则】<br>
-四位玩家分别站在不同的矿石上，待石门炸裂，开始闯关。<br>
-共五关，玩家需要根据每关开始前的提示完成对应的任务。</p><div class="meta"><span>- 免费下载</span><span>（ 跳转 爱发电 ）</span></div></div>
-  </a>
+  <!-- 右侧类型导航 -->
+  <div class="type-nav">
+    <a class="type-dot" href="#type-map" data-name="地图"></a>
+    <a class="type-dot" href="#type-web" data-name="网页"></a>
+    <a class="type-dot" href="#type-project" data-name="工程"></a>
+  </div>
 
-  <a class="card" href="https://www.bilibili.com/video/BV1g4KDzbEhx/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
-    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video2.jpg') center/cover no-repeat;"></div>
-    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">海绵宝宝</span>&nbsp;<span class="tag">meme</span><h3>菌 子 代 餐</h3><p>「哦，我的上帝呀，这个视频给我的感觉简直就像在餐厅里点餐，点的微中辣，结果给我的是特辣，辣到无法呼吸后想要喝水，结果发现是热的一样。」</p><div class="meta"><span>播放 9万+</span><span>（ 跳转 Bilibili ）</span></div></div>
-  </a>
+  <!-- 地图 -->
+  <div class="type-section" id="type-map">
+    <h3 class="type-title">地图</h3>
+    <div class="grid grid-resources">
+      <div class="card feature resource-item" data-title="只要能...到达...那个地方..." data-desc="我的世界 闯关 解密 联机 免费下载 爱发电">
+        <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/r1.jpg') center/cover no-repeat;"></div>
+        <div class="card-body">
+          <span class="tag">游戏</span>&nbsp;<span class="tag">我的世界</span>&nbsp;<span class="tag">闯关</span>&nbsp;<span class="tag">解密</span>&nbsp;<span class="tag">联机</span>
+          <h3>【地图】只要能...到达...那个地方...</h3>
+          <div class="card-text">
+            <p>人数  |  4人<br>版本  |  JAVA 1.21.1<br>用时  |  约25分钟<br><br>【游戏规则】<br>四位玩家分别站在不同的矿石上，待石门炸裂，开始闯关。<br>共五关，玩家需要根据每关开始前的提示完成对应的任务。</p>
+            <div class="meta"><span>- 免费下载</span></div>
+          </div>
+          <div class="download-buttons">
+            <a href="https://wwbmn.lanzout.com/iBNbp41k3j0d" target="_blank" rel="noopener">蓝奏云</a>
+            <a href="https://pan.baidu.com/s/1_KEmdKwwEp9eMiKTAViigA?pwd=1111" target="_blank" rel="noopener">百度网盘</a>
+            <a href="https://afdian.com/p/e0a9c654946e11f19b8952540025c377?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener">爱发电</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <a class="card" href="https://www.bilibili.com/video/BV1BbYDz3Ex8/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
-    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video3.jpg') center/cover no-repeat;"></div>
-    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">少女终末旅行</span>&nbsp;<span class="tag">二创填词</span><h3>“再见啦，这场虚无的旅行”</h3><p>「本来快忘了，总是有二创来戳我一把。但这么优质的少终挺难得的。」</p><div class="meta"><span>投币 2000+</span><span>（ 跳转 Bilibili ）</span></div></div>
-  </a>
+  <!-- 网页 -->
+  <div class="type-section" id="type-web">
+    <h3 class="type-title">网页</h3>
+    <div class="grid grid-resources">
+      <div class="card feature resource-item" data-title="只要能...到达...那个地方..." data-desc="我的世界 闯关 解密 联机 免费下载 爱发电">
+        <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/r1.jpg') center/cover no-repeat;"></div>
+        <div class="card-body">
+          <span class="tag">游戏</span>&nbsp;<span class="tag">我的世界</span>&nbsp;<span class="tag">闯关</span>&nbsp;<span class="tag">解密</span>&nbsp;<span class="tag">联机</span>
+          <h3>【地图】只要能...到达...那个地方...</h3>
+          <div class="card-text">
+            <p>人数  |  4人<br>版本  |  JAVA 1.21.1<br>用时  |  约25分钟<br><br>【游戏规则】<br>四位玩家分别站在不同的矿石上，待石门炸裂，开始闯关。<br>共五关，玩家需要根据每关开始前的提示完成对应的任务。</p>
+            <div class="meta"><span>- 免费下载</span></div>
+          </div>
+          <div class="download-buttons">
+            <a href="https://wwbmn.lanzout.com/iBNbp41k3j0d" target="_blank" rel="noopener">蓝奏云</a>
+            <a href="https://pan.baidu.com/s/1_KEmdKwwEp9eMiKTAViigA?pwd=1111" target="_blank" rel="noopener">百度网盘</a>
+            <a href="https://afdian.com/p/e0a9c654946e11f19b8952540025c377?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener">爱发电</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <a class="card" href="https://www.bilibili.com/video/BV1sZpnzCEvw/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
-    <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video4.jpg') center/cover no-repeat;"></div>
-    <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">摇曳露营</span>&nbsp;<span class="tag">二创填词</span><h3>“有你的露营才是莫愁乡！”</h3><p>「这是没有真经历写不出来这词啊。」</p><div class="meta"><span>再来一遍</span><span>（ 跳转 Bilibili ）</span></div></div>
-  </a>
-</div>
+  <!-- 工程 -->
+  <div class="type-section" id="type-project">
+    <h3 class="type-title">工程</h3>
+    <div class="grid grid-resources">
+      <div class="card feature resource-item" data-title="只要能...到达...那个地方..." data-desc="我的世界 闯关 解密 联机 免费下载 爱发电">
+        <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/r1.jpg') center/cover no-repeat;"></div>
+        <div class="card-body">
+          <span class="tag">游戏</span>&nbsp;<span class="tag">我的世界</span>&nbsp;<span class="tag">闯关</span>&nbsp;<span class="tag">解密</span>&nbsp;<span class="tag">联机</span>
+          <h3>【地图】只要能...到达...那个地方...</h3>
+          <div class="card-text">
+            <p>人数  |  4人<br>版本  |  JAVA 1.21.1<br>用时  |  约25分钟<br><br>【游戏规则】<br>四位玩家分别站在不同的矿石上，待石门炸裂，开始闯关。<br>共五关，玩家需要根据每关开始前的提示完成对应的任务。</p>
+            <div class="meta"><span>- 免费下载</span></div>
+          </div>
+          <div class="download-buttons">
+            <a href="https://wwbmn.lanzout.com/iBNbp41k3j0d" target="_blank" rel="noopener">蓝奏云</a>
+            <a href="https://pan.baidu.com/s/1_KEmdKwwEp9eMiKTAViigA?pwd=1111" target="_blank" rel="noopener">百度网盘</a>
+            <a href="https://afdian.com/p/e0a9c654946e11f19b8952540025c377?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener">爱发电</a>
+          </div>
+        </div>
+      </div>
+
+
+
+
+
+      <div class="card feature resource-item" data-title="只要能...到达...那个地方..." data-desc="我的世界 闯关 解密 联机 免费下载 爱发电">
+        <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/r1.jpg') center/cover no-repeat;"></div>
+        <div class="card-body">
+          <span class="tag">游戏</span>&nbsp;<span class="tag">我的世界</span>&nbsp;<span class="tag">闯关</span>&nbsp;<span class="tag">解密</span>&nbsp;<span class="tag">联机</span>
+          <h3>【地图】只要能...到达...那个地方...</h3>
+          <div class="card-text">
+            <p>人数  |  4人<br>版本  |  JAVA 1.21.1<br>用时  |  约25分钟<br><br>【游戏规则】<br>四位玩家分别站在不同的矿石上，待石门炸裂，开始闯关。<br>共五关，玩家需要根据每关开始前的提示完成对应的任务。</p>
+            <div class="meta"><span>- 免费下载</span></div>
+          </div>
+          <div class="download-buttons">
+            <a href="https://wwbmn.lanzout.com/iBNbp41k3j0d" target="_blank" rel="noopener">蓝奏云</a>
+            <a href="https://pan.baidu.com/s/1_KEmdKwwEp9eMiKTAViigA?pwd=1111" target="_blank" rel="noopener">百度网盘</a>
+            <a href="https://afdian.com/p/e0a9c654946e11f19b8952540025c377?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener">爱发电</a>
+          </div>
+        </div>
+      </div>
+
+
+
+
+
+
+    </div>
+  </div>
+
 </div>
 </section>
 </main>
@@ -795,6 +993,37 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+  // ===== 搜索功能 =====
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const keyword = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('.resource-item').forEach(item => {
+        const title = (item.dataset.title || '').toLowerCase();
+        const desc = (item.dataset.desc || '').toLowerCase();
+        if (!keyword || title.includes(keyword) || desc.includes(keyword)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+      // 如果某个类型下所有项目都隐藏了，隐藏该类型标题
+      document.querySelectorAll('.type-section').forEach(section => {
+        const visible = Array.from(section.querySelectorAll('.resource-item'))
+          .some(item => item.style.display !== 'none');
+        section.style.display = visible ? '' : 'none';
+      });
+    });
+  }
+
+  // ===== 右侧类型导航：点击滚动 =====
+  document.querySelectorAll('.type-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      const target = document.getElementById(dot.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
   // ===== 用户面板里的签到按钮，跳转到首页签到区 =====
   const userPanelSigninBtn = document.getElementById('userPanelSigninBtn');
   if (userPanelSigninBtn) {
@@ -807,4 +1036,8 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 </body>
+
+
+
+
 </html>
