@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>一掷千金 · 宝箱交易商</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0f1a, #03060c);
+            font-family: 'Segoe UI', 'Poppins', 'Orbitron', system-ui, monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            transition: all 0.2s;
+        }
+
+        .global-toast {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0a1428ee;
+            backdrop-filter: blur(16px);
+            border: 1px solid #ffcd7a;
+            border-radius: 60px;
+            padding: 12px 32px;
+            color: #ffffff;
+            font-size: 2rem;
+            font-weight: bold;
+            font-family: monospace;
+            letter-spacing: 4px;
+            text-shadow: 0 0 8px #ffaa66;
+            z-index: 2000;
+            white-space: nowrap;
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.2s;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            border-radius: 48px;
+        }
+        .global-toast.fade-out {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-12px);
+        }
+
+        .game-container {
+            max-width: 1500px;
+            width: 100%;
+            background: rgba(5, 12, 24, 0.7);
+            backdrop-filter: blur(3px);
+            border-radius: 56px;
+            border: 1px solid #ffcc6644;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.5);
+            padding: 20px 26px;
+            height: auto;
+            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 10;
+        }
+
+        .game-layout {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+            align-items: stretch;
+        }
+
+        .left-area {
+            flex: 2.2;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .chests-section {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 48px;
+            padding: 16px 16px 20px 16px;
+        }
+
+        .info-header {
+            background: #0a1428cc;
+            border-radius: 48px;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            border: 1px solid #ffcd7a66;
+        }
+
+        .round-stats {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+        .round-stats span {
+            color: #ffdd99;
+            margin: 0 4px;
+        }
+        .need-open-info {
+            font-size: 0.95rem;
+            color: #ffdd99;
+            margin-top: 5px;
+        }
+
+        .chest-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(92px, 98px));
+            justify-content: center;
+            gap: 14px 16px;
+        }
+
+        .chest {
+            background: radial-gradient(ellipse at 35% 40%, #2d2f3e, #131a26);
+            width: 92px;
+            height: 110px;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.95, 0.4, 1.1);
+            box-shadow: 0 10px 16px rgba(0, 0, 0, 0.5);
+            border: 1px solid #ffd58c88;
+            position: relative;
+            backdrop-filter: blur(2px);
+            transform: translateY(var(--y-offset, 0px)) translateX(var(--x-offset, 0px));
+            will-change: transform, opacity;
+        }
+
+        .chest::before {
+            content: "🎁";
+            font-size: 2rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
+        }
+
+        .chest .chest-label {
+            font-size: 0.7rem;
+            margin-top: 4px;
+            background: #03060cee;
+            padding: 2px 6px;
+            border-radius: 40px;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        .chest-number {
+            font-size: 0.85rem;
+            font-weight: bold;
+            background: #000000aa;
+            padding: 2px 8px;
+            border-radius: 30px;
+            margin-bottom: 4px;
+            color: #ffefcf;
+        }
+
+        .chest.selected-card {
+            background: radial-gradient(ellipse at 35% 40%, #594d2c, #2f280f);
+            border: 2px solid #ffbe4d;
+            box-shadow: 0 0 18px #ffaa44;
+            transform: scale(1.01);
+        }
+
+        /* 动画禁用时直接隐藏占位，无过渡 */
+        .chest.vanish-placeholder {
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        .chest:active {
+            transform: scale(0.94);
+        }
+
+        .buyer-section {
+            background: #07111eee;
+            border-radius: 42px;
+            padding: 16px 18px;
+            border: 1px solid #ffcd7a55;
+            backdrop-filter: blur(12px);
+            position: relative;
+            z-index: 20;
+        }
+        /* 聚焦时无动画，仅样式变化（如果动画关闭则不会有过渡） */
+        .buyer-section.focused {
+            transform: scale(1.08) translateY(-8px);
+            box-shadow: 0 0 30px rgba(255,200,100,0.6);
+            border-color: #ffcc77;
+            z-index: 1001;
+        }
+
+        .offer-price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffdd99;
+            text-align: center;
+            word-break: break-word;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            background: #232e44;
+            border: none;
+            padding: 8px 22px;
+            border-radius: 48px;
+            color: #ffffff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            border: 2px solid transparent;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        button:disabled {
+            opacity: 0.5;
+            transform: none;
+        }
+        .btn-accept {
+            background: #1e3a2f;
+            border-color: #2ecc71;
+            color: white;
+        }
+        .btn-reject {
+            background: #3e2222;
+            border-color: #e74c3c;
+            color: white;
+        }
+        .btn-primary {
+            background: #c97e2a;
+            color: #ffffff;
+            border-color: #ffdd99;
+        }
+        .reset-btn {
+            background: #1e2c3c;
+            width: 100%;
+            margin-top: 10px;
+            border-color: #5f7f9e;
+        }
+
+        .right-area {
+            flex: 1.1;
+            background: #07111eee;
+            border-radius: 42px;
+            padding: 18px 16px;
+            border: 1px solid #ffcd7a55;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            position: relative;
+        }
+
+        .icon-group {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+            z-index: 30;
+        }
+        .icon-btn {
+            background: #1e2a36aa;
+            backdrop-filter: blur(8px);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #ffcd7a88;
+            color: #ffeaac;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        .icon-btn:hover {
+            background: #ffcc55aa;
+            color: #0a0a1a;
+            transform: scale(1.05);
+        }
+
+        .money-board {
+            background: #020a16b3;
+            border-radius: 32px;
+            padding: 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-top: 12px;
+        }
+        .money-title {
+            font-size: 1.3rem;
+            text-align: center;
+            color: #ffdf99;
+            border-bottom: 2px solid #ffbe4d;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 14px;
+            font-weight: bold;
+        }
+        .money-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 22px;
+            overflow: visible;
+            flex: 1;
+            align-content: start;
+        }
+        .money-item {
+            background: #0a1828;
+            padding: 8px 6px;
+            text-align: center;
+            border-radius: 36px;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #ffffff;
+            border-left: 4px solid #ffbb4a;
+            transition: none; /* 无动画 */
+        }
+        .money-item.eliminated {
+            background: #1a1f2c;
+            color: #b8c7e0;
+            text-decoration: line-through;
+            border-left-color: #2c3e44;
+            opacity: 0.75;
+        }
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 18px;
+            opacity: 0.6;
+            color: #cccccc;
+        }
+        .chest {
+            --x-offset: 0px;
+            --y-offset: 0px;
+        }
+
+        /* 模态窗样式 (加大宽度) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 5000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.2s, opacity 0.2s;
+        }
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-container {
+            background: #0f1a28ee;
+            border-radius: 48px;
+            width: 600px;
+            max-width: 90vw;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #ffcd7a;
+            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
+            backdrop-filter: blur(20px);
+            color: #f0f0f0;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 24px;
+            border-bottom: 1px solid #ffcd7a66;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ffdd99;
+        }
+        .modal-header .close-modal {
+            cursor: pointer;
+            font-size: 1.8rem;
+            line-height: 1;
+            background: none;
+            border: none;
+            color: #ffcd7a;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+        }
+        .modal-body {
+            padding: 20px 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .faq-search {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 40px;
+            background: #07111e;
+            border: 1px solid #ffcc77;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            outline: none;
+        }
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .faq-item {
+            background: #07111eaa;
+            border-radius: 28px;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-left: 4px solid #ffcd7a;
+        }
+        .faq-question {
+            font-weight: bold;
+            color: #ffdd99;
+            font-size: 1rem;
+        }
+        .faq-answer {
+            color: #eef2ff;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            padding-top: 6px;
+            border-top: 1px dashed #ffcd7a66;
+            display: none;
+        }
+        .faq-item.expanded .faq-answer {
+            display: block;
+        }
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            font-size: 1rem;
+        }
+        .setting-row label {
+            color: #ffdfaa;
+        }
+        .toggle-switch {
+            width: 48px;
+            height: 24px;
+            background: #2c3e50;
+            border-radius: 40px;
+            display: inline-block;
+            position: relative;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .toggle-switch.active {
+            background: #f0a500;
+        }
+        .toggle-switch::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 3px;
+            transition: 0.2s;
+        }
+        .toggle-switch.active::after {
+            left: 25px;
+        }
+        .number-selector {
+            background: #07111e;
+            border: 1px solid #ffcc77;
+            border-radius: 32px;
+            padding: 4px 12px;
+            color: white;
+            font-size: 1rem;
+            width: 80px;
+            text-align: center;
+        }
+        @media (max-height: 800px) {
+            .chest-grid { gap: 10px; }
+            .chest { width: 85px; height: 100px; }
+            .chest::before { font-size: 1.8rem; }
+            .money-item { font-size: 0.95rem; padding: 6px; }
+            .buyer-section { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+    <div class="game-layout">
+        <div class="left-area">
+            <div class="chests-section">
+                <div class="info-header">
+                    <div class="round-stats" id="roundStats">准备就绪</div>
+                    <div class="need-open-info" id="needOpenInfo">点击宝箱选择底牌</div>
+                </div>
+                <div class="chest-grid" id="chestGrid"></div>
+                <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                    <button id="forceResetBtn" class="reset-btn" style="width: auto; padding: 6px 20px;">重选底牌</button>
+                </div>
+            </div>
+            <div class="buyer-section" id="buyerPanel">
+                <div style="text-align:center; color:#ffefcf; letter-spacing: 1px;">神秘商人</div>
+                <div class="offer-price" id="offerAmount">—</div>
+                <div class="btn-group">
+                    <button id="acceptBtn" class="btn-accept">成交</button>
+                    <button id="rejectBtn" class="btn-reject">拒绝</button>
+                    <button id="bargainBtn" class="btn-primary">讲价</button>
+                </div>
+                <div id="bargainStatus" style="font-size: 0.7rem; text-align: center; margin-top: 8px; color:#dddddd;"></div>
+            </div>
+        </div>
+
+        <div class="right-area">
+            <div class="icon-group">
+                <div class="icon-btn" id="helpIconBtn">❔</div>
+                <div class="icon-btn" id="settingsIconBtn">⚙️</div>
+            </div>
+            <div class="money-board">
+                <div class="money-title">- 奖 金 池 -</div>
+                <div class="money-grid" id="moneyGrid"></div>
+            </div>
+            <button id="restartBtn" class="reset-btn" style="margin-top: 16px;">开启新对局</button>
+        </div>
+    </div>
+    <footer>适度游戏益脑，沉迷游戏伤身</footer>
+</div>
+
+<!-- 帮助模态窗 (FAQ) -->
+<div id="helpModal" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <span>常见问题</span>
+            <button class="close-modal" id="closeHelpModal">✕</button>
+        </div>
+        <div class="modal-body">
+            <input type="text" id="faqSearchInput" class="faq-search" placeholder="搜索你想问的...">
+            <div class="faq-list" id="faqList"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 设置模态窗 -->
+<div id="settingsModal" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <span>游戏设置</span>
+            <button class="close-modal" id="closeSettingsModal">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="setting-row">
+                <label>·&nbsp;&nbsp;动画效果</label>
+                <div class="toggle-switch" id="animationToggle"></div>
+            </div>
+            <div class="setting-row">
+                <label>·&nbsp;&nbsp;讲价次数</label>
+                <input type="number" id="bargainCountInput" class="number-selector" min="1" max="3" step="1" value="1">
+            </div>
+            <div style="text-align:center; margin-top: 10px;"><small>设置即时生效</small></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- 音效模块 (保证点击有声) ----------
+    let audioCtx = null;
+    function initAudio() {
+        if (audioCtx) return audioCtx;
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        return audioCtx;
+    }
+    function ensureAudioContext() {
+        const ctx = initAudio();
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+    }
+    function playOpenBoxSound() {
+        try {
+            ensureAudioContext();
+            const ctx = initAudio();
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sine';
+            osc.frequency.value = 880;
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+            osc.start();
+            osc.stop(now + 0.4);
+        } catch(e) { console.warn(e); }
+    }
+    function playRevealSound() {
+        try {
+            ensureAudioContext();
+            const ctx = initAudio();
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'triangle';
+            osc.frequency.value = 660;
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+            osc.start();
+            osc.stop(now + 0.3);
+            setTimeout(() => {
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.type = 'sine';
+                osc2.frequency.value = 1320;
+                gain2.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
+                osc2.start();
+                osc2.stop(ctx.currentTime + 0.25);
+            }, 120);
+        } catch(e) {}
+    }
+    function playRollingSound() {
+        try {
+            ensureAudioContext();
+            const ctx = initAudio();
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.value = 400;
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
+            osc.start();
+            osc.stop(now + 0.25);
+        } catch(e) {}
+    }
+    function playDealSound() {
+        try {
+            ensureAudioContext();
+            const ctx = initAudio();
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'square';
+            osc.frequency.value = 520;
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+            osc.start();
+            osc.stop(now + 0.35);
+        } catch(e) {}
+    }
+    document.body.addEventListener('click', () => {
+        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+        else if (!audioCtx) initAudio().resume();
+    }, { once: true });
+
+    // ---------- 游戏数据 ----------
+    const FULL_AMOUNTS = [0.1,1,5,10,25,50,75,100,200,300,400,500,750,1000,5000,10000,25000,50000,75000,100000,200000,300000,400000,500000,750000,1000000];
+    const ROUND_OPEN_COUNTS = [6,5,4,3,2,1,1];
+    const MAX_ROUND = ROUND_OPEN_COUNTS.length;
+
+    let chests = [];
+    let chestElements = [];
+    let playerChestId = -1;
+    let eliminatedSet = new Set();
+    let currentRound = 0;
+    let needOpenInThisRound = 0;
+    let gameActive = false;
+    let waitingBuyer = false;
+    let bargainTimesLeft = 1;
+    let bargainUsedCount = 0;
+    let currentOffer = 0;
+    let gameOverFlag = false;
+    let animationLock = false;
+    let rollingInterval = null;
+    let animationsEnabled = true;
+
+    // DOM
+    const chestGridDiv = document.getElementById('chestGrid');
+    const moneyGridDiv = document.getElementById('moneyGrid');
+    const offerAmountSpan = document.getElementById('offerAmount');
+    const roundStatsDiv = document.getElementById('roundStats');
+    const needOpenInfoSpan = document.getElementById('needOpenInfo');
+    const acceptBtn = document.getElementById('acceptBtn');
+    const rejectBtn = document.getElementById('rejectBtn');
+    const bargainBtn = document.getElementById('bargainBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const forceResetBtn = document.getElementById('forceResetBtn');
+    const buyerSection = document.getElementById('buyerPanel');
+    const helpModal = document.getElementById('helpModal');
+    const settingsModal = document.getElementById('settingsModal');
+    const animationToggle = document.getElementById('animationToggle');
+    const bargainCountInput = document.getElementById('bargainCountInput');
+
+    // FAQ 数据
+    const faqData = [
+        { q: "游戏规则是什么？", a: "游戏内共有26个宝箱，分别对应不同的金额，这些金额皆对玩家保密。游戏开始后，玩家需要先抽一个宝箱作为底牌。之后的每轮里，玩家都需要靠选择来打开指定数量的宝箱，每开一个就会在右侧的奖金池里划掉对应的金额。轮过后，下方会有商人买家来购买你的宝箱，他们会根据奖金池里剩余的金额来估价，玩家可以选择成交以拿走买家出价的金额，也可以继续游戏。若七轮后仍没有与买家成交，则直接打开底牌，拿走底牌对应的金额。" },
+        { q: "什么是讲价？", a: "在每局游戏中，买家都会给玩家1~3次讲价的机会（次数可在设置内更改），如果本轮玩家对买家的出价不满意，可以选择去使用。使用后，买家会根据当前局势的利弊来选择是提高价格还是保持原价。" },
+        { q: "如何判断当前局势是否对自己有利？", a: "判断局势是否有利，主要看奖金池里大额数值（如10万以上）和小额数值（如1万以下）的比例。剩余的大额越多、小额越少，说明玩家底牌更有可能是大额，买家为了获利，出价就会更高；反之剩余的小额居多，买家则要压低估价以防止亏损。简单来说，在每轮选择宝箱时，宝箱的数额越小对自己则越有利。" },
+        { q: "如何最大程度防止亏损？", a: "建议玩家不要轻易接受明显低于常规的报价，剩余大额较多时可拒绝成交，坚持开底牌以博取更高的收益，比如场上还剩下400、20万、30万、40万、75万，倘若买家报价10万，则可以选择拒绝成交，因为你的底牌大概率在20万及以上；此外，适时使用讲价卡迫使买家重新出价，若新价提升则有利，若不变则说明当前价格已较合理；第三，避免在剩余金额多为小额时硬撑，接受合理报价以防止空手而归。" },
+        { q: "底牌能不能换？", a: "不能，底牌在游戏开始前抽定后就不可更改。如果在游戏期间点击重选底牌，会重新开始游戏。" }
+    ];
+
+    // 辅助函数
+    function showInfoMessage(msg) {
+        const oldToast = document.querySelector('.global-toast');
+        if(oldToast) oldToast.remove();
+        const toast = document.createElement('div');
+        toast.className = 'global-toast';
+        toast.style.fontSize = '1.2rem';
+        toast.style.whiteSpace = 'nowrap';
+        toast.style.background = '#0a1428ee';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('fade-out');
+            setTimeout(() => toast.remove(), 500);
+        }, 2000);
+    }
+
+    // 设置
+    function loadSettings() {
+        const savedAnim = localStorage.getItem('animationsEnabled');
+        if(savedAnim !== null) animationsEnabled = savedAnim === 'true';
+        const savedBargain = localStorage.getItem('bargainTimesLeftInit');
+        if(savedBargain !== null) bargainTimesLeft = parseInt(savedBargain) || 1;
+        else bargainTimesLeft = 1;
+        if(animationToggle) {
+            if(animationsEnabled) animationToggle.classList.add('active');
+            else animationToggle.classList.remove('active');
+        }
+        if(bargainCountInput) bargainCountInput.value = bargainTimesLeft;
+    }
+    function saveSettings() {
+        localStorage.setItem('animationsEnabled', animationsEnabled);
+        localStorage.setItem('bargainTimesLeftInit', bargainTimesLeft);
+    }
+    function resetBargainTimes() {
+        bargainTimesLeft = parseInt(bargainCountInput.value);
+        if(isNaN(bargainTimesLeft)) bargainTimesLeft = 1;
+        bargainTimesLeft = Math.min(3, Math.max(1, bargainTimesLeft));
+        bargainUsedCount = 0;
+        updateBargainButtonState();
+    }
+    function updateBargainButtonState() {
+        if(!gameActive || !waitingBuyer) bargainBtn.disabled = true;
+        else {
+            if(bargainUsedCount >= bargainTimesLeft) bargainBtn.disabled = true;
+            else bargainBtn.disabled = false;
+        }
+    }
+
+    // AI
+    function computeFairOffer(remainingList) {
+        if (!remainingList.length) return 0;
+        let amounts = [...remainingList];
+        amounts.sort((a,b)=>a-b);
+        const minVal = amounts[0];
+        const maxVal = amounts[amounts.length-1];
+        const avg = amounts.reduce((a,b)=>a+b,0) / amounts.length;
+        let riskFactor = 0.74;
+        if (minVal <= 100 && maxVal >= 100000) riskFactor = 0.55;
+        else if (minVal <= 500 && maxVal >= 500000) riskFactor = 0.62;
+        else if (minVal <= 5000 && maxVal >= 200000) riskFactor = 0.68;
+        else if (minVal / maxVal > 0.3) riskFactor = 0.86;
+        else riskFactor = 0.7;
+        if (amounts.length <= 5 && minVal > 50000) riskFactor = 0.92;
+        if (amounts.length <= 3 && minVal > 100000) riskFactor = 0.96;
+        let offer = Math.floor(avg * riskFactor);
+        offer = Math.max(offer, Math.floor(minVal * 0.35));
+        offer = Math.min(offer, Math.floor(maxVal * 0.85));
+        if (amounts.length === 4 && amounts[0] >= 300000 && amounts[3] >= 1000000) offer = Math.floor(avg * 0.72);
+        if (minVal <= 400 && maxVal >= 300000 && amounts.length > 5) offer = Math.floor(avg * 0.5);
+        return Math.max(offer, 1);
+    }
+    function bargainUpgrade(currentOfferVal, remainingList) {
+        let newOffer = computeFairOffer(remainingList);
+        const highCount = remainingList.filter(v => v >= 50000).length;
+        const total = remainingList.length;
+        const smallCount = remainingList.filter(v => v < 1000).length;
+        let willUpgrade = false;
+        if (newOffer > currentOfferVal) willUpgrade = true;
+        if (smallCount > total / 2) willUpgrade = false;
+        if (highCount > total / 2 && newOffer > currentOfferVal) willUpgrade = true;
+        if (currentOfferVal > (remainingList.reduce((a,b)=>a+b,0)/remainingList.length) * 0.7) willUpgrade = false;
+        return willUpgrade ? newOffer : currentOfferVal;
+    }
+    function getRemainingAmounts() { return FULL_AMOUNTS.filter(amt => !eliminatedSet.has(amt)); }
+
+    let moneyItemMap = new Map();
+    function buildMoneyGrid() {
+        moneyGridDiv.innerHTML = '';
+        moneyItemMap.clear();
+        const leftCol = FULL_AMOUNTS.slice(0,13);
+        const rightCol = FULL_AMOUNTS.slice(13,26);
+        for(let i=0;i<13;i++){
+            const lv=leftCol[i], rv=rightCol[i];
+            const ld=document.createElement('div'); ld.className='money-item';
+            if(eliminatedSet.has(lv)) ld.classList.add('eliminated');
+            ld.textContent=lv.toLocaleString();
+            moneyGridDiv.appendChild(ld); moneyItemMap.set(lv,ld);
+            const rd=document.createElement('div'); rd.className='money-item';
+            if(eliminatedSet.has(rv)) rd.classList.add('eliminated');
+            rd.textContent=rv.toLocaleString();
+            moneyGridDiv.appendChild(rd); moneyItemMap.set(rv,rd);
+        }
+    }
+    function updateMoneyUIWithAnimation(amount) {
+        const div = moneyItemMap.get(amount);
+        if(div && !div.classList.contains('eliminated')) {
+            // 无动画，直接添加消除样式
+            div.classList.add('eliminated');
+        } else if(div) div.classList.add('eliminated');
+    }
+
+    // 开箱 (无动画版本)
+    async function openChestWithAnimation(chestId) {
+        if (animationLock) return;
+        const chestObj = chests.find(c => c.id === chestId);
+        if (!chestObj || !chestObj.visible || playerChestId === chestId) return;
+        if (needOpenInThisRound <= 0) {
+            showInfoMessage("本轮开箱次数已达上限！");
+            return;
+        }
+        animationLock = true;
+        const chestDiv = chestElements[chestId];
+        if (chestDiv && animationsEnabled === false) {
+            // 无动画直接隐藏
+            chestDiv.classList.add('vanish-placeholder');
+        } else if (chestDiv && animationsEnabled) {
+            // 虽然有动画开关，但要求关闭动画时所有动画消失，因此直接不加动画类，仅设置占位
+            chestDiv.classList.add('vanish-placeholder');
+        } else {
+            if(chestDiv) chestDiv.classList.add('vanish-placeholder');
+        }
+        // 播放音效
+        playOpenBoxSound();
+        const amountValue = chestObj.amount;
+        showInfoMessage(`✨ ${amountValue.toLocaleString()} ✨`);
+        if (!eliminatedSet.has(amountValue)) {
+            eliminatedSet.add(amountValue);
+            updateMoneyUIWithAnimation(amountValue);
+        }
+        chestObj.visible = false;
+        if(chestDiv){
+            const labelSpan = chestDiv.querySelector('.chest-label');
+            if(labelSpan) labelSpan.textContent = '已开';
+        }
+        needOpenInThisRound--;
+        updateHeaderInfo();
+        if (needOpenInThisRound === 0 && gameActive && !waitingBuyer && !gameOverFlag) {
+            triggerBuyerRound();
+        }
+        animationLock = false;
+    }
+
+    function selectAsPlayerCard(chestId) {
+        if (playerChestId !== -1) return;
+        const chest = chests.find(c => c.id === chestId);
+        if (!chest || !chest.visible) return;
+        playerChestId = chestId;
+        chest.isPlayerCard = true;
+        gameActive = true;
+        currentRound = 1;
+        needOpenInThisRound = ROUND_OPEN_COUNTS[0];
+        waitingBuyer = false;
+        gameOverFlag = false;
+        bargainUsedCount = 0;
+        updateHeaderInfo();
+        offerAmountSpan.textContent = '—';
+        document.getElementById('bargainStatus').innerText = '';
+        const targetDiv = chestElements[chestId];
+        if(targetDiv) targetDiv.classList.add('selected-card');
+        showInfoMessage(`底牌已锁定为 ${chest.number} 号宝箱！`);
+        updateBargainButtonState();
+    }
+
+    async function triggerBuyerRound() {
+        if (!gameActive || gameOverFlag) return;
+        if (rollingInterval) clearInterval(rollingInterval);
+        buyerSection.classList.add('focused');
+        if (!animationsEnabled) {
+            // 无滚动动画，直接显示价格
+            const remaining = getRemainingAmounts();
+            const finalOffer = computeFairOffer(remaining);
+            currentOffer = finalOffer;
+            offerAmountSpan.textContent = currentOffer.toLocaleString() + " 💰";
+            playRevealSound();
+            waitingBuyer = true;
+            updateBargainButtonState();
+            document.getElementById('bargainStatus').innerText = '';
+            return;
+        }
+        // 有滚动动画
+        let rollCount = 0;
+        const totalSteps = 15;
+        const interval = setInterval(() => {
+            const fake = Math.floor(Math.random() * 1000000);
+            offerAmountSpan.textContent = `${fake.toString().slice(0,6)}`;
+            playRollingSound();
+            rollCount++;
+            if (rollCount >= totalSteps) {
+                clearInterval(interval);
+                const remaining = getRemainingAmounts();
+                const finalOffer = computeFairOffer(remaining);
+                currentOffer = finalOffer;
+                offerAmountSpan.textContent = currentOffer.toLocaleString() + " 💰";
+                playRevealSound();
+                waitingBuyer = true;
+                updateBargainButtonState();
+                document.getElementById('bargainStatus').innerText = '';
+            }
+        }, 100);
+        rollingInterval = interval;
+    }
+
+    function useBargain() {
+        if (!waitingBuyer || !gameActive) return;
+        if (bargainUsedCount >= bargainTimesLeft) {
+            document.getElementById('bargainStatus').innerText = '讲价次数已用完！';
+            return;
+        }
+        const remaining = getRemainingAmounts();
+        const newOffer = bargainUpgrade(currentOffer, remaining);
+        if (newOffer > currentOffer) {
+            currentOffer = newOffer;
+            offerAmountSpan.textContent = currentOffer.toLocaleString() + " 💰";
+            document.getElementById('bargainStatus').innerHTML = '商人重新估价，提高报价！';
+            showInfoMessage(`买家提价至 ${currentOffer.toLocaleString()}`);
+        } else {
+            document.getElementById('bargainStatus').innerHTML = '商人拒绝加价，维持原报价';
+            showInfoMessage(`讲价失败，价格不变`);
+        }
+        bargainUsedCount++;
+        updateBargainButtonState();
+    }
+
+    function settleWin(amountWon, isDeal = true) {
+        if (gameOverFlag) return;
+        gameActive = false;
+        waitingBuyer = false;
+        gameOverFlag = true;
+        if (rollingInterval) clearInterval(rollingInterval);
+        const playerChest = chests.find(c => c.id === playerChestId);
+        const actual = playerChest ? playerChest.amount : 0;
+        if (isDeal) {
+            showInfoMessage(`成交价: ${amountWon.toLocaleString()} 金币`);
+            roundStatsDiv.innerHTML = `成交！获得 ${amountWon.toLocaleString()}`;
+            needOpenInfoSpan.innerHTML = `底牌金额为 ${actual.toLocaleString()}`;
+            playDealSound();
+        } else {
+            showInfoMessage(`你的底牌价值: ${actual.toLocaleString()}`);
+            roundStatsDiv.innerHTML = `底牌揭晓: ${actual.toLocaleString()}`;
+            needOpenInfoSpan.innerHTML = `游戏结束`;
+            playDealSound();
+        }
+        offerAmountSpan.textContent = isDeal ? `成交 ${amountWon.toLocaleString()}` : `底牌 ${actual.toLocaleString()}`;
+        setTimeout(() => { buyerSection.classList.remove('focused'); }, 1000);
+        disableGameClicks();
+    }
+    function finalOpenPlayerChest() {
+        if (!gameActive) return;
+        const pc = chests.find(c => c.id === playerChestId);
+        settleWin(pc?.amount || 0, false);
+    }
+    function disableGameClicks() {
+        chestElements.forEach(el => el.style.pointerEvents = 'none');
+    }
+    function nextRound() {
+        if (!waitingBuyer) return;
+        if (currentRound >= MAX_ROUND) {
+            finalOpenPlayerChest();
+            return;
+        }
+        waitingBuyer = false;
+        currentRound++;
+        needOpenInThisRound = ROUND_OPEN_COUNTS[currentRound-1];
+        updateHeaderInfo();
+        if (needOpenInThisRound === 0) triggerBuyerRound();
+        else {
+            showInfoMessage(`进入第 ${currentRound} 轮，还需开启 ${needOpenInThisRound} 个宝箱`);
+            offerAmountSpan.textContent = '—';
+            document.getElementById('bargainStatus').innerText = '';
+        }
+        buyerSection.classList.remove('focused');
+    }
+    function updateHeaderInfo() {
+        if (!gameActive && playerChestId === -1) {
+            roundStatsDiv.innerHTML = `挑选底牌`;
+            needOpenInfoSpan.innerHTML = `请选择任意一个宝箱作为底牌`;
+        } else if (gameActive && !gameOverFlag) {
+            roundStatsDiv.innerHTML = `第 <span>${currentRound}</span> / <span>${MAX_ROUND}</span> 轮`;
+            needOpenInfoSpan.innerHTML = `本轮还需开启 <strong style="color:#ffcc77">${needOpenInThisRound}</strong> 个宝箱`;
+        }
+    }
+
+    function buildChestsDOM() {
+        chestGridDiv.innerHTML = '';
+        chestElements = [];
+        for (let i = 0; i < chests.length; i++) {
+            const chest = chests[i];
+            const div = document.createElement('div');
+            div.className = 'chest';
+            if (playerChestId === chest.id) div.classList.add('selected-card');
+            if (!chest.visible) div.classList.add('vanish-placeholder');
+            const yOff = (i % 5 === 0 ? -4 : (i % 7 === 0 ? 5 : 0));
+            const xOff = (i % 4 === 0 ? 5 : (i % 3 === 0 ? -4 : 0));
+            div.style.setProperty('--x-offset', `${xOff}px`);
+            div.style.setProperty('--y-offset', `${yOff}px`);
+            div.style.transform = `translate(var(--x-offset), var(--y-offset))`;
+            const numSpan = document.createElement('div');
+            numSpan.className = 'chest-number';
+            numSpan.textContent = `${chest.number}`;
+            const labelSpan = document.createElement('div');
+            labelSpan.className = 'chest-label';
+            if (playerChestId === chest.id && chest.visible) labelSpan.textContent = '⭐ 底牌 ⭐';
+            else if (!chest.visible) labelSpan.textContent = '已开';
+            else labelSpan.textContent = '宝箱';
+            div.appendChild(numSpan);
+            div.appendChild(labelSpan);
+            div.setAttribute('data-id', chest.id);
+            div.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (animationLock || gameOverFlag) return;
+                if (!gameActive && playerChestId === -1 && chest.visible) selectAsPlayerCard(chest.id);
+                else if (gameActive && !waitingBuyer && !gameOverFlag && chest.visible && playerChestId !== chest.id) openChestWithAnimation(chest.id);
+            });
+            chestGridDiv.appendChild(div);
+            chestElements.push(div);
+        }
+    }
+
+    function resetAndNewGame() {
+        if (rollingInterval) clearInterval(rollingInterval);
+        buyerSection.classList.remove('focused');
+        chests = []; playerChestId = -1; eliminatedSet.clear(); currentRound = 0;
+        needOpenInThisRound = 0; gameActive = false; waitingBuyer = false; gameOverFlag = false;
+        currentOffer = 0; animationLock = false;
+        bargainUsedCount = 0;
+        bargainTimesLeft = parseInt(bargainCountInput.value) || 1;
+        bargainTimesLeft = Math.min(3, Math.max(1, bargainTimesLeft));
+        let shuffled = [...FULL_AMOUNTS];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        for (let i = 0; i < 26; i++) {
+            chests.push({ id: i, number: i+1, amount: shuffled[i], visible: true, isPlayerCard: false });
+        }
+        buildMoneyGrid();
+        buildChestsDOM();
+        roundStatsDiv.innerHTML = `挑选底牌`;
+        needOpenInfoSpan.innerHTML = `请选择任意一个宝箱作为底牌`;
+        offerAmountSpan.textContent = '—';
+        document.getElementById('bargainStatus').innerText = '';
+        gameActive = false;
+        gameOverFlag = false;
+        waitingBuyer = false;
+        updateBargainButtonState();
+    }
+
+    // FAQ 构建
+    function buildFaqList(searchTerm = '') {
+        const container = document.getElementById('faqList');
+        container.innerHTML = '';
+        const filtered = faqData.filter(item => item.q.includes(searchTerm) || item.a.includes(searchTerm));
+        filtered.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'faq-item';
+            const qDiv = document.createElement('div');
+            qDiv.className = 'faq-question';
+            qDiv.textContent = item.q;
+            const aDiv = document.createElement('div');
+            aDiv.className = 'faq-answer';
+            aDiv.textContent = item.a;
+            div.appendChild(qDiv);
+            div.appendChild(aDiv);
+            div.addEventListener('click', () => div.classList.toggle('expanded'));
+            container.appendChild(div);
+        });
+    }
+
+    // 事件绑定
+    document.getElementById('helpIconBtn').onclick = () => { buildFaqList(''); helpModal.classList.add('active'); };
+    document.getElementById('settingsIconBtn').onclick = () => settingsModal.classList.add('active');
+    document.getElementById('closeHelpModal').onclick = () => helpModal.classList.remove('active');
+    document.getElementById('closeSettingsModal').onclick = () => settingsModal.classList.remove('active');
+    document.getElementById('faqSearchInput').addEventListener('input', (e) => buildFaqList(e.target.value));
+    animationToggle.onclick = () => {
+        animationsEnabled = !animationsEnabled;
+        if (animationsEnabled) animationToggle.classList.add('active');
+        else animationToggle.classList.remove('active');
+        saveSettings();
+    };
+    bargainCountInput.onchange = () => {
+        let val = parseInt(bargainCountInput.value);
+        if (isNaN(val)) val = 1;
+        val = Math.min(3, Math.max(1, val));
+        bargainCountInput.value = val;
+        bargainTimesLeft = val;
+        saveSettings();
+        if (!gameActive && playerChestId === -1) bargainUsedCount = 0;
+        updateBargainButtonState();
+    };
+    acceptBtn.onclick = () => { if (waitingBuyer && gameActive && !gameOverFlag) settleWin(currentOffer, true); };
+    rejectBtn.onclick = () => { if (waitingBuyer && gameActive && !gameOverFlag) nextRound(); };
+    bargainBtn.onclick = () => { if (waitingBuyer && gameActive && !gameOverFlag) useBargain(); };
+    restartBtn.onclick = () => resetAndNewGame();
+    forceResetBtn.onclick = () => resetAndNewGame();
+
+    loadSettings();
+    resetAndNewGame();
+</script>
+</body>
+</html>
