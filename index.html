@@ -63,6 +63,11 @@ button{font:inherit}
 }
 .logo{font-weight:800;letter-spacing:-.5px}
 .logo span{background:linear-gradient(90deg,var(--blue),var(--purple));-webkit-background-clip:text;color:transparent}
+.nav-exp-badge{margin-left:10px;background:#ffd700;color:#000;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;white-space:nowrap}
+.user-badge{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;font-weight:700;margin-left:6px;vertical-align:middle}
+.user-badge.normal{background:#b8e9b8;color:#000}
+.user-badge.premium{background:#ffd700;color:#000}
+.user-badge.ultimate{background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff}
 
 .navlinks{display:flex;gap:4px;align-items:center}
 .home-dropdown{position:relative;display:inline-block}
@@ -698,6 +703,7 @@ body.page-leaving {
       </div>
       <a href="resources.html">资源</a>
       <a href="games.html">游戏</a>
+      <a href="shop.html">商店</a>
     </div>
     <div class="lang-switch">
       <button class="lang-btn" id="langBtn" type="button">简体中文 ▾</button>
@@ -728,7 +734,11 @@ body.page-leaving {
             </div>
             <input type="file" id="avatarUploadInput" style="display: none;" accept="image/*">
           </div>
-          <div id="popoverNickname" style="text-align: center; font-size: 16px; font-weight: bold; color: #172033; cursor: pointer; margin-bottom: 4px;" title="点击修改昵称">用户昵称</div>
+          <div style="text-align: center; font-size: 16px; font-weight: bold; color: #172033; margin-bottom: 4px;">
+            <span id="popoverNickname">用户昵称</span>
+            <span id="popoverUserBadge"></span>
+          </div>
+
           <div style="text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 16px;">点击昵称修改</div>
 
           <div style="font-size: 12px; color: #6f7890;">
@@ -1171,10 +1181,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ================== 4. 自动登录初始化 ==================
+  const navExpBadge = document.getElementById('navExpBadge');
   const savedUser = localStorage.getItem('user');
   if (savedUser) {
     try {
       const userData = JSON.parse(savedUser);
+      // 顶部经验标签
+      if (navExpBadge) navExpBadge.textContent = '经验：' + (userData.exp || 0).toLocaleString();
       const avatarBtnHTML = document.querySelector('#avatarBtn');
       if (avatarBtnHTML) {
         if (userData.avatar) {
@@ -1193,6 +1206,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(data => {
         if (data.success && data.user) {
           localStorage.setItem('user', JSON.stringify(data.user));
+          if (navExpBadge) navExpBadge.textContent = '经验：' + (data.user.exp || 0).toLocaleString();
           // 同步后刷新绿勾（如果函数已定义）
           if (typeof updateSigninChecks === 'function') {
             updateSigninChecks();
@@ -1324,6 +1338,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         document.getElementById('popoverNickname').textContent = userData.nickname || '用户';
+        // 显示名牌
+        const badgeEl = document.getElementById('popoverUserBadge');
+        if (badgeEl) {
+          if (userData.badge_type && userData.badge_name && userData.badge_expire_at && userData.badge_expire_at > Date.now()) {
+            badgeEl.className = 'user-badge ' + userData.badge_type;
+            badgeEl.textContent = userData.badge_name;
+          } else {
+            badgeEl.className = '';
+            badgeEl.textContent = '';
+          }
+        }
         renderPopoverExp(userData.exp);
       } else {
         popoverLoggedIn.style.display = 'none';
@@ -1582,10 +1607,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
         const avatarStyle = u.avatar ? `background-image: url(${u.avatar});` : '';
         const letter = (u.nickname || 'U').charAt(0).toUpperCase();
+        const badgeHtml = (u.badge_type && u.badge_name && u.badge_expire_at && u.badge_expire_at > Date.now())
+          ? `<span class="user-badge ${u.badge_type}">${u.badge_name}</span>` : '';
         html += `<div class="leaderboard-row ${rankClass}">
           <span style="width:20px;">${rank}</span>
           <div class="leaderboard-avatar" style="${avatarStyle}">${u.avatar ? '' : letter}</div>
-          <span class="leaderboard-name">${u.nickname || '用户'}</span>
+          <span class="leaderboard-name">${u.nickname || '用户'}${badgeHtml}</span>
           <span class="leaderboard-days">${u.continuous_days || 0} 天</span>
         </div>`;
       });
@@ -1595,10 +1622,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const u = data.currentUser;
         const avatarStyle = u.avatar ? `background-image: url(${u.avatar});` : '';
         const letter = (u.nickname || 'U').charAt(0).toUpperCase();
+        const myBadgeHtml = (u.badge_type && u.badge_name && u.badge_expire_at && u.badge_expire_at > Date.now())
+          ? `<span class="user-badge ${u.badge_type}">${u.badge_name}</span>` : '';
         html += `<div class="leaderboard-row current-user">
           <span style="width:20px;">未上榜</span>
           <div class="leaderboard-avatar" style="${avatarStyle}">${u.avatar ? '' : letter}</div>
-          <span class="leaderboard-name">${u.nickname || '用户'}</span>
+          <span class="leaderboard-name">${u.nickname || '用户'}${myBadgeHtml}</span>
           <span class="leaderboard-days">${u.continuous_days || 0} 天</span>
         </div>`;
       }
