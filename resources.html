@@ -8,13 +8,8 @@
 <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
 <style>
 :root{
-  --blue:#4f7cff;
-  --purple:#8a5cf6;
-  --ink:#172033;
-  --muted:#6f7890;
-  --line:#e8ebf5;
-  --bg:#f7f9ff;
-  --card:rgba(255,255,255,.78);
+  --blue:#4f7cff; --purple:#8a5cf6; --ink:#172033; --muted:#6f7890;
+  --line:#e8ebf5; --bg:#f7f9ff; --card:rgba(255,255,255,.78);
   --shadow:0 18px 60px rgba(67,72,120,.10);
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -99,83 +94,41 @@ footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
 .card-text { transition: opacity 0.3s ease; }
 .card-text p { margin-bottom: 0; }
 
-.content-stack {
-  position: relative;
-}
-.card-text {
-  transition: opacity 0.3s ease;
-}
+.content-stack { position: relative; }
+.card-text { transition: opacity 0.3s ease; }
 .download-buttons {
-  position: absolute;
-  left: 20px;
-  right: 20px;
-  bottom: 20px;
-  display: flex;
-  gap: 10px;
-  opacity: 0;
-  pointer-events: none;
+  position: absolute; left: 20px; right: 20px; bottom: 20px;
+  display: flex; gap: 10px; opacity: 0; pointer-events: none;
   transition: opacity 0.3s ease;
 }
 .download-buttons a {
-  flex: 1;
-  text-align: center;
-  padding: 10px;
-  border-radius: 10px;
+  flex: 1; text-align: center; padding: 10px; border-radius: 10px;
   background: linear-gradient(110deg, #4f7cff, #8a5cf6);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: transform 0.2s;
+  color: #fff; font-size: 13px; font-weight: 600;
+  text-decoration: none; transition: transform 0.2s;
 }
-.download-buttons a:hover {
-  transform: translateY(-2px);
-}
-#resources .card:hover .card-text {
-  opacity: 0;
-}
-#resources .card:hover .download-buttons {
-  opacity: 1;
-  pointer-events: auto;
-}
+.download-buttons a:hover { transform: translateY(-2px); }
+#resources .card:hover .card-text { opacity: 0; }
+#resources .card:hover .download-buttons { opacity: 1; pointer-events: auto; }
 
-/* ===== 搜索框 ===== */
 .search-box input {
-  width: 260px;
-  padding: 10px 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  font-size: 14px;
-  background: #fff;
-  outline: none;
-  transition: border-color 0.2s;
+  width: 260px; padding: 10px 14px; border: 1px solid var(--line);
+  border-radius: 12px; font-size: 14px; background: #fff;
+  outline: none; transition: border-color 0.2s;
 }
 .search-box input:focus {
   border-color: #4f7cff;
   box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.12);
 }
 
-/* ===== 右侧类型导航 ===== */
 .type-nav {
-  position: fixed;
-  right: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  z-index: 100;
+  position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 16px; z-index: 100;
 }
 .type-dot {
-  display: block; /* 👈 加这一行 */
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #c9d1e4;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.25s ease;
-  text-decoration: none;
+  display: block; width: 14px; height: 14px; border-radius: 50%;
+  background: #c9d1e4; cursor: pointer; position: relative;
+  transition: all 0.25s ease; text-decoration: none;
 }
 .type-dot:hover {
   background: linear-gradient(135deg, #4f7cff, #8a5cf6);
@@ -183,39 +136,20 @@ footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
 }
 .type-dot::after {
   content: attr(data-name);
-  position: absolute;
-  right: 24px;
-  top: 50%;
+  position: absolute; right: 24px; top: 50%;
   transform: translateY(-50%);
-  background: rgba(23, 32, 51, 0.85);
-  color: #fff;
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
+  background: rgba(23, 32, 51, 0.85); color: #fff; font-size: 12px;
+  padding: 4px 10px; border-radius: 8px; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
 }
-.type-dot:hover::after {
-  opacity: 1;
-}
+.type-dot:hover::after { opacity: 1; }
 
-/* ===== 类型分区 ===== */
-.type-section {
-  margin-top: 50px;
-  scroll-margin-top: 100px;
-}
+.type-section { margin-top: 50px; scroll-margin-top: 100px; }
 .type-title {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  padding-left: 12px;
-  border-left: 4px solid #4f7cff;
-  color: var(--ink);
+  font-size: 22px; font-weight: 700; margin-bottom: 20px;
+  padding-left: 12px; border-left: 4px solid #4f7cff; color: var(--ink);
 }
 
-/* 页面切换淡入淡出 */
 body{opacity:1;transition:opacity .2s ease}
 body.page-leaving{opacity:0}
 
@@ -232,8 +166,8 @@ body.page-leaving{opacity:0}
   .container{width:min(100% - 24px,1160px)}
 }
 
-/* ===== 个人中心头像按钮 ===== */
-.user-center { position: relative; display: flex; align-items: center; margin-left: 4px; padding-bottom: 10px; /* 👈 留出空间，让悬停不中断 */ }
+/* 头像 */
+.user-center { position: relative; display: flex; align-items: center; margin-left: 4px; padding-bottom: 10px; }
 .avatar-btn {
   width: 36px; height: 36px; border-radius: 50%;
   background: linear-gradient(135deg, #4f7cff, #8a5cf6);
@@ -243,9 +177,8 @@ body.page-leaving{opacity:0}
 }
 .avatar-btn:hover { transform: scale(1.08); box-shadow: 0 6px 16px rgba(79, 124, 255, 0.35); }
 
-/* ===== 悬停卡片 ===== */
 .user-popover {
-  position: absolute; top: 100%; /* 👈 改为 100%，让卡片直接贴在悬停区域下方 */ right: 0; width: 220px;
+  position: absolute; top: 100%; right: 0; width: 220px;
   background: #fff; border: 1px solid #e8ebf5; border-radius: 16px;
   box-shadow: 0 10px 30px rgba(55,65,110,0.15); display: none; z-index: 50;
 }
@@ -256,15 +189,21 @@ body.page-leaving{opacity:0}
 }
 .user-center:hover .user-popover { display: block; }
 
-/* ===== 模态框遮罩层 ===== */
+/* 名牌 */
+.user-badge{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;font-weight:700;margin-left:6px;vertical-align:middle}
+.user-badge.normal{background:#b8e9b8;color:#000}
+.user-badge.premium{background:#ffd700;color:#000}
+.user-badge.ultimate{background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff}
+.user-badge.editable-badge{cursor:pointer;transition:filter .15s ease, transform .15s ease;}
+.user-badge.editable-badge:hover{filter:brightness(1.08);transform:scale(1.05);}
+
+/* 模态框 */
 .modal-overlay {
   display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(23, 32, 51, 0.55); backdrop-filter: blur(6px); z-index: 999;
   justify-content: center; align-items: center;
 }
 .modal-overlay.show { display: flex; }
-
-/* ===== 模态框主体 ===== */
 .modal-content {
   background: #fff; border-radius: 24px; width: min(420px, calc(100% - 40px));
   padding: 32px 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
@@ -275,8 +214,6 @@ body.page-leaving{opacity:0}
   font-size: 28px; color: #999; cursor: pointer; line-height: 1;
 }
 .modal-close:hover { color: #333; }
-
-/* ===== 标签切换 ===== */
 .modal-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
 .modal-tab {
   flex: 1; padding: 10px; border: 1px solid #e8ebf5; border-radius: 12px;
@@ -285,8 +222,6 @@ body.page-leaving{opacity:0}
 .modal-tab.active {
   background: linear-gradient(110deg, #4f7cff, #8a5cf6); color: #fff; border-color: transparent;
 }
-
-/* ===== 表单 ===== */
 .form-group { margin-bottom: 18px; }
 .form-group label { display: block; font-size: 13px; color: #6f7890; margin-bottom: 6px; font-weight: 600; }
 .form-group input {
@@ -316,66 +251,28 @@ body.page-leaving{opacity:0}
 #backToLoginLink, #forgotPasswordLink { color: #8a5cf6; font-size: 13px; }
 #userNickname { font-size: 24px; margin-top: 10px; }
 
-/* ===== 等级门槛浮窗 ===== */
 .popover-level-wrap { position: relative; display: inline-block; }
 .level-tooltip {
-  position: absolute;
-  left: 100%;
-  top: 50%;
+  position: absolute; left: 100%; top: 50%;
   transform: translateY(-50%) translateX(6px);
-  background: #fff;
-  color: #172033;
-  font-size: 12px;
-  line-height: 1.8;
-  padding: 10px 14px;
-  border-radius: 10px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
+  background: #fff; color: #172033; font-size: 12px; line-height: 1.8;
+  padding: 10px 14px; border-radius: 10px; white-space: nowrap;
+  opacity: 0; pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
-  z-index: 9999;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  border: 1px solid #e8ebf5;
+  z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e8ebf5;
 }
 .level-tooltip::before {
-  content: "";
-  position: absolute;
-  right: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 6px solid transparent;
-  border-right-color: #fff;
+  content: ""; position: absolute; right: 100%; top: 50%;
+  transform: translateY(-50%); border: 6px solid transparent; border-right-color: #fff;
 }
-.level-tooltip .lv-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.level-tooltip .lv-row:last-child {
-  margin-bottom: 0;
-}
+.level-tooltip .lv-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.level-tooltip .lv-row:last-child { margin-bottom: 0; }
 .level-tooltip .lv-badge {
-  display: inline-block;
-  padding: 1px 8px;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 12px;
-  color: #fff;
-  min-width: 36px;
-  text-align: center;
+  display: inline-block; padding: 1px 8px; border-radius: 6px;
+  font-weight: bold; font-size: 12px; color: #fff; min-width: 36px; text-align: center;
 }
-.level-tooltip .lv-exp {
-  color: #172033;
-  margin-left: auto;
-  text-align: right;
-}
-.popover-level-wrap:hover .level-tooltip {
-  opacity: 1;
-  transform: translateY(-50%) translateX(12px);
-}
-
+.level-tooltip .lv-exp { color: #172033; margin-left: auto; text-align: right; }
+.popover-level-wrap:hover .level-tooltip { opacity: 1; transform: translateY(-50%) translateX(12px); }
 </style>
 </head>
 <body>
@@ -405,7 +302,6 @@ body.page-leaving{opacity:0}
         <button type="button" data-lang="tw">繁體中文（台灣）</button>
       </div>
     </div>
-    <!-- 头像按钮 & 悬停卡片 -->
     <div class="user-center" id="userCenter">
       <div class="avatar-btn" id="avatarBtn" title="个人中心">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -425,25 +321,24 @@ body.page-leaving{opacity:0}
             </div>
             <input type="file" id="avatarUploadInput" style="display: none;" accept="image/*">
           </div>
-          <div id="popoverNickname" style="text-align: center; font-size: 16px; font-weight: bold; color: #172033; cursor: pointer; margin-bottom: 4px;" title="点击修改昵称">用户昵称</div>
-          <div style="text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 16px;">点击昵称修改</div>
-
+          <div style="text-align: center; font-size: 16px; font-weight: bold; color: #172033; margin-bottom: 4px;">
+            <span id="popoverNickname" style="cursor:pointer;" title="点击修改昵称">用户昵称</span><span id="popoverUserBadge"></span>
+          </div>
+          <div style="text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 16px;">点击昵称或名牌修改</div>
           <div style="font-size: 12px; color: #6f7890;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <span>经验值：<span id="popoverExpText">0/200</span></span>
               <div class="popover-level-wrap">
                 <span id="popoverLevelText" style="font-weight: bold; padding: 1px 8px; border-radius: 6px; color: #fff; background: #4ade80;">Lv1</span>
-
-<div class="level-tooltip">
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #4ade80, #22c55e); color: #fff;">Lv1</span><span class="lv-exp">0 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #22c55e, #15803d); color: #fff;">Lv2</span><span class="lv-exp">200 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff;">Lv3</span><span class="lv-exp">500 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #facc15, #eab308); color: #1f2937;">Lv4</span><span class="lv-exp">1200 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #f97316, #c2410c); color: #fff;">Lv5</span><span class="lv-exp">2800 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff;">Lv6</span><span class="lv-exp">6200 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #a855f7, #7e22ce); color: #fff;">Lv7</span><span class="lv-exp">13200 经验</span></div>
-</div>
-
+                <div class="level-tooltip">
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #4ade80, #22c55e); color: #fff;">Lv1</span><span class="lv-exp">0 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #22c55e, #15803d); color: #fff;">Lv2</span><span class="lv-exp">200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff;">Lv3</span><span class="lv-exp">500 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #facc15, #eab308); color: #1f2937;">Lv4</span><span class="lv-exp">1200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #f97316, #c2410c); color: #fff;">Lv5</span><span class="lv-exp">2800 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff;">Lv6</span><span class="lv-exp">6200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #a855f7, #7e22ce); color: #fff;">Lv7</span><span class="lv-exp">13200 经验</span></div>
+                </div>
               </div>
             </div>
             <div style="width: 100%; height: 8px; background: #fff; border: 1px solid #e8ebf5; border-radius: 4px; overflow: hidden;">
@@ -468,14 +363,12 @@ body.page-leaving{opacity:0}
     </div>
   </div>
 
-  <!-- 右侧类型导航 -->
   <div class="type-nav">
     <a class="type-dot" href="#type-map" data-name="地图"></a>
     <a class="type-dot" href="#type-web" data-name="网页"></a>
     <a class="type-dot" href="#type-project" data-name="工程"></a>
   </div>
 
-  <!-- 地图 -->
   <div class="type-section" id="type-map">
     <h3 class="type-title">地图</h3>
     <div class="grid grid-resources">
@@ -499,7 +392,6 @@ body.page-leaving{opacity:0}
     </div>
   </div>
 
-  <!-- 网页 -->
   <div class="type-section" id="type-web">
     <h3 class="type-title">网页</h3>
     <div class="grid grid-resources">
@@ -523,7 +415,6 @@ body.page-leaving{opacity:0}
     </div>
   </div>
 
-  <!-- 工程 -->
   <div class="type-section" id="type-project">
     <h3 class="type-title">工程</h3>
     <div class="grid grid-resources">
@@ -544,11 +435,6 @@ body.page-leaving{opacity:0}
           </div>
         </div>
       </div>
-
-
-
-
-
       <div class="card feature resource-item" data-title="只要能...到达...那个地方..." data-desc="我的世界 闯关 解密 联机 免费下载 爱发电">
         <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/r1.jpg') center/cover no-repeat;"></div>
         <div class="card-body">
@@ -566,12 +452,6 @@ body.page-leaving{opacity:0}
           </div>
         </div>
       </div>
-
-
-
-
-
-
     </div>
   </div>
 
@@ -579,549 +459,19 @@ body.page-leaving{opacity:0}
 </section>
 </main>
 
-<!-- ===== 登录/注册模态框 ===== -->
 <div class="modal-overlay" id="authModal">
   <div class="modal-content">
     <button class="modal-close" id="closeModal">&times;</button>
-
-    <!-- 1. 登录/注册表单 -->
     <div id="authFormContainer">
       <div class="modal-tabs">
         <button class="modal-tab active" data-tab="login" id="tabLogin">登录</button>
         <button class="modal-tab" data-tab="register" id="tabRegister">注册</button>
       </div>
-
       <form id="authForm">
         <div class="form-group">
           <label>邮箱</label>
           <input type="email" id="emailInput" placeholder="请输入邮箱地址" required>
         </div>
-
         <div class="form-group" id="nicknameGroup" style="display: none;">
           <label>昵称</label>
-          <input type="text" id="nicknameInput" placeholder="设置一个独一无二的昵称" maxlength="20">
-        </div>
-
-        <div class="form-group" id="codeGroup" style="display: none;">
-          <label>验证码</label>
-          <div class="code-row">
-            <input type="text" id="codeInput" placeholder="6位数字验证码" maxlength="6">
-            <button type="button" id="sendCodeBtn" class="send-code-btn">获取验证码</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>密码</label>
-          <input type="password" id="passwordInput" placeholder="至少8位，包含字母和数字" required>
-        </div>
-
-        <button type="submit" class="submit-btn" id="submitBtn">登录 / 注册</button>
-      </form>
-      <div class="modal-footer">
-        <a href="javascript:void(0)" id="forgotPasswordLink">忘记密码？</a>
-      </div>
-    </div>
-
-    <!-- 2. 找回密码表单（默认隐藏） -->
-    <div id="resetFormContainer" style="display: none;">
-      <h3 style="margin-bottom: 20px; text-align: center;">重置密码</h3>
-      <form id="resetForm">
-        <div class="form-group">
-          <label>注册邮箱</label>
-          <input type="email" id="resetEmail" placeholder="请输入注册时的邮箱" required>
-        </div>
-        <div class="form-group">
-          <label>验证码</label>
-          <div class="code-row">
-            <input type="text" id="resetCode" placeholder="6位数字验证码" maxlength="6" required>
-            <button type="button" id="sendResetCodeBtn" class="send-code-btn">获取验证码</button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label>新密码</label>
-          <input type="password" id="newPassword" placeholder="至少8位，包含字母和数字" required>
-        </div>
-        <button type="submit" class="submit-btn" id="resetSubmitBtn">确认修改</button>
-      </form>
-      <div class="modal-footer">
-        <a href="javascript:void(0)" id="backToLoginLink">返回登录</a>
-      </div>
-    </div>
-
-    <!-- 3. 用户信息面板（默认隐藏，登录成功后显示） -->
-    <div id="userPanel" style="display: none; text-align: center;">
-      <!-- 👇 这里加上了默认的渐变背景 background: linear-gradient(135deg, #4f7cff, #8a5cf6); -->
-      <div class="avatar" id="userPanelAvatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px; border-radius: 26px; overflow: hidden; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4f7cff, #8a5cf6);">
-        <span id="userAvatarLetter" style="color: #fff;">U</span>
-      </div>
-      <h3 id="userNickname" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-        用户昵称
-      </h3>
-
-      <!-- 经验条区域 -->
-      <div style="margin: 15px 0 20px; font-size: 14px; color: #6f7890; text-align: left;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <span>经验值：<span id="userExpText">0/200</span></span>
-          <span id="userLevelText" style="font-weight: bold; font-size: 14px; color: #4b5563;">Lv1</span>
-        </div>
-        <div style="width: 100%; height: 14px; background: #ffffff; border: 1px solid #e8ebf5; border-radius: 7px; overflow: hidden;">
-          <div id="expBarFill" style="height: 100%; width: 0%; background: #4b5563; border-radius: 7px; transition: width 0.5s ease, background-color 0.5s ease;"></div>
-        </div>
-      </div>
-
-      <button class="submit-btn" id="logoutBtn" style="background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
-    </div>
-
-  </div>
-</div>
-
-<footer>
-  <div>© 2026 这人针不错</div>
-  <div style="margin-top:6px">ZRZBC</div>
-</footer>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-
-  // ===== 经验条渲染 =====
-  function renderExp(exp) {
-    const expNum = parseInt(exp) || 0;
-    const expBarFill = document.getElementById('expBarFill');
-    const userExpText = document.getElementById('userExpText');
-    const userLevelText = document.getElementById('userLevelText');
-    if (!expBarFill || !userExpText || !userLevelText) return;
-
-    let level = 1, nextExp = 200;
-    let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
-
-    if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
-    else if (expNum >= 6200) { level = 6; nextExp = 13200; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
-    else if (expNum >= 2800) { level = 5; nextExp = 6200; baseColor = '#f97316'; darkColor = '#c2410c'; }
-    else if (expNum >= 1200) { level = 4; nextExp = 2800; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
-    else if (expNum >= 500) { level = 3; nextExp = 1200; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
-    else if (expNum >= 200) { level = 2; nextExp = 500; baseColor = '#22c55e'; darkColor = '#15803d'; }
-
-    if (nextExp === Infinity) { userExpText.textContent = `${expNum}/∞`; expBarFill.style.width = '100%'; }
-    else { userExpText.textContent = `${expNum}/${nextExp}`; expBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
-
-    userLevelText.textContent = `Lv${level}`;
-    userLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
-    userLevelText.style.color = textColor;
-    userLevelText.style.padding = '2px 12px';
-    userLevelText.style.borderRadius = '8px';
-    userLevelText.style.display = 'inline-block';
-    expBarFill.style.background = baseColor;
-  }
-
-  // ===== 获取元素 =====
-  const avatarBtn = document.getElementById('avatarBtn');
-  const authModal = document.getElementById('authModal');
-  const closeModal = document.getElementById('closeModal');
-  const authFormContainer = document.getElementById('authFormContainer');
-  const resetFormContainer = document.getElementById('resetFormContainer');
-  const userPanel = document.getElementById('userPanel');
-  const tabLogin = document.getElementById('tabLogin');
-  const tabRegister = document.getElementById('tabRegister');
-  const authForm = document.getElementById('authForm');
-  const emailInput = document.getElementById('emailInput');
-  const codeInput = document.getElementById('codeInput');
-  const passwordInput = document.getElementById('passwordInput');
-  const nicknameGroup = document.getElementById('nicknameGroup');
-  const nicknameInput = document.getElementById('nicknameInput');
-  const sendCodeBtn = document.getElementById('sendCodeBtn');
-  const submitBtn = document.getElementById('submitBtn');
-  const forgotPasswordLink = document.getElementById('forgotPasswordLink');
-  const resetForm = document.getElementById('resetForm');
-  const resetEmail = document.getElementById('resetEmail');
-  const resetCode = document.getElementById('resetCode');
-  const newPassword = document.getElementById('newPassword');
-  const sendResetCodeBtn = document.getElementById('sendResetCodeBtn');
-  const resetSubmitBtn = document.getElementById('resetSubmitBtn');
-  const backToLoginLink = document.getElementById('backToLoginLink');
-  const userAvatarLetter = document.getElementById('userAvatarLetter');
-  const userNickname = document.getElementById('userNickname');
-  const logoutBtn = document.getElementById('logoutBtn');
-
-  function startCountdown(btn) {
-    let countdown = 60;
-    btn.disabled = true; btn.textContent = `${countdown}秒后重试`;
-    const timer = setInterval(() => {
-      countdown--;
-      if (countdown <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; }
-      else { btn.textContent = `${countdown}秒后重试`; }
-    }, 1000);
-  }
-
-  async function sendCode(email, btn) {
-    if (!email || !email.includes('@')) return alert('请输入有效的邮箱地址');
-    btn.disabled = true; btn.textContent = '发送中...';
-    try {
-      const res = await fetch('/api/auth/send-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
-      const data = await res.json();
-      if (data.success) { startCountdown(btn); }
-      else { alert(data.error || '发送失败'); btn.disabled = false; btn.textContent = '获取验证码'; }
-    } catch (err) { alert('网络错误'); btn.disabled = false; btn.textContent = '获取验证码'; }
-  }
-
-  // ===== 自动登录初始化 =====
-  const savedUser = localStorage.getItem('user');
-  if (savedUser) {
-    try {
-      const userData = JSON.parse(savedUser);
-      const avatarBtnHTML = document.querySelector('#avatarBtn');
-      if (avatarBtnHTML) {
-        if (userData.avatar) {
-          avatarBtnHTML.innerHTML = `<img src="${userData.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-        } else {
-          avatarBtnHTML.innerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
-        }
-      }
-      // 👇 新增：打开网站时立刻向后端同步一次最新数据（包括经验值）
-      fetch('/api/auth/me', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: userData.email })
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-        }
-      })
-      .catch(err => console.log('同步失败', err));
-    } catch(e) {}
-  }
-
-  // ===== 头像点击 =====
-  if (avatarBtn && authModal) {
-    avatarBtn.addEventListener('click', async () => {
-      const user = localStorage.getItem('user');
-      if (user) {
-        return; // 已登录：不弹出任何东西
-      } else {
-        authFormContainer.style.display = 'block';
-        resetFormContainer.style.display = 'none';
-        userPanel.style.display = 'none';
-        authModal.classList.add('show');
-      }
-    });
-  }
-
-  // ===== 关闭弹窗 =====
-  if (closeModal && authModal) {
-    closeModal.addEventListener('click', () => authModal.classList.remove('show'));
-    authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('show'); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && authModal.classList.contains('show')) authModal.classList.remove('show'); });
-  }
-
-  // ===== 退出登录 (弹窗内) =====
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      localStorage.removeItem('user'); alert('已退出登录');
-      authModal.classList.remove('show'); location.reload();
-    });
-  }
-
-  // ===== 标签切换 =====
-  if (tabLogin && tabRegister) {
-    tabLogin.addEventListener('click', () => {
-      tabLogin.classList.add('active'); tabRegister.classList.remove('active');
-      nicknameGroup.style.display = 'none';
-      if (document.getElementById('codeGroup')) { document.getElementById('codeGroup').style.display = 'none'; if (codeInput) codeInput.required = false; }
-      forgotPasswordLink.style.display = 'inline';
-    });
-    tabRegister.addEventListener('click', () => {
-      tabRegister.classList.add('active'); tabLogin.classList.remove('active');
-      nicknameGroup.style.display = 'block';
-      if (document.getElementById('codeGroup')) { document.getElementById('codeGroup').style.display = 'block'; if (codeInput) codeInput.required = true; }
-      forgotPasswordLink.style.display = 'none';
-    });
-  }
-
-  // ===== 找回密码切换 =====
-  if (forgotPasswordLink && backToLoginLink) {
-    forgotPasswordLink.addEventListener('click', () => { authFormContainer.style.display = 'none'; resetFormContainer.style.display = 'block'; });
-    backToLoginLink.addEventListener('click', () => { authFormContainer.style.display = 'block'; resetFormContainer.style.display = 'none'; });
-  }
-
-  // ===== 发送验证码按钮 =====
-  if (sendCodeBtn) sendCodeBtn.addEventListener('click', () => sendCode(emailInput.value.trim(), sendCodeBtn));
-  if (sendResetCodeBtn) sendResetCodeBtn.addEventListener('click', () => sendCode(resetEmail.value.trim(), sendResetCodeBtn));
-
-  // ===== 提交登录/注册 =====
-  if (authForm) {
-    authForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = emailInput.value.trim();
-      const code = codeInput.value.trim();
-      const password = passwordInput.value.trim();
-      const isRegister = tabRegister.classList.contains('active');
-      const nickname = isRegister && nicknameInput ? nicknameInput.value.trim() : '';
-      if (!email || !password) return alert('请填写邮箱和密码');
-      if (isRegister && !code) return alert('请填写验证码');
-      if (password.length < 8) return alert('密码至少8位');
-      if (isRegister && !nickname) return alert('请设置您的昵称');
-      submitBtn.disabled = true; submitBtn.textContent = '处理中...';
-      try {
-        const payload = isRegister ? { email, code, password, nickname } : { email, password };
-        const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        const data = await res.json();
-        if (data.success) { alert(isRegister ? '注册成功！' : '登录成功！'); if (data.user) { localStorage.setItem('user', JSON.stringify(data.user)); location.reload(); } }
-        else { alert(data.error || '操作失败'); }
-      } catch (err) { alert('网络错误'); }
-      finally { submitBtn.disabled = false; submitBtn.textContent = '登录 / 注册'; }
-    });
-  }
-
-  // ===== 提交重置密码 =====
-  if (resetForm) {
-    resetForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = resetEmail.value.trim();
-      const code = resetCode.value.trim();
-      const password = newPassword.value.trim();
-      if (!email || !code || !password) return alert('请填写所有字段');
-      if (password.length < 8) return alert('密码至少8位');
-      resetSubmitBtn.disabled = true; resetSubmitBtn.textContent = '处理中...';
-      try {
-        const res = await fetch('/api/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, code, newPassword: password }) });
-        const data = await res.json();
-        if (data.success) { alert('密码重置成功！'); authFormContainer.style.display = 'block'; resetFormContainer.style.display = 'none'; }
-        else { alert(data.error || '重置失败'); }
-      } catch (err) { alert('网络错误'); }
-      finally { resetSubmitBtn.disabled = false; resetSubmitBtn.textContent = '确认修改'; }
-    });
-  }
-
-  // ===== 悬停卡片逻辑 =====
-  const userCenter = document.getElementById('userCenter');
-  if (userCenter) {
-    userCenter.addEventListener('mouseenter', () => {
-      const user = localStorage.getItem('user');
-      const popoverLoggedIn = document.getElementById('popoverLoggedIn');
-      const popoverNotLoggedIn = document.getElementById('popoverNotLoggedIn');
-      
-      if (user) {
-        const userData = JSON.parse(user);
-        popoverLoggedIn.style.display = 'block';
-        popoverNotLoggedIn.style.display = 'none';
-
-        if (userData.avatar) {
-          document.getElementById('popoverAvatar').style.backgroundImage = `url(${userData.avatar})`;
-          document.getElementById('popoverAvatarLetter').style.display = 'none';
-        } else {
-          document.getElementById('popoverAvatar').style.backgroundImage = 'none';
-          document.getElementById('popoverAvatar').style.background = 'linear-gradient(135deg, #4f7cff, #8a5cf6)'; // 👈 确保背景恢复
-          document.getElementById('popoverAvatarLetter').style.display = 'block';
-          document.getElementById('popoverAvatarLetter').style.color = '#fff';
-          document.getElementById('popoverAvatarLetter').textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
-        }
-        document.getElementById('popoverNickname').textContent = userData.nickname || '用户';
-        renderPopoverExp(userData.exp);
-      } else {
-        popoverLoggedIn.style.display = 'none';
-        popoverNotLoggedIn.style.display = 'block';
-      }
-    });
-  }
-
-  function renderPopoverExp(exp) {
-    const expNum = parseInt(exp) || 0;
-    const popoverExpText = document.getElementById('popoverExpText');
-    const popoverLevelText = document.getElementById('popoverLevelText');
-    const popoverExpBarFill = document.getElementById('popoverExpBarFill');
-    if (!popoverExpText || !popoverLevelText || !popoverExpBarFill) return;
-
-    let level = 1, nextExp = 200;
-    let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
-
-    if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
-    else if (expNum >= 6200) { level = 6; nextExp = 13200; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
-    else if (expNum >= 2800) { level = 5; nextExp = 6200; baseColor = '#f97316'; darkColor = '#c2410c'; }
-    else if (expNum >= 1200) { level = 4; nextExp = 2800; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
-    else if (expNum >= 500) { level = 3; nextExp = 1200; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
-    else if (expNum >= 200) { level = 2; nextExp = 500; baseColor = '#22c55e'; darkColor = '#15803d'; }
-
-    if (nextExp === Infinity) { popoverExpText.textContent = `${expNum}/∞`; popoverExpBarFill.style.width = '100%'; }
-    else { popoverExpText.textContent = `${expNum}/${nextExp}`; popoverExpBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
-
-    popoverLevelText.textContent = `Lv${level}`;
-    popoverLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
-    popoverLevelText.style.color = textColor;
-    popoverExpBarFill.style.background = baseColor;
-  }
-
-  // ===== 上传头像 =====
-  const popoverAvatar = document.getElementById('popoverAvatar');
-  const avatarUploadInput = document.getElementById('avatarUploadInput');
-  if (popoverAvatar && avatarUploadInput) {
-    popoverAvatar.addEventListener('click', (e) => { e.stopPropagation(); avatarUploadInput.click(); });
-    avatarUploadInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      if (file.size > 500 * 1024) return alert('图片不能超过 500KB，请压缩后再上传');
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const base64 = event.target.result;
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        try {
-          const res = await fetch('/api/auth/update-avatar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, avatar: base64 }) });
-          const data = await res.json();
-          if (data.success) {
-            user.avatar = base64; localStorage.setItem('user', JSON.stringify(user));
-            document.getElementById('popoverAvatar').style.backgroundImage = `url(${base64})`;
-            document.getElementById('popoverAvatarLetter').style.display = 'none';
-            
-            // 同步更新导航栏和弹窗里的头像
-            const avatarBtnHTML = document.querySelector('#avatarBtn');
-            if (avatarBtnHTML) avatarBtnHTML.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-            const userPanelAvatar = document.getElementById('userPanelAvatar');
-            if (userPanelAvatar) { userPanelAvatar.style.backgroundImage = `url(${base64})`; userAvatarLetter.style.display = 'none'; }
-            
-            alert('头像修改成功！');
-          } else { alert(data.error || '上传失败'); }
-        } catch (err) { alert('网络错误'); }
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  // ===== 点击昵称修改 =====
-  const popoverNickname = document.getElementById('popoverNickname');
-  if (popoverNickname) {
-    popoverNickname.addEventListener('click', async () => {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (!user.email) return;
-      const newNickname = prompt('请输入新的昵称：', user.nickname);
-      if (!newNickname || newNickname.trim() === '' || newNickname === user.nickname) return;
-      try {
-        const res = await fetch('/api/auth/update-nickname', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, newNickname: newNickname.trim() }) });
-        const data = await res.json();
-        if (data.success) {
-          user.nickname = newNickname.trim(); localStorage.setItem('user', JSON.stringify(user));
-          document.getElementById('popoverNickname').textContent = user.nickname;
-          if (!user.avatar) {
-            document.getElementById('popoverAvatarLetter').textContent = user.nickname.charAt(0).toUpperCase();
-            userAvatarLetter.textContent = user.nickname.charAt(0).toUpperCase();
-            const avatarBtnHTML = document.querySelector('#avatarBtn');
-            if (avatarBtnHTML) avatarBtnHTML.innerHTML = `<span style="font-size:16px;font-weight:bold;">${user.nickname.charAt(0).toUpperCase()}</span>`;
-          }
-          alert('昵称修改成功！');
-        } else { alert(data.error || '修改失败'); }
-      } catch (err) { alert('网络错误'); }
-    });
-  }
-
-  // ===== 悬停卡片退出登录 =====
-  // ===== 悬停卡片里的签到按钮，跳转到首页签到区 =====
-  const popoverSigninBtn = document.getElementById('popoverSigninBtn');
-  if (popoverSigninBtn) {
-    popoverSigninBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      window.location.href = 'index.html#signin';
-    });
-  }
-
-  const popoverLogoutBtn = document.getElementById('popoverLogoutBtn');
-  if (popoverLogoutBtn) {
-    popoverLogoutBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); localStorage.removeItem('user'); alert('已退出登录'); window.location.reload();
-    });
-  }
-
-  // ===== 原有的页面切换淡入淡出 =====
-  document.addEventListener('click', function (e) {
-    var link = e.target.closest('a');
-    if (!link) return;
-    var href = link.getAttribute('href');
-    if (!href) return;
-    if (href.startsWith('#') || href.startsWith('http') || link.target === '_blank' || href.startsWith('javascript:')) return;
-    e.preventDefault();
-    document.body.classList.add('page-leaving');
-    setTimeout(function () { window.location.href = href; }, 200);
-  });
-
-  // ===== 语言切换 =====
-  var langBtn = document.getElementById('langBtn');
-  var langMenu = document.getElementById('langMenu');
-  var langSwitch = document.querySelector('.lang-switch');
-  if (langBtn && langMenu && langSwitch && typeof OpenCC !== 'undefined') {
-    var converters = { cn: null, hk: OpenCC.Converter({ from: 'cn', to: 'hk' }), tw: OpenCC.Converter({ from: 'cn', to: 'twp' }) };
-    var langNames = { cn: '简体中文 ▾', hk: '繁體中文（香港）▾', tw: '繁體中文（台灣）▾' };
-    var textNodes = [];
-    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
-    var n;
-    while ((n = walker.nextNode())) {
-      if (!n.nodeValue || !n.nodeValue.trim()) continue;
-      var p = n.parentElement; if (!p) continue;
-      var tag = p.tagName; if (tag === 'SCRIPT' || tag === 'STYLE') continue;
-      n.__original = n.nodeValue; textNodes.push(n);
-    }
-    var applyLang = function (lang) {
-      var converter = converters[lang];
-      for (var i = 0; i < textNodes.length; i++) {
-        var node = textNodes[i]; if (!node.isConnected) continue;
-        node.nodeValue = converter ? converter(node.__original) : node.__original;
-      }
-      langBtn.textContent = langNames[lang];
-      var btns = langMenu.querySelectorAll('button');
-      for (var j = 0; j < btns.length; j++) { btns[j].classList.toggle('active', btns[j].getAttribute('data-lang') === lang); }
-      document.documentElement.lang = lang === 'cn' ? 'zh-CN' : (lang === 'hk' ? 'zh-HK' : 'zh-TW');
-    };
-    langBtn.addEventListener('click', function (e) { e.stopPropagation(); langMenu.classList.toggle('open'); });
-    var menuBtns = langMenu.querySelectorAll('button');
-    for (var k = 0; k < menuBtns.length; k++) {
-      (function (btn) {
-        btn.addEventListener('click', function () { applyLang(btn.getAttribute('data-lang')); langMenu.classList.remove('open'); });
-      })(menuBtns[k]);
-    }
-    document.addEventListener('click', function (e) { if (!langSwitch.contains(e.target)) langMenu.classList.remove('open'); });
-  }
-
-  // ===== 锚点滚动 =====
-  window.addEventListener('load', function () {
-    if (location.hash) {
-      var el = document.querySelector(location.hash);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }
-  });
-
-  // ===== 搜索功能 =====
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', () => {
-      const keyword = searchInput.value.trim().toLowerCase();
-      document.querySelectorAll('.resource-item').forEach(item => {
-        // 抓取整张卡片里所有可见文字
-        const fullText = item.textContent.toLowerCase();
-        item.style.display = (!keyword || fullText.includes(keyword)) ? '' : 'none';
-      });
-      // 如果某个类型下所有项目都隐藏了，隐藏该类型标题
-      document.querySelectorAll('.type-section').forEach(section => {
-        const visible = Array.from(section.querySelectorAll('.resource-item'))
-          .some(item => item.style.display !== 'none');
-        section.style.display = visible ? '' : 'none';
-      });
-    });
-  }
-
-  // ===== 右侧类型导航：点击滚动 =====
-  document.querySelectorAll('.type-dot').forEach(dot => {
-    dot.addEventListener('click', () => {
-      const target = document.getElementById(dot.dataset.target);
-      if (target) target.scrollIntoView({ behavior: 'smooth' });
-    });
-  });
-
-  // ===== 用户面板里的签到按钮，跳转到首页签到区 =====
-  const userPanelSigninBtn = document.getElementById('userPanelSigninBtn');
-  if (userPanelSigninBtn) {
-    userPanelSigninBtn.addEventListener('click', () => {
-      window.location.href = 'index.html#signin';
-    });
-  }
-
-});
-</script>
-</body>
-</html>
+          <input type="text" id="nicknameInput" placeholder="设置一个独一无二的昵称
