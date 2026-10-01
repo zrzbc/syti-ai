@@ -304,6 +304,7 @@ body.page-leaving{opacity:0}
       </div>
       <a href="resources.html">资源</a>
       <a href="games.html">游戏</a>
+      <a href="shop.html">商店</a>
     </div>
     <div class="lang-switch">
       <button class="lang-btn" id="langBtn" type="button">简体中文 ▾</button>
@@ -378,7 +379,7 @@ body.page-leaving{opacity:0}
 
 
 
-    <a class="game-card game-item" href="laizishenyuan.html" target="_blank" rel="noopener" data-title="前方深渊" data-desc="像素风 冒险 动作 2D">
+<a class="game-card game-item" href="laizishenyuan.html" target="_blank" rel="noopener" data-title="前方深渊" data-desc="像素风 冒险 动作 2D" data-tags="冒险 动作 像素风">
 <span class="game-plays" data-game-id="laizishenyuan">游玩次数：--</span>
       <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/laizishenyuan.png');"></div>
       <div class="game-info">
@@ -389,7 +390,7 @@ body.page-leaving{opacity:0}
       </div>
     </a>
 
-    <a class="game-card game-item" href="mimatiaozhanjiandan.html" target="_blank" rel="noopener" data-title="密码挑战简单" data-desc="免登录 推理 策略 烧脑 ">
+<a class="game-card game-item" href="mimatiaozhanjiandan.html" target="_blank" rel="noopener" data-title="密码挑战简单" data-desc="免登录 推理 策略 烧脑" data-tags="免登录 推理 策略 烧脑">
 <span class="game-plays" data-game-id="mimatiaozhanjiandan">游玩次数：--</span>
       <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/mimatiaozhan.png');"></div>
       <div class="game-info">
@@ -400,7 +401,7 @@ body.page-leaving{opacity:0}
       </div>
     </a>
 
-    <a class="game-card game-item" href="mimatiaozhankunnan.html" target="_blank" rel="noopener" data-title="密码挑战困难" data-desc="免登录 推理 策略 烧脑 ">
+<a class="game-card game-item" href="mimatiaozhankunnan.html" target="_blank" rel="noopener" data-title="密码挑战困难" data-desc="免登录 推理 策略 烧脑 ">
 <span class="game-plays" data-game-id="mimatiaozhankunnan">游玩次数：--</span>
       <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/mimatiaozhan.png');"></div>
       <div class="game-info">
@@ -411,7 +412,7 @@ body.page-leaving{opacity:0}
       </div>
     </a>
 
-    <a class="game-card game-item" href="yizhiqianjin.html" target="_blank" rel="noopener" data-title="一掷千金" data-desc="免登录 推理 博弈 心理 ">
+<a class="game-card game-item" href="yizhiqianjin.html" target="_blank" rel="noopener" data-title="一掷千金" data-desc="免登录 推理 博弈 心理" data-tags="免登录 推理 博弈 心理">
 <span class="game-plays" data-game-id="yizhiqianjin">游玩次数：--</span>
       <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/yizhiqianjin.png');"></div>
       <div class="game-info">
@@ -560,9 +561,10 @@ document.addEventListener('DOMContentLoaded', function () {
     searchInput.addEventListener('input', () => {
       const keyword = searchInput.value.trim().toLowerCase();
       document.querySelectorAll('.game-item').forEach(item => {
-        const title = (item.dataset.title || '').toLowerCase();
-        const desc = (item.dataset.desc || '').toLowerCase();
-        item.style.display = (!keyword || title.includes(keyword) || desc.includes(keyword)) ? '' : 'none';
+        // 把整张卡片里所有可见文字拼起来，作为搜索内容
+        const fullText = item.textContent.toLowerCase();
+        const match = !keyword || fullText.includes(keyword);
+        item.style.display = match ? '' : 'none';
       });
     });
   }
