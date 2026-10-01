@@ -99,9 +99,27 @@ h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
   background:linear-gradient(110deg,#4f7cff,#8a5cf6);
   color:#fff;font-size:14px;font-weight:700;cursor:pointer;
   transition:transform .2s,box-shadow .2s;white-space:nowrap;
+  min-width: 100px;
 }
 .shop-buy-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(91,100,230,.35)}
 .shop-buy-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;background:#e8ebf5;color:#6f7890}
+
+/* ★ 已拥有的名牌按钮：灰色，不可购买 */
+.shop-buy-btn.btn-owned,
+.shop-buy-btn.btn-owned:disabled{
+  background:#d1d5db;
+  color:#4b5563;
+  opacity:1;
+  cursor:not-allowed;
+  transform:none;
+  box-shadow:none;
+  font-weight:700;
+}
+.shop-buy-btn.btn-owned:hover{
+  transform:none;
+  box-shadow:none;
+}
+
 .owned-badge-panel{background:linear-gradient(135deg,#f2f7ff,#f9f2ff);border:1px solid #e0e6ff;border-radius:16px;padding:20px}
 .owned-badge-panel h4{font-size:15px;margin-bottom:12px;color:#172033}
 .owned-badge-meta{font-size:13px;color:#6f7890;margin-top:10px;line-height:1.9}
@@ -144,6 +162,10 @@ body.page-leaving{opacity:0}
 .user-badge.normal{background:#b8e9b8;color:#000}
 .user-badge.premium{background:#ffd700;color:#000}
 .user-badge.ultimate{background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff}
+
+/* ★ 浮窗里可点击修改的名牌 */
+.user-badge.editable-badge{cursor:pointer;transition:filter .15s ease, transform .15s ease;}
+.user-badge.editable-badge:hover{filter:brightness(1.08);transform:scale(1.05);}
 
 /* 模态框 */
 .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(23,32,51,.55);backdrop-filter:blur(6px);z-index:999;justify-content:center;align-items:center}
@@ -221,6 +243,7 @@ body.page-leaving{opacity:0}
           <div style="text-align:center;font-size:16px;font-weight:bold;color:#172033;">
             <span id="popoverNickname">用户昵称</span>
           </div>
+          <div id="popoverBadgeHint" style="text-align:center;font-size:11px;color:#9ca3af;margin-top:2px;display:none;">点击名牌可修改名称</div>
           <div style="font-size:12px;color:#6f7890;margin-top:8px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
               <span>经验值：<span id="popoverExpText">0/200</span></span>
@@ -267,27 +290,27 @@ body.page-leaving{opacity:0}
         <div class="shop-items" id="badgeItems">
           <div class="shop-item" data-title="普通名牌 浅绿色 4字 60天" data-desc="普通名牌 浅绿色背景 有效期60天 字数4字以内">
             <div class="shop-info">
-              <div class="badge-preview normal">名牌</div>
+              <div class="badge-preview normal">这是一个可修改的普通名牌......</div>
               <h3>普通名牌</h3>
-              <p>浅绿色背景，黑字，名称 4 字以内，有效期 60 天。</p>
+              <p>可输入最多4字 | 有效期60天</p>
               <div class="shop-price">售价：<span>800</span> 经验</div>
             </div>
-            <button class="shop-buy-btn" data-type="normal">购买</button>
+            <button class="shop-buy-btn" data-type="normal">这是一个可修改的高级名牌......</button>
           </div>
           <div class="shop-item" data-title="高级名牌 黄色 6字 90天" data-desc="高级名牌 黄色背景 有效期90天 字数6字以内">
             <div class="shop-info">
-              <div class="badge-preview premium">名牌</div>
+              <div class="badge-preview premium">这是一个可修改的高级名牌......</div>
               <h3>高级名牌</h3>
-              <p>黄色背景，黑字，名称 6 字以内，有效期 90 天。</p>
+              <p>可输入最多6字 | 有效期90天</p>
               <div class="shop-price">售价：<span>1200</span> 经验</div>
             </div>
             <button class="shop-buy-btn" data-type="premium">购买</button>
           </div>
           <div class="shop-item" data-title="至尊名牌 紫色渐变 6字 120天" data-desc="至尊名牌 紫色渐变背景 有效期120天 字数6字以内">
             <div class="shop-info">
-              <div class="badge-preview ultimate">名牌</div>
+              <div class="badge-preview ultimate">这是一个可修改的高级名牌......</div>
               <h3>至尊名牌</h3>
-              <p>紫色渐变背景，白字，名称 6 字以内，有效期 120 天。</p>
+              <p>可输入最多6字 | 有效期120天</p>
               <div class="shop-price">售价：<span>1550</span> 经验</div>
             </div>
             <button class="shop-buy-btn" data-type="ultimate">购买</button>
@@ -414,13 +437,12 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ============================================================
-     ★ 关键修复 1：把用户头像同步到右上角按钮
+     把用户头像同步到右上角按钮
      ============================================================ */
   function updateAvatarButton(user) {
     const el = document.getElementById('avatarBtn');
     if (!el) return;
     if (!user) {
-      // 未登录 → 默认 SVG 人像图标
       el.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -436,22 +458,24 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ============================================================
-     ★ 关键修复 2：把用户信息渲染到悬停浮窗（同步，不依赖网络）
+     把用户信息渲染到悬停浮窗
+     ★ 名牌改为可点击，用于打开修改名牌名称弹窗
      ============================================================ */
   function renderPopover(user) {
     const popoverLoggedIn   = document.getElementById('popoverLoggedIn');
     const popoverNotLogged = document.getElementById('popoverNotLoggedIn');
+    const badgeHint = document.getElementById('popoverBadgeHint');
     if (!popoverLoggedIn || !popoverNotLogged) return;
 
     if (!user) {
       popoverLoggedIn.style.display = 'none';
       popoverNotLogged.style.display = 'block';
+      if (badgeHint) badgeHint.style.display = 'none';
       return;
     }
     popoverNotLogged.style.display = 'none';
     popoverLoggedIn.style.display = 'block';
 
-    // 头像
     const avatarBox    = document.getElementById('popoverAvatar');
     const avatarLetter = document.getElementById('popoverAvatarLetter');
     if (user.avatar) {
@@ -465,12 +489,17 @@ document.addEventListener('DOMContentLoaded', function () {
       avatarLetter.textContent = (user.nickname || 'U').charAt(0).toUpperCase();
     }
 
-    // 昵称 + 名牌
-    const badgeHTML = (user.badge_type && user.badge_name && user.badge_expire_at && user.badge_expire_at > Date.now())
-      ? `<span class="user-badge ${user.badge_type}">${user.badge_name}</span>` : '';
+    // ★ 名牌改为可点击（加 editable-badge 类和 title，光标变手型）
+    const hasActiveBadge = user.badge_type && user.badge_name &&
+                           user.badge_expire_at && user.badge_expire_at > Date.now();
+    const badgeHTML = hasActiveBadge
+      ? `<span class="user-badge ${user.badge_type} editable-badge" title="点击修改名牌名称">${user.badge_name}</span>`
+      : '';
     document.getElementById('popoverNickname').innerHTML = (user.nickname || '用户') + badgeHTML;
 
-    // 经验条 & 等级
+    // 只有拥有未过期名牌时才显示"点击名牌可修改名称"的提示
+    if (badgeHint) badgeHint.style.display = hasActiveBadge ? 'block' : 'none';
+
     const expNum = parseInt(user.exp) || 0;
     const popoverExpText  = document.getElementById('popoverExpText');
     const popoverLevelText = document.getElementById('popoverLevelText');
@@ -496,7 +525,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ============================================================
-     从服务器拉取最新用户数据（异步，可选）
+     从服务器拉取最新用户数据
      ============================================================ */
   async function refreshRealUser() {
     const u = getLocalUser();
@@ -517,10 +546,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ============================================================
-     页面级刷新：更新经验标签、头像、已拥有名牌、购买按钮、浮窗
+     页面级刷新
      ============================================================ */
   async function refresh() {
-    // 先用本地数据立即渲染（避免页面空白 / 头像不显示）
     const localUser = getLocalUser();
     updateNavExp(localUser);
     updateAvatarButton(localUser);
@@ -528,7 +556,6 @@ document.addEventListener('DOMContentLoaded', function () {
     updateBuyButtons(localUser);
     renderPopover(localUser);
 
-    // 再异步去服务器校准
     const freshUser = await refreshRealUser();
     if (freshUser) {
       updateNavExp(freshUser);
@@ -566,19 +593,44 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('ownedBadgeCount').textContent = user.badge_update_count || 0;
   }
 
+  /* ============================================================
+     更新购买按钮状态
+     ============================================================ */
   function updateBuyButtons(user) {
+    const now = Date.now();
+
     document.querySelectorAll('.shop-buy-btn').forEach(btn => {
+      const type = btn.dataset.type;
+      const item = btn.dataset.item;
+
+      let price = 0;
+      if (type) price = BADGE_PRICES[type] || 0;
+      else if (item) price = EXTRA_PRICES[item] || 0;
+      if (!price) return;
+
+      btn.classList.remove('btn-owned');
+
       if (!user) {
         btn.disabled = true;
         btn.textContent = '请先登录';
         return;
       }
-      const type = btn.dataset.type;
-      const item = btn.dataset.item;
-      let price = 0;
-      if (type) price = BADGE_PRICES[type] || 0;
-      else if (item) price = EXTRA_PRICES[item] || 0;
-      if (!price) return;
+
+      if (type) {
+        const isOwnedActive =
+          user.badge_type === type &&
+          user.badge_expire_at &&
+          user.badge_expire_at > now;
+
+        if (isOwnedActive) {
+          const daysLeft = Math.ceil((user.badge_expire_at - now) / (24 * 60 * 60 * 1000));
+          btn.disabled = true;
+          btn.textContent = `剩余 ${daysLeft} 天`;
+          btn.classList.add('btn-owned');
+          return;
+        }
+      }
+
       if ((user.exp || 0) < price) {
         btn.disabled = true;
         btn.textContent = '经验不足';
@@ -590,16 +642,13 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ============================================================
-     ★ 关键修复 3：悬停浮窗 —— 先本地渲染，再异步刷新
+     悬停浮窗
      ============================================================ */
   const userCenter = document.getElementById('userCenter');
   if (userCenter) {
     userCenter.addEventListener('mouseenter', async () => {
-      // 立刻用本地数据渲染（同步，一定能显示）
       const localUser = getLocalUser();
       renderPopover(localUser);
-
-      // 后台异步校正（不阻塞显示）
       if (localUser) {
         const fresh = await refreshRealUser();
         if (fresh) {
@@ -612,10 +661,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ============================================================
-     ★ 关键修复 4：登录入口（头像点击 / 浮窗提示点击 都能开弹窗）
+     登录入口
      ============================================================ */
   const authModal = document.getElementById('authModal');
-
   function openAuthModal() {
     const formWrap = document.getElementById('authFormContainer');
     const resetWrap = document.getElementById('resetFormContainer');
@@ -630,7 +678,7 @@ document.addEventListener('DOMContentLoaded', function () {
       e.preventDefault();
       e.stopPropagation();
       const u = getLocalUser();
-      if (u) return;      // 已登录：悬停浮窗即可看到信息，不再弹窗
+      if (u) return;
       openAuthModal();
     });
   }
@@ -754,7 +802,7 @@ document.addEventListener('DOMContentLoaded', function () {
           alert(isRegister ? '注册成功！' : '登录成功！');
           if (data.user) {
             localStorage.setItem('user', JSON.stringify(data.user));
-            location.reload();   // 刷新后头像、经验、浮窗都会自动显示
+            location.reload();
           }
         } else alert(data.error || '操作失败');
       } catch(e) { alert('网络错误'); }
@@ -786,7 +834,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ============================================================
-     购买流程：名牌 / 续期卡
+     购买流程
      ============================================================ */
   const badgeNameModal = document.getElementById('badgeNameModal');
   const closeBadgeNameModal = document.getElementById('closeBadgeNameModal');
@@ -803,10 +851,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const type = btn.dataset.type;
       const item = btn.dataset.item;
+      const now = Date.now();
 
+      // ---------- 购买名牌 ----------
       if (type) {
         const price = BADGE_PRICES[type];
-        if (!confirm(`确定花费 ${price} 经验购买"${badgeTextByType(type)}"吗？`)) return;
+
+        const hasActiveBadge =
+          u.badge_type &&
+          u.badge_expire_at &&
+          u.badge_expire_at > now;
+
+        if (hasActiveBadge && u.badge_type !== type) {
+          const oldName = badgeTextByType(u.badge_type);
+          const newName = badgeTextByType(type);
+          const oldDays = Math.ceil((u.badge_expire_at - now) / (24 * 60 * 60 * 1000));
+
+          const ok = confirm(
+            `你当前已拥有【${oldName}】（剩余 ${oldDays} 天）\n` +
+            `购买【${newName}】将替换并清除原有名牌，是否继续？\n` +
+            `（所需经验：${price}）`
+          );
+
+          if (!ok) return;
+        } else {
+          if (!confirm(`确定花费 ${price} 经验购买"${badgeTextByType(type)}"吗？`)) return;
+        }
+
         btn.disabled = true; btn.textContent = '处理中...';
         try {
           const res = await fetch('/api/shop/buy-badge', {
@@ -830,6 +901,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
+      // ---------- 购买续期卡 ----------
       if (item) {
         const price = EXTRA_PRICES[item];
         if (!confirm(`确定花费 ${price} 经验购买"${EXTRA_NAMES[item]}"吗？`)) return;
@@ -848,6 +920,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  /* ============================================================
+     名牌命名弹窗
+     ============================================================ */
   if (badgeNameForm) {
     badgeNameForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -877,21 +952,43 @@ document.addEventListener('DOMContentLoaded', function () {
     closeBadgeNameModal.addEventListener('click', () => badgeNameModal.classList.remove('show'));
     badgeNameModal.addEventListener('click', (e) => { if (e.target === badgeNameModal) badgeNameModal.classList.remove('show'); });
   }
+
+  /* ============================================================
+     ★ 修改名牌名称的统一入口（每月 3 次限制）
+       1）"你当前的名牌"面板里的按钮
+       2）悬停浮窗里点击名牌
+     ============================================================ */
+  function openRenameBadgeModal() {
+    const u = getLocalUser();
+    if (!u) return;
+    if (!u.badge_type) return alert('你还没有名牌');
+    if (u.badge_expire_at && u.badge_expire_at < Date.now()) return alert('名牌已过期');
+
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    let count = u.badge_update_count || 0;
+    if (u.badge_update_month !== currentMonth) count = 0;
+    if (u.badge_name && count >= 3) return alert('本月修改次数已用完（每月3次）');
+
+    badgeNameMaxLen.textContent = getBadgeMaxLen(u.badge_type);
+    badgeNameInput.maxLength = getBadgeMaxLen(u.badge_type);
+    badgeNameInput.value = u.badge_name || '';
+    badgeNameModalTitle.textContent = '修改名牌名称';
+    badgeNameModal.classList.add('show');
+  }
+
+  // 入口 1：面板里的"修改名牌名称"按钮
   if (renameBadgeBtn) {
-    renameBadgeBtn.addEventListener('click', () => {
-      const u = getLocalUser();
-      if (!u) return;
-      if (!u.badge_type) return alert('你还没有名牌');
-      if (u.badge_expire_at && u.badge_expire_at < Date.now()) return alert('名牌已过期');
-      const currentMonth = new Date().toISOString().slice(0, 7);
-      let count = u.badge_update_count || 0;
-      if (u.badge_update_month !== currentMonth) count = 0;
-      if (u.badge_name && count >= 3) return alert('本月修改次数已用完（每月3次）');
-      badgeNameMaxLen.textContent = getBadgeMaxLen(u.badge_type);
-      badgeNameInput.maxLength = getBadgeMaxLen(u.badge_type);
-      badgeNameInput.value = u.badge_name || '';
-      badgeNameModalTitle.textContent = '修改名牌名称';
-      badgeNameModal.classList.add('show');
+    renameBadgeBtn.addEventListener('click', openRenameBadgeModal);
+  }
+
+  // 入口 2：悬停浮窗里点击名牌（事件委托，因为名牌是动态渲染的）
+  const popoverNicknameEl = document.getElementById('popoverNickname');
+  if (popoverNicknameEl) {
+    popoverNicknameEl.addEventListener('click', (e) => {
+      const target = e.target.closest('.editable-badge');
+      if (!target) return;
+      e.stopPropagation();
+      openRenameBadgeModal();
     });
   }
 
@@ -976,9 +1073,21 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   /* ============================================================
-     启动：页面加载后立刻同步一次
+     启动
      ============================================================ */
   refresh();
+
+  /* ============================================================
+     定时刷新：名牌过期后按钮自动恢复为"购买"
+     ============================================================ */
+  setInterval(() => {
+    const u = getLocalUser();
+    if (u) {
+      updateBuyButtons(u);
+      updateOwnedBadge(u);
+    }
+  }, 60 * 1000);
+
 });
 </script>
 </body>
