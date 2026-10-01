@@ -8,13 +8,8 @@
 <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
 <style>
 :root{
-  --blue:#4f7cff;
-  --purple:#8a5cf6;
-  --ink:#172033;
-  --muted:#6f7890;
-  --line:#e8ebf5;
-  --bg:#f7f9ff;
-  --card:rgba(255,255,255,.78);
+  --blue:#4f7cff; --purple:#8a5cf6; --ink:#172033; --muted:#6f7890;
+  --line:#e8ebf5; --bg:#f7f9ff; --card:rgba(255,255,255,.78);
   --shadow:0 18px 60px rgba(67,72,120,.10);
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -76,14 +71,9 @@ section{padding:140px 0 100px}
 .kicker{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#7180a5;font-weight:750}
 h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
 .search-box input {
-  width: 260px;
-  padding: 10px 14px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  font-size: 14px;
-  background: #fff;
-  outline: none;
-  transition: border-color 0.2s;
+  width: 260px; padding: 10px 14px; border: 1px solid var(--line);
+  border-radius: 12px; font-size: 14px; background: #fff;
+  outline: none; transition: border-color 0.2s;
 }
 .search-box input:focus {
   border-color: #4f7cff;
@@ -92,16 +82,11 @@ h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
 
 .game-list { display: flex; flex-direction: column; gap: 20px; }
 .game-card {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 24px;
-  background: var(--card);
-  backdrop-filter: blur(12px);
+  display: grid; grid-template-columns: 320px 1fr; gap: 24px;
+  background: var(--card); backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,.95);
   box-shadow: 0 12px 40px rgba(60,70,120,.07);
-  border-radius: 20px;
-  padding: 20px;
-  cursor: pointer;
+  border-radius: 20px; padding: 20px; cursor: pointer;
   transition: transform 0.25s, box-shadow 0.25s;
 }
 .game-card:hover {
@@ -111,26 +96,15 @@ h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
 
 .game-card { position: relative; }
 .game-plays {
-  position: absolute;
-  top: 28px;
-  right: 28px;
-  background: rgba(23, 32, 51, 0.78);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 8px;
-  letter-spacing: 1px;
-  backdrop-filter: blur(4px);
-  z-index: 5;
-  pointer-events: none;
+  position: absolute; top: 28px; right: 28px;
+  background: rgba(23, 32, 51, 0.78); color: #fff;
+  font-size: 12px; font-weight: 600; padding: 4px 10px;
+  border-radius: 8px; letter-spacing: 1px;
+  backdrop-filter: blur(4px); z-index: 5; pointer-events: none;
 }
-
 .game-cover {
-  width: 100%;
-  aspect-ratio: 16/9;
-  background-size: cover;
-  background-position: center;
+  width: 100%; aspect-ratio: 16/9;
+  background-size: cover; background-position: center;
   border-radius: 14px;
 }
 .game-info h3 { font-size: 20px; margin-bottom: 10px; }
@@ -150,7 +124,7 @@ body.page-leaving{opacity:0}
   h2{font-size:31px}
 }
 
-/* ===== 个人中心头像按钮 ===== */
+/* 头像 */
 .user-center { position: relative; display: flex; align-items: center; margin-left: 4px; padding-bottom: 10px; }
 .avatar-btn {
   width: 36px; height: 36px; border-radius: 50%;
@@ -172,7 +146,15 @@ body.page-leaving{opacity:0}
 }
 .user-center:hover .user-popover { display: block; }
 
-/* ===== 模态框 ===== */
+/* 名牌 */
+.user-badge{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;font-weight:700;margin-left:6px;vertical-align:middle}
+.user-badge.normal{background:#b8e9b8;color:#000}
+.user-badge.premium{background:#ffd700;color:#000}
+.user-badge.ultimate{background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff}
+.user-badge.editable-badge{cursor:pointer;transition:filter .15s ease, transform .15s ease;}
+.user-badge.editable-badge:hover{filter:brightness(1.08);transform:scale(1.05);}
+
+/* 模态框 */
 .modal-overlay {
   display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(23, 32, 51, 0.55); backdrop-filter: blur(6px); z-index: 999;
@@ -221,70 +203,33 @@ body.page-leaving{opacity:0}
 .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(91, 100, 230, 0.35); }
 .modal-footer { text-align: center; margin-top: 16px; }
 .modal-footer a { font-size: 13px; color: #8a5cf6; }
+
 #resetFormContainer h3 { color: #172033; }
 #backToLoginLink, #forgotPasswordLink { color: #8a5cf6; font-size: 13px; }
 #userNickname { font-size: 24px; margin-top: 10px; }
 
-/* ===== 等级门槛浮窗 ===== */
 .popover-level-wrap { position: relative; display: inline-block; }
 .level-tooltip {
-  position: absolute;
-  left: 100%;
-  top: 50%;
+  position: absolute; left: 100%; top: 50%;
   transform: translateY(-50%) translateX(6px);
-  background: #fff;
-  color: #172033;
-  font-size: 12px;
-  line-height: 1.8;
-  padding: 10px 14px;
-  border-radius: 10px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
+  background: #fff; color: #172033; font-size: 12px; line-height: 1.8;
+  padding: 10px 14px; border-radius: 10px; white-space: nowrap;
+  opacity: 0; pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
-  z-index: 9999;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  border: 1px solid #e8ebf5;
+  z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e8ebf5;
 }
 .level-tooltip::before {
-  content: "";
-  position: absolute;
-  right: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 6px solid transparent;
-  border-right-color: #fff;
+  content: ""; position: absolute; right: 100%; top: 50%;
+  transform: translateY(-50%); border: 6px solid transparent; border-right-color: #fff;
 }
-.level-tooltip .lv-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.level-tooltip .lv-row:last-child {
-  margin-bottom: 0;
-}
+.level-tooltip .lv-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.level-tooltip .lv-row:last-child { margin-bottom: 0; }
 .level-tooltip .lv-badge {
-  display: inline-block;
-  padding: 1px 8px;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 12px;
-  color: #fff;
-  min-width: 36px;
-  text-align: center;
+  display: inline-block; padding: 1px 8px; border-radius: 6px;
+  font-weight: bold; font-size: 12px; color: #fff; min-width: 36px; text-align: center;
 }
-.level-tooltip .lv-exp {
-  color: #172033;
-  margin-left: auto;
-  text-align: right;
-}
-.popover-level-wrap:hover .level-tooltip {
-  opacity: 1;
-  transform: translateY(-50%) translateX(12px);
-}
-
+.level-tooltip .lv-exp { color: #172033; margin-left: auto; text-align: right; }
+.popover-level-wrap:hover .level-tooltip { opacity: 1; transform: translateY(-50%) translateX(12px); }
 </style>
 </head>
 <body>
@@ -333,24 +278,24 @@ body.page-leaving{opacity:0}
             </div>
             <input type="file" id="avatarUploadInput" style="display: none;" accept="image/*">
           </div>
-          <div id="popoverNickname" style="text-align: center; font-size: 16px; font-weight: bold; color: #172033; cursor: pointer; margin-bottom: 4px;" title="点击修改昵称">用户昵称</div>
-          <div style="text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 16px;">点击昵称修改</div>
+          <div style="text-align: center; font-size: 16px; font-weight: bold; color: #172033; margin-bottom: 4px;">
+            <span id="popoverNickname" style="cursor:pointer;" title="点击修改昵称">用户昵称</span><span id="popoverUserBadge"></span>
+          </div>
+          <div style="text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 16px;">点击昵称或名牌修改</div>
           <div style="font-size: 12px; color: #6f7890;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <span>经验值：<span id="popoverExpText">0/200</span></span>
               <div class="popover-level-wrap">
                 <span id="popoverLevelText" style="font-weight: bold; padding: 1px 8px; border-radius: 6px; color: #fff; background: #4ade80;">Lv1</span>
-
-<div class="level-tooltip">
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #4ade80, #22c55e); color: #fff;">Lv1</span><span class="lv-exp">0 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #22c55e, #15803d); color: #fff;">Lv2</span><span class="lv-exp">200 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff;">Lv3</span><span class="lv-exp">500 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #facc15, #eab308); color: #1f2937;">Lv4</span><span class="lv-exp">1200 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #f97316, #c2410c); color: #fff;">Lv5</span><span class="lv-exp">2800 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff;">Lv6</span><span class="lv-exp">6200 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #a855f7, #7e22ce); color: #fff;">Lv7</span><span class="lv-exp">13200 经验</span></div>
-</div>
-
+                <div class="level-tooltip">
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #4ade80, #22c55e); color: #fff;">Lv1</span><span class="lv-exp">0 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #22c55e, #15803d); color: #fff;">Lv2</span><span class="lv-exp">200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff;">Lv3</span><span class="lv-exp">500 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #facc15, #eab308); color: #1f2937;">Lv4</span><span class="lv-exp">1200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #f97316, #c2410c); color: #fff;">Lv5</span><span class="lv-exp">2800 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff;">Lv6</span><span class="lv-exp">6200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #a855f7, #7e22ce); color: #fff;">Lv7</span><span class="lv-exp">13200 经验</span></div>
+                </div>
               </div>
             </div>
             <div style="width: 100%; height: 8px; background: #fff; border: 1px solid #e8ebf5; border-radius: 4px; overflow: hidden;">
@@ -376,8 +321,6 @@ body.page-leaving{opacity:0}
   </div>
 
   <div class="game-list" id="gameList">
-
-
 
 <a class="game-card game-item" href="laizishenyuan.html" target="_blank" rel="noopener" data-title="前方深渊" data-desc="像素风 冒险 动作 2D" data-tags="冒险 动作 像素风">
 <span class="game-plays" data-game-id="laizishenyuan">游玩次数：--</span>
@@ -428,7 +371,6 @@ body.page-leaving{opacity:0}
 </section>
 </main>
 
-<!-- ===== 登录/注册模态框 ===== -->
 <div class="modal-overlay" id="authModal">
   <div class="modal-content">
     <button class="modal-close" id="closeModal">&times;</button>
@@ -463,6 +405,7 @@ body.page-leaving{opacity:0}
         <a href="javascript:void(0)" id="forgotPasswordLink">忘记密码？</a>
       </div>
     </div>
+
     <div id="resetFormContainer" style="display: none;">
       <h3 style="margin-bottom: 20px; text-align: center;">重置密码</h3>
       <form id="resetForm">
@@ -487,6 +430,7 @@ body.page-leaving{opacity:0}
         <a href="javascript:void(0)" id="backToLoginLink">返回登录</a>
       </div>
     </div>
+
     <div id="userPanel" style="display: none; text-align: center;">
       <div class="avatar" id="userPanelAvatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px; border-radius: 26px; overflow: hidden; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4f7cff, #8a5cf6);">
         <span id="userAvatarLetter" style="color: #fff;">U</span>
@@ -506,6 +450,21 @@ body.page-leaving{opacity:0}
   </div>
 </div>
 
+<!-- ★ 名牌命名弹窗 -->
+<div class="modal-overlay" id="badgeNameModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeBadgeNameModal">&times;</button>
+    <h3 style="text-align:center;margin-bottom:18px;" id="badgeNameModalTitle">修改名牌名称</h3>
+    <form id="badgeNameForm">
+      <div class="form-group">
+        <label>名牌名称（<span id="badgeNameMaxLen">4</span> 字以内）</label>
+        <input type="text" id="badgeNameInput" placeholder="请输入名牌显示的名称" maxlength="6">
+      </div>
+      <button type="submit" class="submit-btn" id="badgeNameSubmitBtn">确定</button>
+    </form>
+  </div>
+</div>
+
 <footer>
   <div>© 2026 这人针不错</div>
   <div style="margin-top:6px">ZRZBC</div>
@@ -514,13 +473,11 @@ body.page-leaving{opacity:0}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-  // ===== 游玩次数统计 =====
+  /* ===== 游玩次数统计 ===== */
   async function loadPlayCounts() {
     try {
       const res = await fetch('/api/game/get-clicks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: '{}'
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
       });
       const data = await res.json();
       if (data.success) {
@@ -532,18 +489,13 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     } catch(e) { console.log('加载游玩次数失败', e); }
   }
-
   function recordPlay(gameId) {
     fetch('/api/game/add-click', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ gameId }),
-      keepalive: true
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId }), keepalive: true
     }).catch(function(){});
   }
-
   loadPlayCounts();
-
   document.querySelectorAll('.game-item').forEach(card => {
     card.addEventListener('click', () => {
       const plays = card.querySelector('.game-plays');
@@ -555,13 +507,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // ===== 搜索 =====
+  /* ===== 搜索 ===== */
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       const keyword = searchInput.value.trim().toLowerCase();
       document.querySelectorAll('.game-item').forEach(item => {
-        // 把整张卡片里所有可见文字拼起来，作为搜索内容
         const fullText = item.textContent.toLowerCase();
         const match = !keyword || fullText.includes(keyword);
         item.style.display = match ? '' : 'none';
@@ -569,7 +520,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ===== 获取元素 =====
+  /* ===== DOM ===== */
   const avatarBtn = document.getElementById('avatarBtn');
   const authModal = document.getElementById('authModal');
   const closeModal = document.getElementById('closeModal');
@@ -607,7 +558,6 @@ document.addEventListener('DOMContentLoaded', function () {
       else { btn.textContent = `${countdown}秒后重试`; }
     }, 1000);
   }
-
   async function sendCode(email, btn) {
     if (!email || !email.includes('@')) return alert('请输入有效的邮箱地址');
     btn.disabled = true; btn.textContent = '发送中...';
@@ -619,7 +569,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (err) { alert('网络错误'); btn.disabled = false; btn.textContent = '获取验证码'; }
   }
 
-  // ===== 自动登录初始化 =====
+  /* ===== 自动登录初始化 ===== */
   const savedUser = localStorage.getItem('user');
   if (savedUser) {
     try {
@@ -632,14 +582,17 @@ document.addEventListener('DOMContentLoaded', function () {
           avatarBtnHTML.innerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
         }
       }
-      fetch('/api/auth/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: userData.email }) })
+      fetch('/api/auth/me', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userData.email })
+      })
       .then(res => res.json())
       .then(data => { if (data.success && data.user) localStorage.setItem('user', JSON.stringify(data.user)); })
       .catch(err => console.log('同步失败', err));
     } catch(e) {}
   }
 
-  // ===== 头像点击 =====
+  /* ===== 头像点击 ===== */
   if (avatarBtn && authModal) {
     avatarBtn.addEventListener('click', async () => {
       const user = localStorage.getItem('user');
@@ -732,17 +685,19 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ===== 悬停卡片 =====
+  /* ===== 悬停卡片逻辑 ===== */
   const userCenter = document.getElementById('userCenter');
   if (userCenter) {
     userCenter.addEventListener('mouseenter', () => {
       const user = localStorage.getItem('user');
       const popoverLoggedIn = document.getElementById('popoverLoggedIn');
       const popoverNotLoggedIn = document.getElementById('popoverNotLoggedIn');
+      
       if (user) {
         const userData = JSON.parse(user);
         popoverLoggedIn.style.display = 'block';
         popoverNotLoggedIn.style.display = 'none';
+
         if (userData.avatar) {
           document.getElementById('popoverAvatar').style.backgroundImage = `url(${userData.avatar})`;
           document.getElementById('popoverAvatarLetter').style.display = 'none';
@@ -754,6 +709,15 @@ document.addEventListener('DOMContentLoaded', function () {
           document.getElementById('popoverAvatarLetter').textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
         }
         document.getElementById('popoverNickname').textContent = userData.nickname || '用户';
+        // 显示名牌（可点击修改）
+        const badgeEl = document.getElementById('popoverUserBadge');
+        if (badgeEl) {
+          if (userData.badge_type && userData.badge_name && userData.badge_expire_at && userData.badge_expire_at > Date.now()) {
+            badgeEl.innerHTML = `<span class="user-badge ${userData.badge_type} editable-badge" title="点击修改名牌名称">${userData.badge_name}</span>`;
+          } else {
+            badgeEl.innerHTML = '';
+          }
+        }
         renderPopoverExp(userData.exp);
       } else {
         popoverLoggedIn.style.display = 'none';
@@ -768,16 +732,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const popoverLevelText = document.getElementById('popoverLevelText');
     const popoverExpBarFill = document.getElementById('popoverExpBarFill');
     if (!popoverExpText || !popoverLevelText || !popoverExpBarFill) return;
+
     let level = 1, nextExp = 200;
     let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
-
     if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
     else if (expNum >= 6200) { level = 6; nextExp = 13200; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
     else if (expNum >= 2800) { level = 5; nextExp = 6200; baseColor = '#f97316'; darkColor = '#c2410c'; }
     else if (expNum >= 1200) { level = 4; nextExp = 2800; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
     else if (expNum >= 500) { level = 3; nextExp = 1200; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
     else if (expNum >= 200) { level = 2; nextExp = 500; baseColor = '#22c55e'; darkColor = '#15803d'; }
-
     if (nextExp === Infinity) { popoverExpText.textContent = `${expNum}/∞`; popoverExpBarFill.style.width = '100%'; }
     else { popoverExpText.textContent = `${expNum}/${nextExp}`; popoverExpBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
     popoverLevelText.textContent = `Lv${level}`;
@@ -786,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function () {
     popoverExpBarFill.style.background = baseColor;
   }
 
-  // ===== 上传头像 =====
+  /* ===== 上传头像 ===== */
   const popoverAvatar = document.getElementById('popoverAvatar');
   const avatarUploadInput = document.getElementById('avatarUploadInput');
   if (popoverAvatar && avatarUploadInput) {
@@ -816,10 +779,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ===== 修改昵称 =====
+  /* ===== 点击昵称修改 ===== */
   const popoverNickname = document.getElementById('popoverNickname');
   if (popoverNickname) {
-    popoverNickname.addEventListener('click', async () => {
+    popoverNickname.addEventListener('click', async (e) => {
+      e.stopPropagation();
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (!user.email) return;
       const newNickname = prompt('请输入新的昵称：', user.nickname);
@@ -841,7 +805,75 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ===== 悬停卡片签到 =====
+  /* ===== ★ 点击名牌修改（每月 3 次） ===== */
+  const popoverUserBadge = document.getElementById('popoverUserBadge');
+  const badgeNameModal = document.getElementById('badgeNameModal');
+  const closeBadgeNameModal = document.getElementById('closeBadgeNameModal');
+  const badgeNameForm = document.getElementById('badgeNameForm');
+  const badgeNameInput = document.getElementById('badgeNameInput');
+  const badgeNameMaxLen = document.getElementById('badgeNameMaxLen');
+  const badgeNameModalTitle = document.getElementById('badgeNameModalTitle');
+
+  function getBadgeMaxLen(type) {
+    return { normal: 4, premium: 6, ultimate: 6 }[type] || 6;
+  }
+  function openRenameBadgeModal() {
+    const u = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!u.email) return;
+    if (!u.badge_type) return alert('你还没有名牌');
+    if (u.badge_expire_at && u.badge_expire_at < Date.now()) return alert('名牌已过期');
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    let count = u.badge_update_count || 0;
+    if (u.badge_update_month !== currentMonth) count = 0;
+    if (u.badge_name && count >= 3) return alert('本月修改次数已用完（每月3次）');
+    badgeNameMaxLen.textContent = getBadgeMaxLen(u.badge_type);
+    badgeNameInput.maxLength = getBadgeMaxLen(u.badge_type);
+    badgeNameInput.value = u.badge_name || '';
+    badgeNameModalTitle.textContent = '修改名牌名称';
+    badgeNameModal.classList.add('show');
+  }
+
+  if (popoverUserBadge) {
+    popoverUserBadge.addEventListener('click', (e) => {
+      const badge = e.target.closest('.editable-badge');
+      if (!badge) return;
+      e.stopPropagation();
+      openRenameBadgeModal();
+    });
+  }
+
+  if (badgeNameForm) {
+    badgeNameForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!u.email) return alert('请先登录');
+      const newName = badgeNameInput.value.trim();
+      if (!newName) return alert('名称不能为空');
+      const btn = document.getElementById('badgeNameSubmitBtn');
+      btn.disabled = true; btn.textContent = '保存中...';
+      try {
+        const res = await fetch('/api/shop/update-badge-name', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: u.email, newName })
+        });
+        const data = await res.json();
+        if (data.success) {
+          badgeNameModal.classList.remove('show');
+          const meRes = await fetch('/api/auth/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: u.email }) });
+          const meData = await meRes.json();
+          if (meData.success && meData.user) localStorage.setItem('user', JSON.stringify(meData.user));
+          alert('名牌名称修改成功！');
+        } else alert(data.error || '修改失败');
+      } catch(err) { alert('网络错误'); }
+      finally { btn.disabled = false; btn.textContent = '确定'; }
+    });
+  }
+  if (closeBadgeNameModal) {
+    closeBadgeNameModal.addEventListener('click', () => badgeNameModal.classList.remove('show'));
+    badgeNameModal.addEventListener('click', (e) => { if (e.target === badgeNameModal) badgeNameModal.classList.remove('show'); });
+  }
+
+  /* ===== 悬停卡片签到 / 退出 ===== */
   const popoverSigninBtn = document.getElementById('popoverSigninBtn');
   if (popoverSigninBtn) {
     popoverSigninBtn.addEventListener('click', (e) => {
@@ -849,7 +881,6 @@ document.addEventListener('DOMContentLoaded', function () {
       window.location.href = 'index.html#signin';
     });
   }
-
   const popoverLogoutBtn = document.getElementById('popoverLogoutBtn');
   if (popoverLogoutBtn) {
     popoverLogoutBtn.addEventListener('click', (e) => {
@@ -857,7 +888,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ===== 页面切换淡入淡出 =====
+  /* ===== 页面切换淡入淡出 ===== */
   document.addEventListener('click', function (e) {
     var link = e.target.closest('a');
     if (!link) return;
@@ -869,7 +900,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(function () { window.location.href = href; }, 200);
   });
 
-  // ===== 语言切换 =====
+  /* ===== 语言切换 ===== */
   var langBtn = document.getElementById('langBtn');
   var langMenu = document.getElementById('langMenu');
   var langSwitch = document.querySelector('.lang-switch');
