@@ -4,9 +4,12 @@ export async function onRequestPost(context) {
 
   if (!email) return Response.json({ error: '参数不完整' }, { status: 400 });
 
-const user = await env.DB.prepare('SELECT id, email, nickname, exp, avatar, signin_days, continuous_days, last_signin_date, has_badge FROM users WHERE email = ?').bind(email).first();
+  const user = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(email).first();
 
   if (!user) return Response.json({ error: '用户不存在' }, { status: 400 });
+
+  // 判断名牌是否有效
+  const badgeValid = user.badge_type && user.badge_expire_at && user.badge_expire_at > Date.now();
 
   return Response.json({
     success: true,
@@ -19,7 +22,12 @@ const user = await env.DB.prepare('SELECT id, email, nickname, exp, avatar, sign
       signin_days: user.signin_days || 0,
       continuous_days: user.continuous_days || 0,
       last_signin_date: user.last_signin_date || null,
-      has_badge: user.has_badge || 0
+      has_badge: badgeValid ? 1 : 0,
+      badge_type: badgeValid ? user.badge_type : null,
+      badge_name: badgeValid ? user.badge_name : null,
+      badge_expire_at: badgeValid ? user.badge_expire_at : null,
+      badge_update_count: user.badge_update_count || 0,
+      badge_update_month: user.badge_update_month || ''
     }
   });
 }
