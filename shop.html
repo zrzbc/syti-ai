@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="商店">
+<title>商店 - 这人针不错</title>
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
+<style>
+:root{
+  --blue:#4f7cff;--purple:#8a5cf6;--ink:#172033;--muted:#6f7890;
+  --line:#e8ebf5;--bg:#f7f9ff;--card:rgba(255,255,255,.78);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--ink);background:
+  radial-gradient(circle at 10% 5%,rgba(79,124,255,.14),transparent 28%),
+  radial-gradient(circle at 90% 10%,rgba(138,92,246,.13),transparent 30%),
+  var(--bg);
+  line-height:1.7;overflow-x:hidden;
+}
+a{text-decoration:none;color:inherit}
+button{font:inherit}
+.container{width:min(1160px,calc(100% - 40px));margin:auto}
+.nav{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  width:min(1120px,calc(100% - 32px));z-index:20;
+  background:rgba(255,255,255,.72);backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,.9);box-shadow:0 10px 35px rgba(55,65,110,.08);
+  border-radius:18px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
+}
+.logo{font-weight:800;letter-spacing:-.5px}
+.logo span{background:linear-gradient(90deg,var(--blue),var(--purple));-webkit-background-clip:text;color:transparent}
+.nav-exp-badge{
+  margin-left:10px;
+  background:#ffd700;
+  color:#000;
+  font-size:12px;
+  font-weight:700;
+  padding:4px 10px;
+  border-radius:8px;
+  white-space:nowrap;
+}
+.navlinks{display:flex;gap:4px;align-items:center}
+.navlinks a{font-size:14px;color:#59627a;padding:8px 12px;border-radius:10px}
+.navlinks a:hover{background:#f0f3ff;color:#3f63d9}
+.home-dropdown{position:relative;display:inline-block}
+.home-trigger{font-size:14px;color:#59627a;padding:8px 12px;border-radius:10px;cursor:pointer;transition:.2s;display:inline-block}
+.home-trigger:hover{background:#f0f3ff;color:#3f63d9}
+.home-dropdown .home-menu{display:none;position:absolute;top:100%;left:0;min-width:140px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(55,65,110,.14);padding:6px;z-index:30}
+.home-dropdown:hover .home-menu{display:block}
+.home-menu a{display:block;font-size:14px;color:#59627a;padding:8px 12px;border-radius:8px;transition:.2s}
+.home-menu a:hover{background:#f0f3ff;color:#3f63d9}
+.nav-right{display:flex;align-items:center;gap:8px}
+.lang-switch{position:relative}
+.lang-btn{font:inherit;font-size:13px;color:#59627a;padding:8px 12px;border-radius:10px;background:#fff;border:1px solid var(--line);cursor:pointer;transition:.2s;white-space:nowrap}
+.lang-btn:hover{background:#f0f3ff;color:#3f63d9}
+.lang-menu{position:absolute;top:calc(100% + 6px);right:0;min-width:168px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(55,65,110,.14);padding:6px;display:none;z-index:30}
+.lang-menu.open{display:block}
+.lang-menu button{display:block;width:100%;text-align:left;padding:8px 10px;font:inherit;font-size:13px;color:#59627a;background:none;border:0;border-radius:8px;cursor:pointer}
+.lang-menu button:hover{background:#f0f3ff;color:#3f63d9}
+.lang-menu button.active{background:#eef2ff;color:#3f63d9;font-weight:600}
+
+section{padding:140px 0 100px}
+.section-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:32px}
+.kicker{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#7180a5;font-weight:750}
+h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
+.search-box input{width:260px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;font-size:14px;background:#fff;outline:none;transition:border-color .2s}
+.search-box input:focus{border-color:#4f7cff;box-shadow:0 0 0 3px rgba(79,124,255,.12)}
+
+/* 商店两列布局 */
+.shop-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.shop-category{margin-bottom:32px}
+.category-title{font-size:22px;font-weight:700;margin-bottom:20px;padding-left:12px;border-left:4px solid #4f7cff;color:var(--ink)}
+.shop-items{display:flex;flex-direction:column;gap:14px}
+.shop-item{
+  display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;
+  background:#fff;border:1px solid #e8ebf5;border-radius:16px;
+  padding:18px 20px;
+  transition:transform .2s,box-shadow .2s;
+}
+.shop-item:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(60,70,120,.1)}
+
+.badge-preview{
+  display:inline-block;
+  padding:4px 12px;
+  border-radius:8px;
+  font-size:14px;
+  font-weight:700;
+  margin-bottom:8px;
+}
+.badge-preview.normal{background:#b8e9b8;color:#000}
+.badge-preview.premium{background:#ffd700;color:#000}
+.badge-preview.ultimate{background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff}
+
+.shop-info h3{font-size:17px;margin-bottom:6px}
+.shop-info p{font-size:13px;color:var(--muted);margin-bottom:6px}
+.shop-price{font-size:13px;color:#f59e0b;font-weight:700}
+.shop-price span{font-size:16px}
+
+.shop-buy-btn{
+  padding:10px 22px;border:none;border-radius:12px;
+  background:linear-gradient(110deg,#4f7cff,#8a5cf6);
+  color:#fff;font-size:14px;font-weight:700;cursor:pointer;
+  transition:transform .2s,box-shadow .2s;
+  white-space:nowrap;
+}
+.shop-buy-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(91,100,230,.35)}
+.shop-buy-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;background:#e8ebf5;color:#6f7890}
+
+/* 已拥有名牌面板 */
+.owned-badge-panel{
+  background:linear-gradient(135deg,#f2f7ff,#f9f2ff);
+  border:1px solid #e0e6ff;
+  border-radius:16px;
+  padding:20px;
+}
+.owned-badge-panel h4{font-size:15px;margin-bottom:12px;color:#172033}
+.owned-badge-meta{font-size:13px;color:#6f7890;margin-top:10px;line-height:1.9}
+.owned-badge-meta b{color:#172033}
+.owned-badge-actions{margin-top:14px;display:flex;gap:10px}
+.mini-btn{
+  padding:8px 16px;border:1px solid #4f7cff;border-radius:10px;
+  background:#fff;color:#4f7cff;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;
+}
+.mini-btn:hover{background:#f0f3ff}
+
+footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
+body{opacity:1;transition:opacity .2s ease}
+body.page-leaving{opacity:0}
+
+@media(max-width:850px){
+  .navlinks{display:none}
+  .shop-layout{grid-template-columns:1fr}
+  section{padding:120px 0 70px}
+  h2{font-size:31px}
+}
+
+/* 头像 */
+.user-center{position:relative;display:flex;align-items:center;margin-left:4px;padding-bottom:10px}
+.avatar-btn{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#8a5cf6);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;transition:transform .2s ease,box-shadow .2s ease;border:2px solid rgba(255,255,255,.8);overflow:hidden}
+.avatar-btn:hover{transform:scale(1.08);box-shadow:0 6px 16px rgba(79,124,255,.35)}
+.user-popover{position:absolute;top:100%;right:0;width:220px;background:#fff;border:1px solid #e8ebf5;border-radius:16px;box-shadow:0 10px 30px rgba(55,65,110,.15);display:none;z-index:50}
+.user-popover::before{content:"";position:absolute;top:-6px;right:18px;width:12px;height:12px;background:#fff;border-top:1px solid #e8ebf5;border-left:1px solid #e8ebf5;transform:rotate(45deg)}
+.user-center:hover .user-popover{display:block}
+
+/* 名牌显示 */
+.user-badge{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;font-weight:700;margin-left:6px;vertical-align:middle}
+.user-badge.normal{background:#b8e9b8;color:#000}
+.user-badge.premium{background:#ffd700;color:#000}
+.user-badge.ultimate{background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff}
+
+/* 模态框 */
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(23,32,51,.55);backdrop-filter:blur(6px);z-index:999;justify-content:center;align-items:center}
+.modal-overlay.show{display:flex}
+.modal-content{background:#fff;border-radius:24px;width:min(420px,calc(100% - 40px));padding:32px 28px;box-shadow:0 30px 80px rgba(0,0,0,.2);position:relative;max-height:90vh;overflow-y:auto}
+.modal-close{position:absolute;top:16px;right:20px;background:none;border:none;font-size:28px;color:#999;cursor:pointer;line-height:1}
+.modal-close:hover{color:#333}
+.modal-tabs{display:flex;gap:8px;margin-bottom:24px}
+.modal-tab{flex:1;padding:10px;border:1px solid #e8ebf5;border-radius:12px;background:#f7f9ff;color:#6f7890;font-weight:600;cursor:pointer;transition:.2s}
+.modal-tab.active{background:linear-gradient(110deg,#4f7cff,#8a5cf6);color:#fff;border-color:transparent}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:13px;color:#6f7890;margin-bottom:6px;font-weight:600}
+.form-group input{width:100%;padding:12px 14px;border:1px solid #e8ebf5;border-radius:12px;font-size:15px;outline:none;transition:border-color .2s}
+.form-group input:focus{border-color:#4f7cff;box-shadow:0 0 0 3px rgba(79,124,255,.12)}
+.code-row{display:flex;gap:10px}
+.code-row input{flex:1}
+.send-code-btn{white-space:nowrap;padding:12px 16px;border:1px solid #4f7cff;border-radius:12px;background:#fff;color:#4f7cff;font-weight:600;font-size:13px;cursor:pointer;transition:.2s}
+.send-code-btn:hover{background:#f0f3ff}
+.send-code-btn:disabled{opacity:.5;cursor:not-allowed}
+.submit-btn{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(110deg,#4f7cff,#8a5cf6);color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;transition:transform .2s,box-shadow .2s}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(91,100,230,.35)}
+.modal-footer{text-align:center;margin-top:16px}
+.modal-footer a{font-size:13px;color:#8a5cf6}
+#resetFormContainer h3{color:#172033}
+#backToLoginLink, #forgotPasswordLink{color:#8a5cf6;font-size:13px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div style="display:flex;align-items:center;">
+    <a class="logo" href="index.html">&nbsp;&nbsp;这人<span>针不错</span></a>
+    <span class="nav-exp-badge" id="navExpBadge">经验：--</span>
+  </div>
+  <div class="nav-right">
+    <div class="navlinks">
+      <div class="home-dropdown">
+        <a href="index.html" class="home-trigger">主页 ▾</a>
+        <div class="home-menu">
+          <a href="index.html#works">作品</a>
+          <a href="index.html#about">关于</a>
+          <a href="index.html#community">社群</a>
+          <a href="index.html#contact">联系</a>
+        </div>
+      </div>
+      <a href="resources.html">资源</a>
+      <a href="games.html">游戏</a>
+      <a href="shop.html">商店</a>
+    </div>
+    <div class="lang-switch">
+      <button class="lang-btn" id="langBtn" type="button">简体中文 ▾</button>
+      <div class="lang-menu" id="langMenu">
+        <button type="button" data-lang="cn" class="active">简体中文</button>
+        <button type="button" data-lang="hk">繁體中文（香港）</button>
+        <button type="button" data-lang="tw">繁體中文（台灣）</button>
+      </div>
+    </div>
+    <div class="user-center" id="userCenter">
+      <div class="avatar-btn" id="avatarBtn" title="个人中心">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <div class="user-popover" id="userPopover">
+        <div id="popoverNotLoggedIn" style="display:none;padding:20px;text-align:center;color:#6f7890;font-size:14px;">请先点击头像登录或注册</div>
+        <div id="popoverLoggedIn" style="display:none;padding:16px;">
+          <div style="text-align:center;margin-bottom:12px;">
+            <div id="popoverAvatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#8a5cf6);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.1);background-size:cover;background-position:center;">
+              <span id="popoverAvatarLetter" style="font-size:28px;font-weight:bold;color:#fff;">U</span>
+            </div>
+          </div>
+          <div style="text-align:center;font-size:16px;font-weight:bold;color:#172033;">
+            <span id="popoverNickname">用户昵称</span>
+          </div>
+          <div style="font-size:12px;color:#6f7890;margin-top:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <span>经验值：<span id="popoverExpText">0/200</span></span>
+              <span id="popoverLevelText" style="font-weight:bold;padding:1px 8px;border-radius:6px;color:#fff;background:#4ade80;">Lv1</span>
+            </div>
+            <div style="width:100%;height:8px;background:#fff;border:1px solid #e8ebf5;border-radius:4px;overflow:hidden;">
+              <div id="popoverExpBarFill" style="height:100%;width:0%;background:#4ade80;border-radius:4px;"></div>
+            </div>
+          </div>
+          <button class="submit-btn" id="popoverLogoutBtn" style="padding:8px;font-size:14px;margin-top:16px;background:linear-gradient(110deg,#ff7a8a,#ff2442);">退出登录</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main>
+<section id="shop">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Shop</div><h2>商店</h2></div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜索商品...">
+    </div>
+  </div>
+
+  <div class="shop-layout">
+
+    <!-- 左列 -->
+    <div>
+      <div class="shop-category" id="category-badge">
+        <h3 class="category-title">名牌</h3>
+
+        <!-- 已拥有名牌面板（默认隐藏） -->
+        <div class="owned-badge-panel" id="ownedBadgePanel" style="display:none; margin-bottom:14px;">
+          <h4>你当前的名牌</h4>
+          <div id="ownedBadgePreviewWrap" style="text-align:center;margin:10px 0;"></div>
+          <div class="owned-badge-meta">
+            有效期至：<b id="ownedBadgeExpire">--</b><br>
+            剩余天数：<b id="ownedBadgeDays">--</b> 天<br>
+            本月已修改：<b id="ownedBadgeCount">0</b> / 3 次
+          </div>
+          <div class="owned-badge-actions">
+            <button class="mini-btn" id="renameBadgeBtn">修改名牌名称</button>
+          </div>
+        </div>
+
+        <!-- 商品列表 -->
+        <div class="shop-items" id="badgeItems">
+          <div class="shop-item" data-title="普通名牌 浅绿色 4字 60天" data-desc="普通名牌 浅绿色背景 有效期60天 字数4字以内">
+            <div class="shop-info">
+              <div class="badge-preview normal">名牌</div>
+              <h3>普通名牌</h3>
+              <p>浅绿色背景，黑字，名称 4 字以内，有效期 60 天。</p>
+              <div class="shop-price">售价：<span>800</span> 经验</div>
+            </div>
+            <button class="shop-buy-btn" data-type="normal">购买</button>
+          </div>
+
+          <div class="shop-item" data-title="高级名牌 黄色 6字 90天" data-desc="高级名牌 黄色背景 有效期90天 字数6字以内">
+            <div class="shop-info">
+              <div class="badge-preview premium">名牌</div>
+              <h3>高级名牌</h3>
+              <p>黄色背景，黑字，名称 6 字以内，有效期 90 天。</p>
+              <div class="shop-price">售价：<span>1200</span> 经验</div>
+            </div>
+            <button class="shop-buy-btn" data-type="premium">购买</button>
+          </div>
+
+          <div class="shop-item" data-title="至尊名牌 紫色渐变 6字 120天" data-desc="至尊名牌 紫色渐变背景 有效期120天 字数6字以内">
+            <div class="shop-info">
+              <div class="badge-preview ultimate">名牌</div>
+              <h3>至尊名牌</h3>
+              <p>紫色渐变背景，白字，名称 6 字以内，有效期 120 天。</p>
+              <div class="shop-price">售价：<span>1550</span> 经验</div>
+            </div>
+            <button class="shop-buy-btn" data-type="ultimate">购买</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右列：预留 -->
+    <div>
+      <!-- 未来在这里添加其他商品类型，比如头像框、称号等 -->
+    </div>
+
+  </div>
+</div>
+</section>
+</main>
+
+<!-- 输入名牌名称的弹窗 -->
+<div class="modal-overlay" id="badgeNameModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeBadgeNameModal">&times;</button>
+    <h3 style="text-align:center;margin-bottom:18px;" id="badgeNameModalTitle">设置名牌名称</h3>
+    <form id="badgeNameForm">
+      <div class="form-group">
+        <label>名牌名称（<span id="badgeNameMaxLen">4</span> 字以内）</label>
+        <input type="text" id="badgeNameInput" placeholder="请输入名牌显示的名称" maxlength="6">
+      </div>
+      <button type="submit" class="submit-btn" id="badgeNameSubmitBtn">确定</button>
+    </form>
+  </div>
+</div>
+
+<!-- 登录/注册弹窗 -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeModal">&times;</button>
+    <div id="authFormContainer">
+      <div class="modal-tabs">
+        <button class="modal-tab active" data-tab="login" id="tabLogin">登录</button>
+        <button class="modal-tab" data-tab="register" id="tabRegister">注册</button>
+      </div>
+      <form id="authForm">
+        <div class="form-group"><label>邮箱</label><input type="email" id="emailInput" placeholder="请输入邮箱地址" required></div>
+        <div class="form-group" id="nicknameGroup" style="display:none;"><label>昵称</label><input type="text" id="nicknameInput" placeholder="设置一个独一无二的昵称" maxlength="20"></div>
+        <div class="form-group" id="codeGroup" style="display:none;">
+          <label>验证码</label>
+          <div class="code-row">
+            <input type="text" id="codeInput" placeholder="6位数字验证码" maxlength="6">
+            <button type="button" id="sendCodeBtn" class="send-code-btn">获取验证码</button>
+          </div>
+        </div>
+        <div class="form-group"><label>密码</label><input type="password" id="passwordInput" placeholder="至少8位，包含字母和数字" required></div>
+        <button type="submit" class="submit-btn" id="submitBtn">登录 / 注册</button>
+      </form>
+      <div class="modal-footer"><a href="javascript:void(0)" id="forgotPasswordLink">忘记密码？</a></div>
+    </div>
+    <div id="resetFormContainer" style="display:none;">
+      <h3 style="margin-bottom:20px;text-align:center;">重置密码</h3>
+      <form id="resetForm">
+        <div class="form-group"><label>注册邮箱</label><input type="email" id="resetEmail" placeholder="请输入注册时的邮箱" required></div>
+        <div class="form-group">
+          <label>验证码</label>
+          <div class="code-row">
+            <input type="text" id="resetCode" placeholder="6位数字验证码" maxlength="6" required>
+            <button type="button" id="sendResetCodeBtn" class="send-code-btn">获取验证码</button>
+          </div>
+        </div>
+        <div class="form-group"><label>新密码</label><input type="password" id="newPassword" placeholder="至少8位，包含字母和数字" required></div>
+        <button type="submit" class="submit-btn" id="resetSubmitBtn">确认修改</button>
+      </form>
+      <div class="modal-footer"><a href="javascript:void(0)" id="backToLoginLink">返回登录</a></div>
+    </div>
+  </div>
+</div>
+
+<footer><div>© 2026 这人针不错</div></footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  // ============ 元素 ============
+  const navExpBadge = document.getElementById('navExpBadge');
+  const avatarBtn = document.getElementById('avatarBtn');
+  const authModal = document.getElementById('authModal');
+  const closeModal = document.getElementById('closeModal');
+  const tabLogin = document.getElementById('tabLogin');
+  const tabRegister = document.getElementById('tabRegister');
+  const authForm = document.getElementById('authForm');
+  const emailInput = document.getElementById('emailInput');
+  const codeInput = document.getElementById('codeInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const nicknameGroup = document.getElementById('nicknameGroup');
+  const nicknameInput = document.getElementById('nicknameInput');
+  const sendCodeBtn = document.getElementById('sendCodeBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+  const resetForm = document.getElementById('resetForm');
+  const resetEmail = document.getElementById('resetEmail');
+  const resetCode = document.getElementById('resetCode');
+  const newPassword = document.getElementById('newPassword');
+  const sendResetCodeBtn = document.getElementById('sendResetCodeBtn');
+  const resetSubmitBtn = document.getElementById('resetSubmitBtn');
+  const backToLoginLink = document.getElementById('backToLoginLink');
+  const badgeNameModal = document.getElementById('badgeNameModal');
+  const closeBadgeNameModal = document.getElementById('closeBadgeNameModal');
+  const badgeNameForm = document.getElementById('badgeNameForm');
+  const badgeNameInput = document.getElementById('badgeNameInput');
+  const badgeNameMaxLen = document.getElementById('badgeNameMaxLen');
+  const badgeNameModalTitle = document.getElementById('badgeNameModalTitle');
+  const ownedBadgePanel = document.getElementById('ownedBadgePanel');
+  const ownedBadgePreviewWrap = document.getElementById('ownedBadgePreviewWrap');
+  const ownedBadgeExpire = document.getElementById('ownedBadgeExpire');
+  const ownedBadgeDays = document.getElementById('ownedBadgeDays');
+  const ownedBadgeCount = document.getElementById('ownedBadgeCount');
+  const renameBadgeBtn = document.getElementById('renameBadgeBtn');
+
+  let pendingBadgeType = null; // 待购买的名牌类型
+
+  // ============ 拉取真实用户数据 ============
+  async function refreshRealUser() {
+    const saved = localStorage.getItem('user');
+    if (!saved) return null;
+    const u = JSON.parse(saved);
+    try {
+      const res = await fetch('/api/auth/me', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: u.email })
+      });
+      const data = await res.json();
+      if (data.success && data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        return data.user;
+      }
+    } catch(e) {}
+    return null;
+  }
+
+  // ============ 名牌相关工具函数 ============
+  function badgeTextByType(type) {
+    return { normal: '普通名牌', premium: '高级名牌', ultimate: '至尊名牌' }[type] || '名牌';
+  }
+
+  function getBadgeMaxLen(type) {
+    return { normal: 4, premium: 6, ultimate: 6 }[type] || 6;
+  }
+
+  // 显示名牌
+  function renderBadgeHTML(user) {
+    if (!user || !user.badge_type || !user.badge_name) return '';
+    if (!user.badge_expire_at || user.badge_expire_at < Date.now()) return '';
+    return `<span class="user-badge ${user.badge_type}">${user.badge_name}</span>`;
+  }
+
+  // 更新顶部经验标签
+  function updateNavExp(user) {
+    if (!user) {
+      navExpBadge.textContent = '经验：--';
+      return;
+    }
+    navExpBadge.textContent = '经验：' + (user.exp || 0).toLocaleString();
+  }
+
+  // 更新已拥有名牌面板
+  function updateOwnedBadge(user) {
+    if (!user || !user.badge_type || !user.badge_name) {
+      ownedBadgePanel.style.display = 'none';
+      return;
+    }
+    if (!user.badge_expire_at || user.badge_expire_at < Date.now()) {
+      ownedBadgePanel.style.display = 'none';
+      return;
+    }
+    ownedBadgePanel.style.display = 'block';
+    ownedBadgePreviewWrap.innerHTML = `<span class="badge-preview ${user.badge_type}">${user.badge_name}</span>`;
+    const expireDate = new Date(user.badge_expire_at);
+    ownedBadgeExpire.textContent = expireDate.toLocaleDateString('zh-CN') + ' ' + expireDate.toLocaleTimeString('zh-CN', {hour:'2-digit', minute:'2-digit'});
+    const days = Math.ceil((user.badge_expire_at - Date.now()) / (24 * 60 * 60 * 1000));
+    ownedBadgeDays.textContent = days > 0 ? days : 0;
+    ownedBadgeCount.textContent = user.badge_update_count || 0;
+  }
+
+  // 更新购买按钮状态
+  function updateBuyButtons(user) {
+    document.querySelectorAll('.shop-buy-btn').forEach(btn => {
+      if (!user) {
+        btn.disabled = true;
+        btn.textContent = '请先登录';
+        return;
+      }
+      const type = btn.dataset.type;
+      const price = { normal: 800, premium: 1200, ultimate: 1550 }[type];
+      if ((user.exp || 0) < price) {
+        btn.disabled = true;
+        btn.textContent = '经验不足';
+      } else {
+        btn.disabled = false;
+        btn.textContent = '购买';
+      }
+    });
+  }
+
+  // 整体刷新
+  async function refresh() {
+    const user = await refreshRealUser();
+    updateNavExp(user);
+    updateOwnedBadge(user);
+    updateBuyButtons(user);
+    return user;
+  }
+
+  // ============ 页面初始化 ============
+  refresh();
+
+  // ============ 购买流程 ============
+  document.querySelectorAll('.shop-buy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const saved = localStorage.getItem('user');
+      if (!saved) return alert('请先登录！');
+      const type = btn.dataset.type;
+      const price = { normal: 800, premium: 1200, ultimate: 1550 }[type];
+
+      if (!confirm(`确定花费 ${price} 经验购买"${badgeTextByType(type)}"吗？`)) return;
+
+      btn.disabled = true;
+      btn.textContent = '处理中...';
+      try {
+        const u = JSON.parse(saved);
+        const res = await fetch('/api/shop/buy-badge', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: u.email, type })
+        });
+        const data = await res.json();
+        if (data.success) {
+          // 购买成功，弹窗引导设置名称
+          pendingBadgeType = type;
+          badgeNameMaxLen.textContent = getBadgeMaxLen(type);
+          badgeNameInput.maxLength = getMaxBadgeLen(type);
+          badgeNameInput.value = '';
+          badgeNameModalTitle.textContent = '设置名牌名称';
+          badgeNameModal.classList.add('show');
+          await refresh();
+        } else {
+          alert(data.error || '购买失败');
+          await refresh();
+        }
+      } catch(e) {
+        alert('网络错误');
+        await refresh();
+      }
+    });
+  });
+
+  function getMaxBadgeLen(type) {
+    return { normal: 4, premium: 6, ultimate: 6 }[type] || 6;
+  }
+
+  // ============ 提交名牌名称 ============
+  if (badgeNameForm) {
+    badgeNameForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const saved = localStorage.getItem('user');
+      if (!saved) return alert('请先登录');
+      const u = JSON.parse(saved);
+      const newName = badgeNameInput.value.trim();
+      if (!newName) return alert('名称不能为空');
+
+      const btn = document.getElementById('badgeNameSubmitBtn');
+      btn.disabled = true;
+      btn.textContent = '保存中...';
+      try {
+        const res = await fetch('/api/shop/update-badge-name', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: u.email, newName })
+        });
+        const data = await res.json();
+        if (data.success) {
+          badgeNameModal.classList.remove('show');
+          pendingBadgeType = null;
+          await refresh();
+          alert('名牌设置成功！');
+        } else {
+          alert(data.error || '设置失败');
+        }
+      } catch(e) {
+        alert('网络错误');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '确定';
+      }
+    });
+  }
+
+  if (closeBadgeNameModal) {
+    closeBadgeNameModal.addEventListener('click', () => badgeNameModal.classList.remove('show'));
+    badgeNameModal.addEventListener('click', (e) => { if (e.target === badgeNameModal) badgeNameModal.classList.remove('show'); });
+  }
+
+  // ============ 点击“修改名牌名称”按钮 ============
+  if (renameBadgeBtn) {
+    renameBadgeBtn.addEventListener('click', async () => {
+      const saved = localStorage.getItem('user');
+      if (!saved) return;
+      const u = JSON.parse(saved);
+      if (!u.badge_type) return alert('你还没有名牌');
+      if (u.badge_expire_at && u.badge_expire_at < Date.now()) return alert('名牌已过期');
+      // 检查本月次数
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      let count = u.badge_update_count || 0;
+      if (u.badge_update_month !== currentMonth) count = 0;
+      if (u.badge_name && count >= 3) return alert('本月修改次数已用完（每月3次）');
+
+      pendingBadgeType = u.badge_type;
+      badgeNameMaxLen.textContent = getBadgeMaxLen(u.badge_type);
+      badgeNameInput.maxLength = getMaxBadgeLen(u.badge_type);
+      badgeNameInput.value = u.badge_name || '';
+      badgeNameModalTitle.textContent = '修改名牌名称';
+      badgeNameModal.classList.add('show');
+    });
+  }
+
+  // ============ 商店搜索 ============
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const keyword = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('.shop-item').forEach(item => {
+        const fullText = item.textContent.toLowerCase();
+        item.style.display = (!keyword || fullText.includes(keyword)) ? '' : 'none';
+      });
+    });
+  }
+
+  // ============ 头像悬停卡片 ============
+  const userCenter = document.getElementById('userCenter');
+  if (userCenter) {
+    userCenter.addEventListener('mouseenter', async () => {
+      const saved = localStorage.getItem('user');
+      const popoverLoggedIn = document.getElementById('popoverLoggedIn');
+      const popoverNotLoggedIn = document.getElementById('popoverNotLoggedIn');
+      if (!saved) {
+        popoverLoggedIn.style.display = 'none';
+        popoverNotLoggedIn.style.display = 'block';
+        return;
+      }
+      const userData = await refreshRealUser() || JSON.parse(saved);
+      popoverLoggedIn.style.display = 'block';
+      popoverNotLoggedIn.style.display = 'none';
+      if (userData.avatar) {
+        document.getElementById('popoverAvatar').style.backgroundImage = `url(${userData.avatar})`;
+        document.getElementById('popoverAvatarLetter').style.display = 'none';
+      } else {
+        document.getElementById('popoverAvatar').style.backgroundImage = 'none';
+        document.getElementById('popoverAvatar').style.background = 'linear-gradient(135deg, #4f7cff, #8a5cf6)';
+        document.getElementById('popoverAvatarLetter').style.display = 'block';
+        document.getElementById('popoverAvatarLetter').textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
+      }
+      // 昵称 + 名牌
+      document.getElementById('popoverNickname').innerHTML = (userData.nickname || '用户') + renderBadgeHTML(userData);
+
+      // 经验条
+      const expNum = parseInt(userData.exp) || 0;
+      const popoverExpText = document.getElementById('popoverExpText');
+      const popoverLevelText = document.getElementById('popoverLevelText');
+      const popoverExpBarFill = document.getElementById('popoverExpBarFill');
+      let level = 1, nextExp = 200, baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
+      if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
+      else if (expNum >= 6200) { level = 6; nextExp = 13200; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
+      else if (expNum >= 2800) { level = 5; nextExp = 6200; baseColor = '#f97316'; darkColor = '#c2410c'; }
+      else if (expNum >= 1200) { level = 4; nextExp = 2800; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
+      else if (expNum >= 500) { level = 3; nextExp = 1200; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
+      else if (expNum >= 200) { level = 2; nextExp = 500; baseColor = '#22c55e'; darkColor = '#15803d'; }
+      if (nextExp === Infinity) { popoverExpText.textContent = `${expNum}/∞`; popoverExpBarFill.style.width = '100%'; }
+      else { popoverExpText.textContent = `${expNum}/${nextExp}`; popoverExpBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
+      popoverLevelText.textContent = `Lv${level}`;
+      popoverLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
+      popoverLevelText.style.color = textColor;
+      popoverExpBarFill.style.background = baseColor;
+    });
+  }
+
+  // ============ 退出登录 ============
+  const popoverLogoutBtn = document.getElementById('popoverLogoutBtn');
+  if (popoverLogoutBtn) {
+    popoverLogoutBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      localStorage.removeItem('user');
+      alert('已退出登录');
+      window.location.reload();
+    });
+  }
+
+  // ============ 登录/注册弹窗 ============
+  if (avatarBtn && authModal) {
+    avatarBtn.addEventListener('click', () => {
+      const user = localStorage.getItem('user');
+      if (user) return;
+      document.getElementById('authFormContainer').style.display = 'block';
+      document.getElementById('resetFormContainer').style.display = 'none';
+      authModal.classList.add('show');
+    });
+  }
+  if (closeModal && authModal) {
+    closeModal.addEventListener('click', () => authModal.classList.remove('show'));
+    authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('show'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && authModal.classList.contains('show')) authModal.classList.remove('show'); });
+  }
+
+  if (tabLogin && tabRegister) {
+    tabLogin.addEventListener('click', () => {
+      tabLogin.classList.add('active'); tabRegister.classList.remove('active');
+      nicknameGroup.style.display = 'none';
+      document.getElementById('codeGroup').style.display = 'none';
+      codeInput.required = false;
+      forgotPasswordLink.style.display = 'inline';
+    });
+    tabRegister.addEventListener('click', () => {
+      tabRegister.classList.add('active'); tabLogin.classList.remove('active');
+      nicknameGroup.style.display = 'block';
+      document.getElementById('codeGroup').style.display = 'block';
+      codeInput.required = true;
+      forgotPasswordLink.style.display = 'none';
+    });
+  }
+  if (forgotPasswordLink && backToLoginLink) {
+    forgotPasswordLink.addEventListener('click', () => {
+      document.getElementById('authFormContainer').style.display = 'none';
+      document.getElementById('resetFormContainer').style.display = 'block';
+    });
+    backToLoginLink.addEventListener('click', () => {
+      document.getElementById('authFormContainer').style.display = 'block';
+      document.getElementById('resetFormContainer').style.display = 'none';
+    });
+  }
+
+  function startCountdown(btn) {
+    let c = 60;
+    btn.disabled = true; btn.textContent = `${c}秒后重试`;
+    const timer = setInterval(() => {
+      c--;
+      if (c <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; }
+      else btn.textContent = `${c}秒后重试`;
+    }, 1000);
+  }
+  async function sendCode(email, btn) {
+    if (!email || !email.includes('@')) return alert('请输入有效的邮箱地址');
+    btn.disabled = true; btn.textContent = '发送中...';
+    try {
+      const res = await fetch('/api/auth/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (data.success) startCountdown(btn);
+      else { alert(data.error || '发送失败'); btn.disabled = false; btn.textContent = '获取验证码'; }
+    } catch(e) { alert('网络错误'); btn.disabled = false; btn.textContent = '获取验证码'; }
+  }
+  if (sendCodeBtn) sendCodeBtn.addEventListener('click', () => sendCode(emailInput.value.trim(), sendCodeBtn));
+  if (sendResetCodeBtn) sendResetCodeBtn.addEventListener('click', () => sendCode(resetEmail.value.trim(), sendResetCodeBtn));
+
+  if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const code = codeInput.value.trim();
+      const password = passwordInput.value.trim();
+      const isRegister = tabRegister.classList.contains('active');
+      const nickname = isRegister && nicknameInput ? nicknameInput.value.trim() : '';
+      if (!email || !password) return alert('请填写邮箱和密码');
+      if (isRegister && !code) return alert('请填写验证码');
+      if (password.length < 8) return alert('密码至少8位');
+      if (isRegister && !nickname) return alert('请设置您的昵称');
+      submitBtn.disabled = true; submitBtn.textContent = '处理中...';
+      try {
+        const payload = isRegister ? { email, code, password, nickname } : { email, password };
+        const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(isRegister ? '注册成功！' : '登录成功！');
+          if (data.user) { localStorage.setItem('user', JSON.stringify(data.user)); location.reload(); }
+        } else alert(data.error || '操作失败');
+      } catch(e) { alert('网络错误'); }
+      finally { submitBtn.disabled = false; submitBtn.textContent = '登录 / 注册'; }
+    });
+  }
+
+  if (resetForm) {
+    resetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = resetEmail.value.trim();
+      const code = resetCode.value.trim();
+      const password = newPassword.value.trim();
+      if (!email || !code || !password) return alert('请填写所有字段');
+      if (password.length < 8) return alert('密码至少8位');
+      resetSubmitBtn.disabled = true; resetSubmitBtn.textContent = '处理中...';
+      try {
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code, newPassword: password })
+        });
+        const data = await res.json();
+        if (data.success) { alert('密码重置成功！'); location.reload(); }
+        else alert(data.error || '重置失败');
+      } catch(e) { alert('网络错误'); }
+      finally { resetSubmitBtn.disabled = false; resetSubmitBtn.textContent = '确认修改'; }
+    });
+  }
+
+  // 页面切换淡入淡出
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest('a');
+    if (!link) return;
+    var href = link.getAttribute('href');
+    if (!href) return;
+    if (href.startsWith('#') || href.startsWith('http') || link.target === '_blank' || href.startsWith('javascript:')) return;
+    e.preventDefault();
+    document.body.classList.add('page-leaving');
+    setTimeout(function () { window.location.href = href; }, 200);
+  });
+
+  // 语言切换
+  var langBtn = document.getElementById('langBtn');
+  var langMenu = document.getElementById('langMenu');
+  var langSwitch = document.querySelector('.lang-switch');
+  if (langBtn && langMenu && langSwitch && typeof OpenCC !== 'undefined') {
+    var converters = { cn: null, hk: OpenCC.Converter({ from: 'cn', to: 'hk' }), tw: OpenCC.Converter({ from: 'cn', to: 'twp' }) };
+    var langNames = { cn: '简体中文 ▾', hk: '繁體中文（香港）▾', tw: '繁體中文（台灣）▾' };
+    var textNodes = [];
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+    var n;
+    while ((n = walker.nextNode())) {
+      if (!n.nodeValue || !n.nodeValue.trim()) continue;
+      var p = n.parentElement; if (!p) continue;
+      var tag = p.tagName; if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+      n.__original = n.nodeValue; textNodes.push(n);
+    }
+    var applyLang = function (lang) {
+      var converter = converters[lang];
+      for (var i = 0; i < textNodes.length; i++) {
+        var node = textNodes[i]; if (!node.isConnected) continue;
+        node.nodeValue = converter ? converter(node.__original) : node.__original;
+      }
+      langBtn.textContent = langNames[lang];
+      var btns = langMenu.querySelectorAll('button');
+      for (var j = 0; j < btns.length; j++) { btns[j].classList.toggle('active', btns[j].getAttribute('data-lang') === lang); }
+      document.documentElement.lang = lang === 'cn' ? 'zh-CN' : (lang === 'hk' ? 'zh-HK' : 'zh-TW');
+    };
+    langBtn.addEventListener('click', function (e) { e.stopPropagation(); langMenu.classList.toggle('open'); });
+    var menuBtns = langMenu.querySelectorAll('button');
+    for (var k = 0; k < menuBtns.length; k++) {
+      (function (btn) {
+        btn.addEventListener('click', function () { applyLang(btn.getAttribute('data-lang')); langMenu.classList.remove('open'); });
+      })(menuBtns[k]);
+    }
+    document.addEventListener('click', function (e) { if (!langSwitch.contains(e.target)) langMenu.classList.remove('open'); });
+  }
+
+});
+</script>
+</body>
+</html>
