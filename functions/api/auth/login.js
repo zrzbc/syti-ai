@@ -23,7 +23,7 @@ export async function onRequestPost(context) {
     return Response.json({ error: '密码错误' }, { status: 400 });
   }
 
-  // 3. 登录成功，返回用户信息（新增 nickname）
+  // 3. 登录成功，返回用户信息
   return Response.json({
     success: true,
     message: '登录成功',
@@ -35,7 +35,8 @@ export async function onRequestPost(context) {
       exp: user.exp || 0,
       signin_days: user.signin_days || 0,
       continuous_days: user.continuous_days || 0,
-      last_signin_date: user.last_signin_date || null
+      last_signin_date: user.last_signin_date || null,
+      has_badge: user.has_badge || 0
     }
   });
 }
