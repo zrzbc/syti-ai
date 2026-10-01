@@ -5,24 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="这人针不错官方网站">
 <title>主页 - 这人针不错</title>
-<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js">
-</script>
-
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
 <style>
-
-/* ===== 悬停卡片 ===== */
 .user-center { position: relative; display: flex; align-items: center; margin-left: 4px; }
 .user-popover {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  width: 220px;
-  background: #fff;
-  border: 1px solid #e8ebf5;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(55,65,110,0.15);
-  display: none;
-  z-index: 50;
+  position: absolute; top: 100%; right: 0; width: 220px;
+  background: #fff; border: 1px solid #e8ebf5; border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(55,65,110,0.15); display: none; z-index: 50;
 }
 .user-popover::before {
   content: ""; position: absolute; top: -6px; right: 18px;
@@ -32,13 +21,8 @@
 .user-center:hover .user-popover { display: block; }
 
 :root{
-  --blue:#4f7cff;
-  --purple:#8a5cf6;
-  --ink:#172033;
-  --muted:#6f7890;
-  --line:#e8ebf5;
-  --bg:#f7f9ff;
-  --card:rgba(255,255,255,.78);
+  --blue:#4f7cff; --purple:#8a5cf6; --ink:#172033; --muted:#6f7890;
+  --line:#e8ebf5; --bg:#f7f9ff; --card:rgba(255,255,255,.78);
   --shadow:0 18px 60px rgba(67,72,120,.10);
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -68,6 +52,9 @@ button{font:inherit}
 .user-badge.normal{background:#b8e9b8;color:#000}
 .user-badge.premium{background:#ffd700;color:#000}
 .user-badge.ultimate{background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff}
+/* ★ 名牌可点击 */
+.user-badge.editable-badge{cursor:pointer;transition:filter .15s ease, transform .15s ease;}
+.user-badge.editable-badge:hover{filter:brightness(1.08);transform:scale(1.05);}
 
 .navlinks{display:flex;gap:4px;align-items:center}
 .home-dropdown{position:relative;display:inline-block}
@@ -160,84 +147,38 @@ footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
  .numbers{gap:8px}.number{padding:16px}.number b{font-size:25px}
 }
 
-/* 精选作品 / 资源卡片悬停放大 */
 #works .card,
-#resources .card {
-  transition: transform .25s ease, box-shadow .25s ease;
-}
+#resources .card { transition: transform .25s ease, box-shadow .25s ease; }
 #works .card:hover,
-#resources .card:hover {
-  transform: scale(1.02);
-  box-shadow: 0 20px 50px rgba(60,70,120,.15);
-}
+#resources .card:hover { transform: scale(1.02); box-shadow: 0 20px 50px rgba(60,70,120,.15); }
 
-/* 社交平台 / 与我互动按钮悬停放大 */
-.contact-item {
-  transition: transform .2s ease, box-shadow .2s ease;
-}
-.contact-item:hover {
-  transform: scale(1.02);
-  box-shadow: 0 8px 20px rgba(0,0,0,.12);
-}
+.contact-item { transition: transform .2s ease, box-shadow .2s ease; }
+.contact-item:hover { transform: scale(1.02); box-shadow: 0 8px 20px rgba(0,0,0,.12); }
 
-/* 各大部分之间的细分隔线（灰色、不连通两端） */
 #works,
 #about,
 #community,
 #contact,
-#resources {
-  position: relative;
-  border-top: 0;
-}
+#resources { position: relative; border-top: 0; }
 
 #works::before,
 #about::before,
 #community::before,
 #contact::before,
 #resources::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(1160px, calc(100% - 80px));
-  height: 1px;
-  background: #d9dce5;
+  content: ""; position: absolute; top: 0; left: 50%;
+  transform: translateX(-50%); width: min(1160px, calc(100% - 80px));
+  height: 1px; background: #d9dce5;
 }
 
-/* 头像 / 数据框 悬停放大（名字不放大） */
 .avatar,
-.stat {
-  transition: transform .2s ease, box-shadow .2s ease;
-  cursor: pointer;
-}
-.avatar:hover {
-  transform: scale(1.05);
-}
-.stat:hover {
-  transform: scale(1.03);
-  box-shadow: 0 8px 20px rgba(60,70,120,.12);
-}
-.profile h3 {
-  cursor: pointer;
-}
+.stat { transition: transform .2s ease, box-shadow .2s ease; cursor: pointer; }
+.avatar:hover { transform: scale(1.05); }
+.stat:hover { transform: scale(1.03); box-shadow: 0 8px 20px rgba(60,70,120,.12); }
+.profile h3 { cursor: pointer; }
 
-/* 四叶草容器与图片 */
-.clover-wrap {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px 0;
-}
-#cloverImg {
-  max-width: 62%;
-  height: auto;
-  display: block;
-  cursor: pointer;
-  transition: transform .25s ease;
-  will-change: transform;
-}
+.clover-wrap { position: relative; display: flex; justify-content: center; align-items: center; padding: 10px 0; }
+#cloverImg { max-width: 62%; height: auto; display: block; cursor: pointer; transition: transform .25s ease; will-change: transform; }
 #cloverImg:hover { transform: scale(1.05); }
 #cloverImg.pop { animation: cloverPop .4s ease; }
 @keyframes cloverPop {
@@ -246,64 +187,30 @@ footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
   100% { transform: scale(1); }
 }
 .clover-tip {
-  position: absolute;
-  top: 0;
-  left: 50%;
+  position: absolute; top: 0; left: 50%;
   transform: translateX(-50%) translateY(6px);
-  background: rgba(23,32,51,.82);
-  color: #fff;
-  font-size: 13px;
-  padding: 6px 12px;
-  border-radius: 10px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .25s ease, transform .25s ease;
-  z-index: 2;
+  background: rgba(23,32,51,.82); color: #fff; font-size: 13px;
+  padding: 6px 12px; border-radius: 10px; white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease; z-index: 2;
 }
-.clover-tip.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(-6px);
-}
+.clover-tip.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
 
-.profile {
-  cursor: pointer;
-}
+.profile { cursor: pointer; }
 
-/* 找我官方合作 展开子按钮 */
 .coop-item { display: grid; }
 .coop-toggle { cursor: pointer; }
 .coop-sub {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  max-height: 0;
-  overflow: hidden;
-  opacity: 0;
-  margin-top: 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  max-height: 0; overflow: hidden; opacity: 0; margin-top: 0;
   transition: max-height .3s ease, opacity .3s ease, margin-top .3s ease;
 }
-.coop-item:hover .coop-sub {
-  max-height: 120px;
-  opacity: 1;
-  margin-top: 10px;
-}
-.coop-sub .contact-item {
-  font-size: 13px;
-  text-align: center;
-  padding: 11px 8px;
-}
+.coop-item:hover .coop-sub { max-height: 120px; opacity: 1; margin-top: 10px; }
+.coop-sub .contact-item { font-size: 13px; text-align: center; padding: 11px 8px; }
 
-/* QQ 群二维码悬停放大 */
-.card.qr img {
-  transition: transform .25s ease;
-  cursor: pointer;
-}
-.card.qr img:hover {
-  transform: scale(1.05);
-}
+.card.qr img { transition: transform .25s ease; cursor: pointer; }
+.card.qr img:hover { transform: scale(1.05); }
 
-/* 语言切换器 */
 .nav-right{display:flex;align-items:center;gap:8px}
 .lang-switch{position:relative}
 .lang-btn{
@@ -331,272 +238,113 @@ footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
   .lang-btn{padding:7px 9px;font-size:12px}
 }
 
-/* 数据滚动 / 淡出动画 */
-.stat b {
-  transition: opacity .5s ease;
-}
-.stat.fade-out b {
-  opacity: 0;
-}
+.stat b { transition: opacity .5s ease; }
+.stat.fade-out b { opacity: 0; }
 
-/* 页面切换淡入淡出 */
-body {
-  opacity: 1;
-  transition: opacity .2s ease;
-}
-body.page-leaving {
-  opacity: 0;
-}
+body { opacity: 1; transition: opacity .2s ease; }
+body.page-leaving { opacity: 0; }
 
-/* ===== 个人中心头像按钮 ===== */
 .user-center {
-  position: relative;
-  display: flex;
-  align-items: center;
-  margin-left: 4px;
-  padding-bottom: 10px;
+  position: relative; display: flex; align-items: center;
+  margin-left: 4px; padding-bottom: 10px;
 }
-
 .avatar-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%; /* 圆形 */
-  background: linear-gradient(135deg, #4f7cff, #8a5cf6); /* 和你网站主题色一致的渐变 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #fff; /* 图标颜色 */
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #4f7cff, #8a5cf6);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #fff;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   border: 2px solid rgba(255, 255, 255, 0.8);
 }
+.avatar-btn:hover { transform: scale(1.08); box-shadow: 0 6px 16px rgba(79, 124, 255, 0.35); }
 
-.avatar-btn:hover {
-  transform: scale(1.08);
-  box-shadow: 0 6px 16px rgba(79, 124, 255, 0.35);
-}
-
-/* ===== 模态框遮罩层 ===== */
 .modal-overlay {
-  display: none; /* 默认隐藏 */
-  position: fixed;
-  top: 0; left: 0;
+  display: none; position: fixed; top: 0; left: 0;
   width: 100%; height: 100%;
-  background: rgba(23, 32, 51, 0.55); /* 半透明深色背景 */
-  backdrop-filter: blur(6px);
-  z-index: 999;
-  justify-content: center;
-  align-items: center;
+  background: rgba(23, 32, 51, 0.55);
+  backdrop-filter: blur(6px); z-index: 999;
+  justify-content: center; align-items: center;
 }
-
-.modal-overlay.show {
-  display: flex; /* 加上 .show 类时显示 */
-}
-
-/* ===== 模态框主体 ===== */
+.modal-overlay.show { display: flex; }
 .modal-content {
-  background: #fff;
-  border-radius: 24px;
+  background: #fff; border-radius: 24px;
   width: min(420px, calc(100% - 40px));
-  padding: 32px 28px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
-  position: relative;
-  max-height: 90vh;
-  overflow-y: auto;
+  padding: 32px 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+  position: relative; max-height: 90vh; overflow-y: auto;
 }
-
 .modal-close {
-  position: absolute;
-  top: 16px; right: 20px;
-  background: none;
-  border: none;
-  font-size: 28px;
-  color: #999;
-  cursor: pointer;
-  line-height: 1;
+  position: absolute; top: 16px; right: 20px;
+  background: none; border: none; font-size: 28px;
+  color: #999; cursor: pointer; line-height: 1;
 }
-
 .modal-close:hover { color: #333; }
-
-/* ===== 标签切换 ===== */
-.modal-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 24px;
-}
-
+.modal-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
 .modal-tab {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #e8ebf5;
-  border-radius: 12px;
-  background: #f7f9ff;
-  color: #6f7890;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
+  flex: 1; padding: 10px; border: 1px solid #e8ebf5; border-radius: 12px;
+  background: #f7f9ff; color: #6f7890; font-weight: 600; cursor: pointer; transition: 0.2s;
 }
-
 .modal-tab.active {
   background: linear-gradient(110deg, #4f7cff, #8a5cf6);
-  color: #fff;
-  border-color: transparent;
+  color: #fff; border-color: transparent;
 }
-
-/* ===== 表单 ===== */
-.form-group {
-  margin-bottom: 18px;
-}
-
-.form-group label {
-  display: block;
-  font-size: 13px;
-  color: #6f7890;
-  margin-bottom: 6px;
-  font-weight: 600;
-}
-
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 13px; color: #6f7890; margin-bottom: 6px; font-weight: 600; }
 .form-group input {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #e8ebf5;
-  border-radius: 12px;
-  font-size: 15px;
-  outline: none;
-  transition: border-color 0.2s;
+  width: 100%; padding: 12px 14px; border: 1px solid #e8ebf5;
+  border-radius: 12px; font-size: 15px; outline: none; transition: border-color 0.2s;
 }
-
-.form-group input:focus {
-  border-color: #4f7cff;
-  box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.12);
-}
-
-.code-row {
-  display: flex;
-  gap: 10px;
-}
-
+.form-group input:focus { border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.12); }
+.code-row { display: flex; gap: 10px; }
 .code-row input { flex: 1; }
-
 .send-code-btn {
-  white-space: nowrap;
-  padding: 12px 16px;
-  border: 1px solid #4f7cff;
-  border-radius: 12px;
-  background: #fff;
-  color: #4f7cff;
-  font-weight: 600;
-  font-size: 13px;
-  cursor: pointer;
-  transition: 0.2s;
+  white-space: nowrap; padding: 12px 16px; border: 1px solid #4f7cff;
+  border-radius: 12px; background: #fff; color: #4f7cff;
+  font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s;
 }
-
-.send-code-btn:hover {
-  background: #f0f3ff;
-}
-
-.send-code-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
+.send-code-btn:hover { background: #f0f3ff; }
+.send-code-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .submit-btn {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 14px;
+  width: 100%; padding: 14px; border: none; border-radius: 14px;
   background: linear-gradient(110deg, #4f7cff, #8a5cf6);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 8px;
+  color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px;
   transition: transform 0.2s, box-shadow 0.2s;
 }
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(91, 100, 230, 0.35); }
+.modal-footer { text-align: center; margin-top: 16px; }
+.modal-footer a { font-size: 13px; color: #8a5cf6; }
 
-.submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(91, 100, 230, 0.35);
-}
-
-.modal-footer {
-  text-align: center;
-  margin-top: 16px;
-}
-
-.modal-footer a {
-  font-size: 13px;
-  color: #8a5cf6;
-}
-
-/* 用户信息面板和找回密码面板的样式 */
 #resetFormContainer h3 { color: #172033; }
 #backToLoginLink, #forgotPasswordLink { color: #8a5cf6; font-size: 13px; }
 #userNickname { font-size: 24px; margin-top: 10px; }
 
-/* ===== 签到区 ===== */
-.signin-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
+.signin-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .signin-card {
-  background: var(--card);
-  backdrop-filter: blur(12px);
+  background: var(--card); backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.95);
   box-shadow: 0 12px 40px rgba(60,70,120,.07);
-  border-radius: 20px;
-  padding: 24px;
+  border-radius: 20px; padding: 24px;
 }
-.signin-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
+.signin-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .signin-table th, .signin-table td {
-  padding: 10px 12px;
-  text-align: left;
-  border-bottom: 1px solid #eef1f8;
+  padding: 10px 12px; text-align: left; border-bottom: 1px solid #eef1f8;
 }
-.signin-table th {
-  background: #f7f9ff;
-  color: #6f7890;
-  font-weight: 600;
-}
+.signin-table th { background: #f7f9ff; color: #6f7890; font-weight: 600; }
 .signin-table tr:last-child td { border-bottom: none; }
 
-.reward-cell {
-  display: flex !important;
-  justify-content: space-between;
-  align-items: center;
-}
-.check-mark {
-  color: #22c55e;
-  font-weight: bold;
-  font-size: 18px;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
+.reward-cell { display: flex !important; justify-content: space-between; align-items: center; }
+.check-mark { color: #22c55e; font-weight: bold; font-size: 18px; opacity: 0; transition: opacity 0.5s ease; }
 .check-mark.show { opacity: 1; }
 
 .random-reward {
   font-weight: bold;
   background: linear-gradient(135deg, #a855f7, #7e22ce);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
 }
 
 .leaderboard-row {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: 10px;
-  margin-bottom: 6px;
-  background: #fff;
-  font-size: 13px;
-  gap: 10px;
+  display: flex; align-items: center; padding: 8px 12px; border-radius: 10px;
+  margin-bottom: 6px; background: #fff; font-size: 13px; gap: 10px;
   border: 2px solid #000;
 }
 .leaderboard-row.rank-1 { background: linear-gradient(135deg, #ffd700, #ffb800); }
@@ -604,16 +352,10 @@ body.page-leaving {
 .leaderboard-row.rank-3 { background: linear-gradient(135deg, #d2a679, #b8864a); }
 .leaderboard-row.rank-1,
 .leaderboard-row.rank-2,
-.leaderboard-row.rank-3 {
-  border: none;
-}
+.leaderboard-row.rank-3 { border: none; }
 .leaderboard-row.rank-2, .leaderboard-row.rank-3 { color: #fff; }
 .leaderboard-row.rank-1 { color: #000; }
-.leaderboard-row.current-user {
-  margin-top: 16px;
-  border-top: 1px dashed #d9dce5;
-  padding-top: 12px;
-}
+.leaderboard-row.current-user { margin-top: 16px; border-top: 1px dashed #d9dce5; padding-top: 12px; }
 .leaderboard-avatar {
   width: 28px; height: 28px; border-radius: 50%;
   background: linear-gradient(135deg, #4f7cff, #8a5cf6);
@@ -624,66 +366,34 @@ body.page-leaving {
 .leaderboard-name { flex: 1; }
 .leaderboard-days { margin-left: auto; font-weight: 600; }
 
-/* ===== 等级门槛浮窗 ===== */
 .popover-level-wrap { position: relative; display: inline-block; }
 .level-tooltip {
-  position: absolute;
-  left: 100%;
-  top: 50%;
+  position: absolute; left: 100%; top: 50%;
   transform: translateY(-50%) translateX(6px);
-  background: #fff;
-  color: #172033;
-  font-size: 12px;
-  line-height: 1.8;
-  padding: 10px 14px;
-  border-radius: 10px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
+  background: #fff; color: #172033; font-size: 12px; line-height: 1.8;
+  padding: 10px 14px; border-radius: 10px; white-space: nowrap;
+  opacity: 0; pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
-  z-index: 9999;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   border: 1px solid #e8ebf5;
 }
 .level-tooltip::before {
-  content: "";
-  position: absolute;
-  right: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 6px solid transparent;
+  content: ""; position: absolute; right: 100%; top: 50%;
+  transform: translateY(-50%); border: 6px solid transparent;
   border-right-color: #fff;
 }
 .level-tooltip .lv-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 8px;
 }
-.level-tooltip .lv-row:last-child {
-  margin-bottom: 0;
-}
+.level-tooltip .lv-row:last-child { margin-bottom: 0; }
 .level-tooltip .lv-badge {
-  display: inline-block;
-  padding: 1px 8px;
-  border-radius: 6px;
-  font-weight: bold;
-  font-size: 12px;
-  color: #fff;
-  min-width: 36px;
-  text-align: center;
+  display: inline-block; padding: 1px 8px; border-radius: 6px;
+  font-weight: bold; font-size: 12px; color: #fff;
+  min-width: 36px; text-align: center;
 }
-.level-tooltip .lv-exp {
-  color: #172033;
-  margin-left: auto;
-  text-align: right;
-}
-.popover-level-wrap:hover .level-tooltip {
-  opacity: 1;
-  transform: translateY(-50%) translateX(12px);
-}
-
+.level-tooltip .lv-exp { color: #172033; margin-left: auto; text-align: right; }
+.popover-level-wrap:hover .level-tooltip { opacity: 1; transform: translateY(-50%) translateX(12px); }
 </style>
 </head>
 <body>
@@ -713,7 +423,6 @@ body.page-leaving {
         <button type="button" data-lang="tw">繁體中文（台灣）</button>
       </div>
     </div>
-    <!-- 头像按钮 -->
     <div class="user-center" id="userCenter">
       <div class="avatar-btn" id="avatarBtn" title="个人中心">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -721,7 +430,6 @@ body.page-leaving {
           <circle cx="12" cy="7" r="4"></circle>
         </svg>
       </div>
-      <!-- 悬停卡片 -->
       <div class="user-popover" id="userPopover">
         <div id="popoverNotLoggedIn" style="display:none; padding: 20px; text-align: center; color: #6f7890; font-size: 14px;">
           请先点击头像登录或注册
@@ -735,28 +443,23 @@ body.page-leaving {
             <input type="file" id="avatarUploadInput" style="display: none;" accept="image/*">
           </div>
           <div style="text-align: center; font-size: 16px; font-weight: bold; color: #172033; margin-bottom: 4px;">
-            <span id="popoverNickname">用户昵称</span>
-            <span id="popoverUserBadge"></span>
+            <span id="popoverNickname" style="cursor:pointer;" title="点击修改昵称">用户昵称</span><span id="popoverUserBadge"></span>
           </div>
-
-          <div style="text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 16px;">点击昵称修改</div>
-
+          <div style="text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 16px;">点击昵称或名牌修改</div>
           <div style="font-size: 12px; color: #6f7890;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <span>经验值：<span id="popoverExpText">0/200</span></span>
               <div class="popover-level-wrap">
                 <span id="popoverLevelText" style="font-weight: bold; padding: 1px 8px; border-radius: 6px; color: #fff; background: #4ade80;">Lv1</span>
-
-<div class="level-tooltip">
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #4ade80, #22c55e); color: #fff;">Lv1</span><span class="lv-exp">0 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #22c55e, #15803d); color: #fff;">Lv2</span><span class="lv-exp">200 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff;">Lv3</span><span class="lv-exp">500 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #facc15, #eab308); color: #1f2937;">Lv4</span><span class="lv-exp">1200 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #f97316, #c2410c); color: #fff;">Lv5</span><span class="lv-exp">2800 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff;">Lv6</span><span class="lv-exp">6200 经验</span></div>
-  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #a855f7, #7e22ce); color: #fff;">Lv7</span><span class="lv-exp">13200 经验</span></div>
-</div>
-
+                <div class="level-tooltip">
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #4ade80, #22c55e); color: #fff;">Lv1</span><span class="lv-exp">0 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #22c55e, #15803d); color: #fff;">Lv2</span><span class="lv-exp">200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff;">Lv3</span><span class="lv-exp">500 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #facc15, #eab308); color: #1f2937;">Lv4</span><span class="lv-exp">1200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #f97316, #c2410c); color: #fff;">Lv5</span><span class="lv-exp">2800 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff;">Lv6</span><span class="lv-exp">6200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #a855f7, #7e22ce); color: #fff;">Lv7</span><span class="lv-exp">13200 经验</span></div>
+                </div>
               </div>
             </div>
             <div style="width: 100%; height: 8px; background: #fff; border: 1px solid #e8ebf5; border-radius: 4px; overflow: hidden;">
@@ -768,6 +471,7 @@ body.page-leaving {
         </div>
       </div>
     </div>
+  </div>
 </nav>
 
 <main>
@@ -783,8 +487,7 @@ body.page-leaving {
   <div class="hero-card">
     <div class="profile">
       <div>
-<div class="avatar" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/touxiang.png') center/cover no-repeat;"></div>
-
+        <div class="avatar" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/touxiang.png') center/cover no-repeat;"></div>
         <h3>这人针不错</h3>
         <div class="role">适可而止就是恰到好处。</div>
       </div>
@@ -809,43 +512,34 @@ body.page-leaving {
     <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video1.jpg') center/cover no-repeat;"></div>
     <div class="card-body"><span class="tag">最多播放</span>&nbsp;<span class="tag">游戏</span>&nbsp;<span class="tag">治愈</span>&nbsp;<span class="tag">美学</span><h3>𝑾𝒉𝒂𝒕 𝒄𝒐𝒍𝒐𝒓 𝒊𝒔 𝑴𝒊𝒏𝒆𝒄𝒓𝒂𝒇𝒕 ? 【我的世界】</h3><p>「好喜欢的风格……开始的岩浆就让人亮眼，湖水分镜本还在一片灰中找红色在哪，结果画面踩点倏然变蓝真的好惊艳。黄色开篇景就很漂亮，后面梯田一样那段更是好漂亮的设计……」</p><div class="meta"><span>播放 24万+</span><span>（ 跳转 Bilibili ）</span></div></div>
   </a>
-
-  <a class="card" href="https://www.bilibili.com/video/BV1g4KDzbEhx/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+  <a class="card" href="https://www.bilibili.com/video/BV1g4KDzbEhx/" target="_blank" rel="noopener">
     <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video2.jpg') center/cover no-repeat;"></div>
     <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">海绵宝宝</span>&nbsp;<span class="tag">meme</span><h3>菌 子 代 餐</h3><p>「哦，我的上帝呀，这个视频给我的感觉简直就像在餐厅里点餐，点的微中辣，结果给我的是特辣，辣到无法呼吸后想要喝水，结果发现是热的一样。」</p><div class="meta"><span>播放 9万+</span><span>（ 跳转 Bilibili ）</span></div></div>
   </a>
-
-  <a class="card" href="https://www.bilibili.com/video/BV1BbYDz3Ex8/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+  <a class="card" href="https://www.bilibili.com/video/BV1BbYDz3Ex8/" target="_blank" rel="noopener">
     <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video3.jpg') center/cover no-repeat;"></div>
     <div class="card-body"><span class="tag">动画</span>&nbsp;<span class="tag">少女终末旅行</span>&nbsp;<span class="tag">二创填词</span><h3>“再见啦，这场虚无的旅行”</h3><p>「本来快忘了，总是有二创来戳我一把。但这么优质的少终挺难得的。」</p><div class="meta"><span>投币 2000+</span><span>（ 跳转 Bilibili ）</span></div></div>
   </a>
-
-  <a class="card" href="https://www.bilibili.com/video/BV1sZpnzCEvw/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+  <a class="card" href="https://www.bilibili.com/video/BV1sZpnzCEvw/" target="_blank" rel="noopener">
     <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video4.jpg') center/cover no-repeat;"></div>
     <div class="card-body"><span class="tag">动画</span>&nbsp;<span class="tag">摇曳露营</span>&nbsp;<span class="tag">二创填词</span><h3>“有你的露营才是莫愁乡！”</h3><p>「这是没有真经历写不出来这词啊。」</p><div class="meta"><span>“再来亿遍”</span><span>（ 跳转 Bilibili ）</span></div></div>
   </a>
-
-  <a class="card" href="https://www.bilibili.com/video/BV1ui3b6hE2T/?spm_id_from=333.1387.upload.video_card.click&amp;vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+  <a class="card" href="https://www.bilibili.com/video/BV1ui3b6hE2T/" target="_blank" rel="noopener">
     <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video5.jpg') center/cover no-repeat;"></div>
     <div class="card-body"><span class="tag">游戏</span>&nbsp;<span class="tag">我的世界</span>&nbsp;<span class="tag">实况</span><h3>只要能…到达…那个地方…</h3><p>「这个视频让我想起了很久以前，微机课偷玩电脑的时候，班上三四个小伙伴会带U盘玩离线版的我的世界，我那时候也会做地图给大家玩，可惜那是以前了。」</p><div class="meta"><span>地图分享</span><span>（ 跳转 Bilibili ）</span></div></div>
   </a>
-
-  <a class="card" href="https://www.bilibili.com/video/BV16AKNz7EDG/?spm_id_from=333.1387.upload.video_card.click&vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+  <a class="card" href="https://www.bilibili.com/video/BV16AKNz7EDG/" target="_blank" rel="noopener">
     <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video6.jpg') center/cover no-repeat;"></div>
     <div class="card-body"><span class="tag">动画</span>&nbsp;<span class="tag">少女终末旅行</span>&nbsp;<span class="tag">二创填词</span><h3>少女的旅行，该结束了吗？</h3><p>「作者我爱你，这歌词我直接泪目了。」</p><div class="meta"><span>“百万填词”</span><span>（ 跳转 Bilibili ）</span></div></div>
   </a>
-
-  <a class="card" href="https://www.bilibili.com/video/BV11d4y1e7SG/?spm_id_from=333.1387.upload.video_card.click&vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+  <a class="card" href="https://www.bilibili.com/video/BV11d4y1e7SG/" target="_blank" rel="noopener">
     <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video8.jpg') center/cover no-repeat;"></div>
     <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">孤独摇滚</span>&nbsp;<span class="tag">二创填词</span><h3>⚡ 只身海外，孤独摇滚！⚡</h3><p>「这是这七年来我看的最创人的二创。」</p><div class="meta"><span>播放 12万+</span><span>（ 跳转 Bilibili ）</span></div></div>
   </a>
-
-  <a class="card" href="https://www.bilibili.com/video/BV1MWKH6ZETJ/?spm_id_from=333.1387.upload.video_card.click&vd_source=c6ad045fffb07e4044221fff3db62713" target="_blank" rel="noopener">
+  <a class="card" href="https://www.bilibili.com/video/BV1MWKH6ZETJ/" target="_blank" rel="noopener">
     <div class="video-cover" style="background:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/video7.jpg') center/cover no-repeat;"></div>
     <div class="card-body"><span class="tag">鬼畜</span>&nbsp;<span class="tag">电影剪辑</span>&nbsp;<span class="tag">二创填词</span><h3>“我叫邓小龙，是一个小角色……”</h3><p>「有些人适合当配角，能比主角演的更出色。」</p><div class="meta"><span>鬼畜RAP</span><span>（ 跳转 Bilibili ）</span></div></div>
   </a>
-
-
 </div>
 </section>
 
@@ -897,31 +591,25 @@ body.page-leaving {
 <div class="container">
  <div class="section-head"><div><div class="kicker">Contact</div><h2>找到我</h2></div></div>
  <div class="contact">
-
   <div class="card contact-card" style="background:linear-gradient(135deg,#e6ecff,#f1e7ff);">
     <h3>社交平台</h3>
     <div class="contact-list">
-
       <a class="contact-item" href="https://space.bilibili.com/488273925" target="_blank" rel="noopener"
          style="background:linear-gradient(135deg,#ffb3c6,#fb7299);border-color:transparent;color:#fff;">
         &nbsp;&nbsp;&nbsp;Bilibili　@这人针不错
       </a>
-
       <a class="contact-item" href="https://www.douyin.com/user/MS4wLjABAAAAIiJW1XWG7Wb2cMSPX9sftd_bZ6Qn5n1wd4b1Tgbgumyb76na33h9NCqJkDwZNtI8?from_tab_name=main" target="_blank" rel="noopener"
          style="background:linear-gradient(135deg,#2c3e66,#1a2a4a);border-color:transparent;color:#fff;">
         &nbsp;&nbsp;&nbsp;抖音　@这人针不错
       </a>
-
       <a class="contact-item" href="https://xhslink.cn/o/4L3igiRgfDD" target="_blank" rel="noopener"
          style="background:linear-gradient(135deg,#ff7a8a,#ff2442);border-color:transparent;color:#fff;">
         &nbsp;&nbsp;&nbsp;小红书　@这人针不错
       </a>
-
       <a class="contact-item" href="https://afdian.com/a/zrzbc123?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener"
          style="background:linear-gradient(135deg,#b794f6,#7c3aed);border-color:transparent;color:#fff;">
         &nbsp;&nbsp;&nbsp;爱发电　@这人针不错
       </a>
-
     </div>
   </div>
   <div class="card contact-card"style="background:linear-gradient(135deg,#e6ecff,#f1e7ff);">
@@ -949,7 +637,6 @@ body.page-leaving {
 </div>
 </section>
 
-<!-- ===== 签到区 ===== -->
 <section id="signin">
   <div class="container">
     <div class="section-head">
@@ -957,14 +644,12 @@ body.page-leaving {
       <div class="section-desc">连续签到，获得更多经验值！</div>
     </div>
     <div class="signin-layout">
-      <!-- 左侧：签到表格 -->
       <div class="signin-card">
         <h3 style="margin-bottom: 16px;">签到奖励</h3>
         <table class="signin-table">
           <thead>
             <tr><th>天数</th><th>奖励</th></tr>
           </thead>
-
           <tbody>
             <tr><td>第 1 天</td><td class="reward-cell" data-day="1"><span>50 经验</span><span class="check-mark">✓</span></td></tr>
             <tr><td>第 2 天</td><td class="reward-cell" data-day="2"><span>80 经验</span><span class="check-mark">✓</span></td></tr>
@@ -974,14 +659,10 @@ body.page-leaving {
             <tr><td>第 6 天</td><td class="reward-cell" data-day="6"><span>120 经验</span><span class="check-mark">✓</span></td></tr>
             <tr><td>第 7 天</td><td class="reward-cell" data-day="7"><span class="random-reward">随机经验</span><span class="check-mark">✓</span></td></tr>
           </tbody>
-
         </table>
-
         <button class="submit-btn" id="signinBtn" style="margin-top: 18px;">立即签到</button>
         <div id="signinStatus" style="text-align: center; margin-top: 10px; font-size: 13px; color: #6f7890;"></div>
       </div>
-
-      <!-- 右侧：排行榜 -->
       <div class="signin-card">
         <h3 style="margin-bottom: 16px;">签到榜</h3>
         <div id="leaderboardList"></div>
@@ -990,41 +671,34 @@ body.page-leaving {
   </div>
 </section>
 
-<!-- ===== 登录/注册模态框 ===== --><div class="modal-overlay" id="authModal">
+<div class="modal-overlay" id="authModal">
   <div class="modal-content">
     <button class="modal-close" id="closeModal">&times;</button>
-
-    <!-- 1. 登录/注册表单 -->
     <div id="authFormContainer">
       <div class="modal-tabs">
         <button class="modal-tab active" data-tab="login" id="tabLogin">登录</button>
         <button class="modal-tab" data-tab="register" id="tabRegister">注册</button>
       </div>
-
       <form id="authForm">
         <div class="form-group">
           <label>邮箱</label>
           <input type="email" id="emailInput" placeholder="请输入邮箱地址" required>
         </div>
-
         <div class="form-group" id="nicknameGroup" style="display: none;">
           <label>昵称</label>
           <input type="text" id="nicknameInput" placeholder="设置一个独一无二的昵称" maxlength="20">
         </div>
-
-<div class="form-group" id="codeGroup" style="display: none;">  <!-- 👈 加上 style="display: none;" -->
-  <label>验证码</label>
+        <div class="form-group" id="codeGroup" style="display: none;">
+          <label>验证码</label>
           <div class="code-row">
-<input type="text" id="codeInput" placeholder="6位数字验证码" maxlength="6">
+            <input type="text" id="codeInput" placeholder="6位数字验证码" maxlength="6">
             <button type="button" id="sendCodeBtn" class="send-code-btn">获取验证码</button>
           </div>
         </div>
-
         <div class="form-group">
           <label>密码</label>
           <input type="password" id="passwordInput" placeholder="至少8位，包含字母和数字" required>
         </div>
-
         <button type="submit" class="submit-btn" id="submitBtn">登录 / 注册</button>
       </form>
       <div class="modal-footer">
@@ -1032,7 +706,6 @@ body.page-leaving {
       </div>
     </div>
 
-    <!-- 2. 找回密码表单（默认隐藏） -->
     <div id="resetFormContainer" style="display: none;">
       <h3 style="margin-bottom: 20px; text-align: center;">重置密码</h3>
       <form id="resetForm">
@@ -1058,29 +731,22 @@ body.page-leaving {
       </div>
     </div>
 
-    <!-- 3. 用户信息面板（默认隐藏，登录成功后显示） -->
     <div id="userPanel" style="display: none; text-align: center;">
       <div class="avatar" id="userPanelAvatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px; border-radius: 26px; overflow: hidden; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4f7cff, #8a5cf6);">
         <span id="userAvatarLetter" style="color: #fff;">U</span>
       </div>
-      <!-- 修改这行：加上铅笔图标 -->
       <h3 id="userNickname" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
         用户昵称
       </h3>
-
-      <!-- 经验条区域 -->
       <div style="margin: 15px 0 20px; font-size: 14px; color: #6f7890; text-align: left;">
-        <!-- 上方文字：当前经验/下一级所需经验，右侧显示等级 -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
           <span>经验值：<span id="userExpText">0/200</span></span>
-<span id="userLevelText">Lv1</span>
+          <span id="userLevelText">Lv1</span>
         </div>
-        <!-- 进度条容器 -->
         <div style="width: 100%; height: 14px; background: #ffffff; border: 1px solid #e8ebf5; border-radius: 7px; overflow: hidden;">
           <div id="expBarFill" style="height: 100%; width: 0%; background: #4b5563; border-radius: 7px; transition: width 0.5s ease, background-color 0.5s ease;"></div>
         </div>
       </div>
-
       <button class="submit-btn" id="userPanelSigninBtn" style="background: #fff; color: #172033; border: 1px solid #e8ebf5;">签到</button>
       <button class="submit-btn" id="logoutBtn" style="background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
     </div>
@@ -1088,6 +754,20 @@ body.page-leaving {
   </div>
 </div>
 
+<!-- ★ 名牌命名弹窗 -->
+<div class="modal-overlay" id="badgeNameModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeBadgeNameModal">&times;</button>
+    <h3 style="text-align:center;margin-bottom:18px;" id="badgeNameModalTitle">修改名牌名称</h3>
+    <form id="badgeNameForm">
+      <div class="form-group">
+        <label>名牌名称（<span id="badgeNameMaxLen">4</span> 字以内）</label>
+        <input type="text" id="badgeNameInput" placeholder="请输入名牌显示的名称" maxlength="6">
+      </div>
+      <button type="submit" class="submit-btn" id="badgeNameSubmitBtn">确定</button>
+    </form>
+  </div>
+</div>
 
 </main>
 
@@ -1099,7 +779,7 @@ body.page-leaving {
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-  // ================== 1. 获取所有 DOM 元素 ==================
+  /* ================== DOM ================== */
   const avatarBtn = document.getElementById('avatarBtn');
   const authModal = document.getElementById('authModal');
   const closeModal = document.getElementById('closeModal');
@@ -1128,7 +808,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const userNickname = document.getElementById('userNickname');
   const logoutBtn = document.getElementById('logoutBtn');
 
-  // ================== 2. 经验条渲染 ==================
+  function getLocalUser() {
+    try {
+      const raw = localStorage.getItem('user');
+      if (!raw) return null;
+      const u = JSON.parse(raw);
+      if (!u || !u.email) return null;
+      return u;
+    } catch(e) { return null; }
+  }
+
+  /* ================== 经验条渲染 ================== */
   function renderExp(exp) {
     const expNum = parseInt(exp) || 0;
     const expBarFill = document.getElementById('expBarFill');
@@ -1138,17 +828,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let level = 1, nextExp = 200;
     let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
-
     if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
     else if (expNum >= 6200) { level = 6; nextExp = 13200; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
     else if (expNum >= 2800) { level = 5; nextExp = 6200; baseColor = '#f97316'; darkColor = '#c2410c'; }
     else if (expNum >= 1200) { level = 4; nextExp = 2800; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
     else if (expNum >= 500) { level = 3; nextExp = 1200; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
     else if (expNum >= 200) { level = 2; nextExp = 500; baseColor = '#22c55e'; darkColor = '#15803d'; }
-
     if (nextExp === Infinity) { userExpText.textContent = `${expNum}/∞`; expBarFill.style.width = '100%'; }
     else { userExpText.textContent = `${expNum}/${nextExp}`; expBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
-
     userLevelText.textContent = `Lv${level}`;
     userLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
     userLevelText.style.color = textColor;
@@ -1158,7 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
     expBarFill.style.background = baseColor;
   }
 
-  // ================== 3. 通用工具函数 ==================
+  /* ================== 工具 ================== */
   function startCountdown(btn) {
     let countdown = 60;
     btn.disabled = true; btn.textContent = `${countdown}秒后重试`;
@@ -1168,7 +855,6 @@ document.addEventListener('DOMContentLoaded', () => {
       else { btn.textContent = `${countdown}秒后重试`; }
     }, 1000);
   }
-
   async function sendCode(email, btn) {
     if (!email || !email.includes('@')) return alert('请输入有效的邮箱地址');
     btn.disabled = true; btn.textContent = '发送中...';
@@ -1180,13 +866,12 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) { alert('网络错误'); btn.disabled = false; btn.textContent = '获取验证码'; }
   }
 
-  // ================== 4. 自动登录初始化 ==================
+  /* ================== 自动登录初始化 ================== */
   const navExpBadge = document.getElementById('navExpBadge');
   const savedUser = localStorage.getItem('user');
   if (savedUser) {
     try {
       const userData = JSON.parse(savedUser);
-      // 顶部经验标签
       if (navExpBadge) navExpBadge.textContent = '经验：' + (userData.exp || 0).toLocaleString();
       const avatarBtnHTML = document.querySelector('#avatarBtn');
       if (avatarBtnHTML) {
@@ -1196,7 +881,6 @@ document.addEventListener('DOMContentLoaded', () => {
           avatarBtnHTML.innerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
         }
       }
-      // 👇 新增：打开网站时立刻向后端同步一次最新数据（包括经验值）
       fetch('/api/auth/me', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1207,24 +891,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.success && data.user) {
           localStorage.setItem('user', JSON.stringify(data.user));
           if (navExpBadge) navExpBadge.textContent = '经验：' + (data.user.exp || 0).toLocaleString();
-          // 同步后刷新绿勾（如果函数已定义）
-          if (typeof updateSigninChecks === 'function') {
-            updateSigninChecks();
-          }
+          if (typeof updateSigninChecks === 'function') updateSigninChecks();
         }
       })
       .catch(err => console.log('同步失败', err));
     } catch(e) {}
   }
-  // ================== 5. 弹窗与面板切换 ==================
+
+  /* ================== 弹窗 ================== */
   if (avatarBtn && authModal) {
     avatarBtn.addEventListener('click', async () => {
       const user = localStorage.getItem('user');
-      if (user) {
-        // 已登录：不弹出任何东西（悬停卡片里已有信息）
-        return;
-      } else {
-        // 未登录：打开登录/注册弹窗
+      if (user) { return; }
+      else {
         authFormContainer.style.display = 'block';
         resetFormContainer.style.display = 'none';
         userPanel.style.display = 'none';
@@ -1232,20 +911,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
   if (closeModal && authModal) {
     closeModal.addEventListener('click', () => authModal.classList.remove('show'));
     authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('show'); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && authModal.classList.contains('show')) authModal.classList.remove('show'); });
   }
-
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
       localStorage.removeItem('user'); alert('已退出登录');
       authModal.classList.remove('show'); location.reload();
     });
   }
-
   if (tabLogin && tabRegister) {
     tabLogin.addEventListener('click', () => {
       tabLogin.classList.add('active'); tabRegister.classList.remove('active');
@@ -1260,13 +936,10 @@ document.addEventListener('DOMContentLoaded', () => {
       forgotPasswordLink.style.display = 'none';
     });
   }
-
   if (forgotPasswordLink && backToLoginLink) {
     forgotPasswordLink.addEventListener('click', () => { authFormContainer.style.display = 'none'; resetFormContainer.style.display = 'block'; });
     backToLoginLink.addEventListener('click', () => { authFormContainer.style.display = 'block'; resetFormContainer.style.display = 'none'; });
   }
-
-  // ================== 6. 表单提交 ==================
   if (sendCodeBtn) sendCodeBtn.addEventListener('click', () => sendCode(emailInput.value.trim(), sendCodeBtn));
   if (sendResetCodeBtn) sendResetCodeBtn.addEventListener('click', () => sendCode(resetEmail.value.trim(), sendResetCodeBtn));
 
@@ -1313,7 +986,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ================== 7. 悬停卡片逻辑 ==================
+  /* ================== 悬停卡片 ================== */
   const userCenter = document.getElementById('userCenter');
   if (userCenter) {
     userCenter.addEventListener('mouseenter', () => {
@@ -1338,15 +1011,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         document.getElementById('popoverNickname').textContent = userData.nickname || '用户';
-        // 显示名牌
+        // 显示名牌（可点击修改）
         const badgeEl = document.getElementById('popoverUserBadge');
         if (badgeEl) {
           if (userData.badge_type && userData.badge_name && userData.badge_expire_at && userData.badge_expire_at > Date.now()) {
-            badgeEl.className = 'user-badge ' + userData.badge_type;
-            badgeEl.textContent = userData.badge_name;
+            badgeEl.innerHTML = `<span class="user-badge ${userData.badge_type} editable-badge" title="点击修改名牌名称">${userData.badge_name}</span>`;
           } else {
-            badgeEl.className = '';
-            badgeEl.textContent = '';
+            badgeEl.innerHTML = '';
           }
         }
         renderPopoverExp(userData.exp);
@@ -1366,24 +1037,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let level = 1, nextExp = 200;
     let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
-
     if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
     else if (expNum >= 6200) { level = 6; nextExp = 13200; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
     else if (expNum >= 2800) { level = 5; nextExp = 6200; baseColor = '#f97316'; darkColor = '#c2410c'; }
     else if (expNum >= 1200) { level = 4; nextExp = 2800; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
     else if (expNum >= 500) { level = 3; nextExp = 1200; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
     else if (expNum >= 200) { level = 2; nextExp = 500; baseColor = '#22c55e'; darkColor = '#15803d'; }
-
     if (nextExp === Infinity) { popoverExpText.textContent = `${expNum}/∞`; popoverExpBarFill.style.width = '100%'; }
     else { popoverExpText.textContent = `${expNum}/${nextExp}`; popoverExpBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
-
     popoverLevelText.textContent = `Lv${level}`;
     popoverLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
     popoverLevelText.style.color = textColor;
     popoverExpBarFill.style.background = baseColor;
   }
 
-  // ================== 8. 悬停卡片内交互 ==================
+  /* ================== 悬停卡片内交互 ================== */
   const popoverAvatar = document.getElementById('popoverAvatar');
   const avatarUploadInput = document.getElementById('avatarUploadInput');
   if (popoverAvatar && avatarUploadInput) {
@@ -1411,9 +1079,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* ================== ★ 点击昵称修改 ================== */
   const popoverNickname = document.getElementById('popoverNickname');
   if (popoverNickname) {
-    popoverNickname.addEventListener('click', async () => {
+    popoverNickname.addEventListener('click', async (e) => {
+      e.stopPropagation();
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       if (!user.email) return;
       const newNickname = prompt('请输入新的昵称：', user.nickname);
@@ -1431,7 +1101,76 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ===== 悬停卡片里的签到按钮 =====
+  /* ================== ★ 点击名牌修改（每月 3 次） ================== */
+  const popoverUserBadge = document.getElementById('popoverUserBadge');
+  const badgeNameModal = document.getElementById('badgeNameModal');
+  const closeBadgeNameModal = document.getElementById('closeBadgeNameModal');
+  const badgeNameForm = document.getElementById('badgeNameForm');
+  const badgeNameInput = document.getElementById('badgeNameInput');
+  const badgeNameMaxLen = document.getElementById('badgeNameMaxLen');
+  const badgeNameModalTitle = document.getElementById('badgeNameModalTitle');
+
+  function getBadgeMaxLen(type) {
+    return { normal: 4, premium: 6, ultimate: 6 }[type] || 6;
+  }
+  function openRenameBadgeModal() {
+    const u = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!u.email) return;
+    if (!u.badge_type) return alert('你还没有名牌');
+    if (u.badge_expire_at && u.badge_expire_at < Date.now()) return alert('名牌已过期');
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    let count = u.badge_update_count || 0;
+    if (u.badge_update_month !== currentMonth) count = 0;
+    if (u.badge_name && count >= 3) return alert('本月修改次数已用完（每月3次）');
+    badgeNameMaxLen.textContent = getBadgeMaxLen(u.badge_type);
+    badgeNameInput.maxLength = getBadgeMaxLen(u.badge_type);
+    badgeNameInput.value = u.badge_name || '';
+    badgeNameModalTitle.textContent = '修改名牌名称';
+    badgeNameModal.classList.add('show');
+  }
+
+  if (popoverUserBadge) {
+    popoverUserBadge.addEventListener('click', (e) => {
+      const badge = e.target.closest('.editable-badge');
+      if (!badge) return;
+      e.stopPropagation();
+      openRenameBadgeModal();
+    });
+  }
+
+  if (badgeNameForm) {
+    badgeNameForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!u.email) return alert('请先登录');
+      const newName = badgeNameInput.value.trim();
+      if (!newName) return alert('名称不能为空');
+      const btn = document.getElementById('badgeNameSubmitBtn');
+      btn.disabled = true; btn.textContent = '保存中...';
+      try {
+        const res = await fetch('/api/shop/update-badge-name', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: u.email, newName })
+        });
+        const data = await res.json();
+        if (data.success) {
+          badgeNameModal.classList.remove('show');
+          const meRes = await fetch('/api/auth/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: u.email }) });
+          const meData = await meRes.json();
+          if (meData.success && meData.user) localStorage.setItem('user', JSON.stringify(meData.user));
+          alert('名牌名称修改成功！');
+        } else alert(data.error || '修改失败');
+      } catch(err) { alert('网络错误'); }
+      finally { btn.disabled = false; btn.textContent = '确定'; }
+    });
+  }
+  if (closeBadgeNameModal) {
+    closeBadgeNameModal.addEventListener('click', () => badgeNameModal.classList.remove('show'));
+    badgeNameModal.addEventListener('click', (e) => { if (e.target === badgeNameModal) badgeNameModal.classList.remove('show'); });
+  }
+
+  /* ================== 签到按钮 ================== */
   const popoverSigninBtn = document.getElementById('popoverSigninBtn');
   if (popoverSigninBtn) {
     popoverSigninBtn.addEventListener('click', (e) => {
@@ -1439,16 +1178,14 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelector('#signin').scrollIntoView({ behavior: 'smooth' });
     });
   }
-
   const popoverLogoutBtn = document.getElementById('popoverLogoutBtn');
-
   if (popoverLogoutBtn) {
     popoverLogoutBtn.addEventListener('click', (e) => {
       e.stopPropagation(); localStorage.removeItem('user'); alert('已退出登录'); window.location.reload();
     });
   }
 
-  // ================== 9. 四叶草签到 ==================
+  /* ================== 四叶草签到 ================== */
   const cloverImg = document.getElementById('cloverImg');
   const cloverTip = document.getElementById('cloverTip');
   if (cloverImg && cloverTip) {
@@ -1478,7 +1215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ================== 10. 原有的动画与交互 ==================
+  /* ================== 原有动画与交互 ================== */
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       const el = document.querySelector(a.getAttribute('href'));
@@ -1584,7 +1321,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (statEls.length === 3) { runStatsCycle(); }
 
-  // ===== 签到功能 =====
+  /* ================== 签到 / 排行榜 ================== */
   const signinBtn = document.getElementById('signinBtn');
   const signinStatus = document.getElementById('signinStatus');
   const leaderboardList = document.getElementById('leaderboardList');
@@ -1636,7 +1373,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) { console.log('排行榜加载失败', err); }
   }
 
-  // ===== 刷新签到表格的绿勾 =====
   function updateSigninChecks() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const signinDays = user.signin_days || 0;
@@ -1644,11 +1380,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const day = parseInt(cell.dataset.day);
       const check = cell.querySelector('.check-mark');
       if (!check) return;
-      if (day <= signinDays) {
-        check.classList.add('show');
-      } else {
-        check.classList.remove('show');
-      }
+      if (day <= signinDays) { check.classList.add('show'); }
+      else { check.classList.remove('show'); }
     });
   }
 
@@ -1673,7 +1406,7 @@ document.addEventListener('DOMContentLoaded', () => {
           signinStatus.textContent = data.message;
           signinStatus.style.color = '#22c55e';
           renderExp(data.exp);
-          updateSigninChecks(); // 👈 刷新绿勾
+          updateSigninChecks();
           loadLeaderboard();
         } else {
           signinStatus.textContent = data.error;
@@ -1689,7 +1422,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 页面加载时刷新一次绿勾
   updateSigninChecks();
 
   const userPanelSigninBtn = document.getElementById('userPanelSigninBtn');
@@ -1721,3 +1453,5 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
+</body>
+</html>
