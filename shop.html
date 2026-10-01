@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="商店">
 <title>商店 - 这人针不错</title>
+<script src="https://cdn.jsdelivr.net/npm/opentcc-js@1.0.5/dist/umd/full.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
 <style>
 :root{
@@ -33,16 +34,21 @@ button{font:inherit}
 }
 .logo{font-weight:800;letter-spacing:-.5px}
 .logo span{background:linear-gradient(90deg,var(--blue),var(--purple));-webkit-background-clip:text;color:transparent}
+
+/* ===== 左上角经验标签：紫色渐变 + 白字 ===== */
 .nav-exp-badge{
   margin-left:10px;
-  background:#ffd700;
-  color:#000;
+  background:linear-gradient(110deg,#7c3aed 0%,#a855f7 100%);
+  color:#ffffff;
   font-size:12px;
   font-weight:700;
   padding:4px 10px;
   border-radius:8px;
   white-space:nowrap;
+  box-shadow:0 4px 14px rgba(138,92,246,.35);
+  text-shadow:0 1px 2px rgba(0,0,0,.15);
 }
+
 .navlinks{display:flex;gap:4px;align-items:center}
 .navlinks a{font-size:14px;color:#59627a;padding:8px 12px;border-radius:10px}
 .navlinks a:hover{background:#f0f3ff;color:#3f63d9}
@@ -94,6 +100,8 @@ h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
 .badge-preview.normal{background:#b8e9b8;color:#000}
 .badge-preview.premium{background:#ffd700;color:#000}
 .badge-preview.ultimate{background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff}
+/* 续期卡预览标签 */
+.badge-preview.extend{background:linear-gradient(135deg,#4f7cff,#8a5cf6);color:#fff}
 
 .shop-info h3{font-size:17px;margin-bottom:6px}
 .shop-info p{font-size:13px;color:var(--muted);margin-bottom:6px}
@@ -216,7 +224,7 @@ body.page-leaving{opacity:0}
         </svg>
       </div>
       <div class="user-popover" id="userPopover">
-        <div id="popoverNotLoggedIn" style="display:none;padding:20px;text-align:center;color:#6f7890;font-size:14px;">请先点击头像登录或注册</div>
+        <div id="popoverNotLoggedIn" style="display:none;padding:20px;text-align:center;color:#6f7890;font-size:14px;cursor:pointer;">请先点击头像登录或注册</div>
         <div id="popoverLoggedIn" style="display:none;padding:16px;">
           <div style="text-align:center;margin-bottom:12px;">
             <div id="popoverAvatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#8a5cf6);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.1);background-size:cover;background-position:center;">
@@ -254,7 +262,7 @@ body.page-leaving{opacity:0}
 
   <div class="shop-layout">
 
-    <!-- 左列 -->
+    <!-- 左列：名牌 -->
     <div>
       <div class="shop-category" id="category-badge">
         <h3 class="category-title">名牌</h3>
@@ -308,9 +316,34 @@ body.page-leaving{opacity:0}
       </div>
     </div>
 
-    <!-- 右列：预留 -->
+    <!-- 右列：续期卡等道具 -->
     <div>
-      <!-- 未来在这里添加其他商品类型，比如头像框、称号等 -->
+      <div class="shop-category" id="category-extra">
+        <h3 class="category-title">道具</h3>
+        <div class="shop-items" id="extraItems">
+
+          <div class="shop-item" data-title="名牌续期卡 30天 600经验" data-desc="为当前名牌延长30天有效期">
+            <div class="shop-info">
+              <div class="badge-preview extend">续期</div>
+              <h3>名牌续期卡 · 30 天</h3>
+              <p>为自己当前的名牌延长 30 天有效期（需已拥有且未过期）。</p>
+              <div class="shop-price">售价：<span>600</span> 经验</div>
+            </div>
+            <button class="shop-buy-btn" data-item="extend30">购买</button>
+          </div>
+
+          <div class="shop-item" data-title="名牌续期卡 90天 1500经验" data-desc="为当前名牌延长90天有效期">
+            <div class="shop-info">
+              <div class="badge-preview extend">续期</div>
+              <h3>名牌续期卡 · 90 天</h3>
+              <p>为自己当前的名牌延长 90 天有效期（需已拥有且未过期）。</p>
+              <div class="shop-price">售价：<span>1500</span> 经验</div>
+            </div>
+            <button class="shop-buy-btn" data-item="extend90">购买</button>
+          </div>
+
+        </div>
+      </div>
     </div>
 
   </div>
@@ -419,11 +452,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
   let pendingBadgeType = null; // 待购买的名牌类型
 
+  // ============ 价格表 ============
+  const BADGE_PRICES = { normal: 800, premium: 1200, ultimate: 1550 };
+  const EXTRA_PRICES = { extend30: 600, extend90: 1500 };
+  const EXTRA_NAMES  = { extend30: '名牌续期卡 · 30天', extend90: '名牌续期卡 · 90天' };
+
+  // ============ 安全读取本地用户 ============
+  function getLocalUser() {
+    try {
+      const raw = localStorage.getItem('user');
+      if (!raw) return null;
+      const u = JSON.parse(raw);
+      if (!u || !u.email) return null;
+      return u;
+    } catch (e) {
+      return null;
+    }
+  }
+
   // ============ 拉取真实用户数据 ============
   async function refreshRealUser() {
-    const saved = localStorage.getItem('user');
-    if (!saved) return null;
-    const u = JSON.parse(saved);
+    const u = getLocalUser();
+    if (!u) return null;
     try {
       const res = await fetch('/api/auth/me', {
         method: 'POST',
@@ -447,8 +497,9 @@ document.addEventListener('DOMContentLoaded', function () {
   function getBadgeMaxLen(type) {
     return { normal: 4, premium: 6, ultimate: 6 }[type] || 6;
   }
+  const getMaxBadgeLen = getBadgeMaxLen;
 
-  // 显示名牌
+  // 显示名牌 HTML
   function renderBadgeHTML(user) {
     if (!user || !user.badge_type || !user.badge_name) return '';
     if (!user.badge_expire_at || user.badge_expire_at < Date.now()) return '';
@@ -483,7 +534,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ownedBadgeCount.textContent = user.badge_update_count || 0;
   }
 
-  // 更新购买按钮状态
+  // 更新所有购买按钮状态（含右列道具）
   function updateBuyButtons(user) {
     document.querySelectorAll('.shop-buy-btn').forEach(btn => {
       if (!user) {
@@ -492,7 +543,12 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
       const type = btn.dataset.type;
-      const price = { normal: 800, premium: 1200, ultimate: 1550 }[type];
+      const item = btn.dataset.item;
+      let price = 0;
+      if (type) price = BADGE_PRICES[type] || 0;
+      else if (item) price = EXTRA_PRICES[item] || 0;
+      if (!price) return;
+
       if ((user.exp || 0) < price) {
         btn.disabled = true;
         btn.textContent = '经验不足';
@@ -515,57 +571,84 @@ document.addEventListener('DOMContentLoaded', function () {
   // ============ 页面初始化 ============
   refresh();
 
-  // ============ 购买流程 ============
+  // ============ 购买流程（左列名牌 + 右列道具）============
   document.querySelectorAll('.shop-buy-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-      const saved = localStorage.getItem('user');
-      if (!saved) return alert('请先登录！');
+      const u = getLocalUser();
+      if (!u) return alert('请先登录！');
+
       const type = btn.dataset.type;
-      const price = { normal: 800, premium: 1200, ultimate: 1550 }[type];
+      const item = btn.dataset.item;
 
-      if (!confirm(`确定花费 ${price} 经验购买"${badgeTextByType(type)}"吗？`)) return;
+      // ---------- 购买名牌 ----------
+      if (type) {
+        const price = BADGE_PRICES[type];
+        if (!confirm(`确定花费 ${price} 经验购买"${badgeTextByType(type)}"吗？`)) return;
 
-      btn.disabled = true;
-      btn.textContent = '处理中...';
-      try {
-        const u = JSON.parse(saved);
-        const res = await fetch('/api/shop/buy-badge', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: u.email, type })
-        });
-        const data = await res.json();
-        if (data.success) {
-          // 购买成功，弹窗引导设置名称
-          pendingBadgeType = type;
-          badgeNameMaxLen.textContent = getBadgeMaxLen(type);
-          badgeNameInput.maxLength = getMaxBadgeLen(type);
-          badgeNameInput.value = '';
-          badgeNameModalTitle.textContent = '设置名牌名称';
-          badgeNameModal.classList.add('show');
-          await refresh();
-        } else {
-          alert(data.error || '购买失败');
+        btn.disabled = true;
+        btn.textContent = '处理中...';
+        try {
+          const res = await fetch('/api/shop/buy-badge', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: u.email, type })
+          });
+          const data = await res.json();
+          if (data.success) {
+            pendingBadgeType = type;
+            badgeNameMaxLen.textContent = getBadgeMaxLen(type);
+            badgeNameInput.maxLength = getMaxBadgeLen(type);
+            badgeNameInput.value = '';
+            badgeNameModalTitle.textContent = '设置名牌名称';
+            badgeNameModal.classList.add('show');
+            await refresh();
+          } else {
+            alert(data.error || '购买失败');
+            await refresh();
+          }
+        } catch(e) {
+          alert('网络错误');
           await refresh();
         }
-      } catch(e) {
-        alert('网络错误');
-        await refresh();
+        return;
+      }
+
+      // ---------- 购买右列道具（续期卡） ----------
+      if (item) {
+        const price = EXTRA_PRICES[item];
+        if (!confirm(`确定花费 ${price} 经验购买"${EXTRA_NAMES[item]}"吗？`)) return;
+
+        btn.disabled = true;
+        btn.textContent = '处理中...';
+        try {
+          const res = await fetch('/api/shop/buy-extend', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: u.email, type: item })
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert('续期成功！名牌有效期已延长。');
+            await refresh();
+          } else {
+            alert(data.error || '购买失败');
+            await refresh();
+          }
+        } catch(e) {
+          alert('网络错误');
+          await refresh();
+        }
       }
     });
   });
-
-  function getMaxBadgeLen(type) {
-    return { normal: 4, premium: 6, ultimate: 6 }[type] || 6;
-  }
 
   // ============ 提交名牌名称 ============
   if (badgeNameForm) {
     badgeNameForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const saved = localStorage.getItem('user');
-      if (!saved) return alert('请先登录');
-      const u = JSON.parse(saved);
+      const u = getLocalUser();
+      if (!u) return alert('请先登录');
+
       const newName = badgeNameInput.value.trim();
       if (!newName) return alert('名称不能为空');
 
@@ -601,15 +684,14 @@ document.addEventListener('DOMContentLoaded', function () {
     badgeNameModal.addEventListener('click', (e) => { if (e.target === badgeNameModal) badgeNameModal.classList.remove('show'); });
   }
 
-  // ============ 点击“修改名牌名称”按钮 ============
+  // ============ 点击"修改名牌名称"按钮 ============
   if (renameBadgeBtn) {
     renameBadgeBtn.addEventListener('click', async () => {
-      const saved = localStorage.getItem('user');
-      if (!saved) return;
-      const u = JSON.parse(saved);
+      const u = getLocalUser();
+      if (!u) return;
       if (!u.badge_type) return alert('你还没有名牌');
       if (u.badge_expire_at && u.badge_expire_at < Date.now()) return alert('名牌已过期');
-      // 检查本月次数
+
       const currentMonth = new Date().toISOString().slice(0, 7);
       let count = u.badge_update_count || 0;
       if (u.badge_update_month !== currentMonth) count = 0;
@@ -640,15 +722,16 @@ document.addEventListener('DOMContentLoaded', function () {
   const userCenter = document.getElementById('userCenter');
   if (userCenter) {
     userCenter.addEventListener('mouseenter', async () => {
-      const saved = localStorage.getItem('user');
+      const savedUser = getLocalUser();
       const popoverLoggedIn = document.getElementById('popoverLoggedIn');
       const popoverNotLoggedIn = document.getElementById('popoverNotLoggedIn');
-      if (!saved) {
+
+      if (!savedUser) {
         popoverLoggedIn.style.display = 'none';
         popoverNotLoggedIn.style.display = 'block';
         return;
       }
-      const userData = await refreshRealUser() || JSON.parse(saved);
+      const userData = await refreshRealUser() || savedUser;
       popoverLoggedIn.style.display = 'block';
       popoverNotLoggedIn.style.display = 'none';
       if (userData.avatar) {
@@ -660,10 +743,8 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('popoverAvatarLetter').style.display = 'block';
         document.getElementById('popoverAvatarLetter').textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
       }
-      // 昵称 + 名牌
       document.getElementById('popoverNickname').innerHTML = (userData.nickname || '用户') + renderBadgeHTML(userData);
 
-      // 经验条
       const expNum = parseInt(userData.exp) || 0;
       const popoverExpText = document.getElementById('popoverExpText');
       const popoverLevelText = document.getElementById('popoverLevelText');
@@ -695,16 +776,35 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // ============ 登录/注册弹窗 ============
+  // ============ 打开登录弹窗的公共函数 ============
+  function openAuthModal() {
+    const formWrap = document.getElementById('authFormContainer');
+    const resetWrap = document.getElementById('resetFormContainer');
+    if (formWrap) formWrap.style.display = 'block';
+    if (resetWrap) resetWrap.style.display = 'none';
+    authModal.classList.add('show');
+  }
+
+  // ============ 头像点击打开登录弹窗（修复）============
   if (avatarBtn && authModal) {
-    avatarBtn.addEventListener('click', () => {
-      const user = localStorage.getItem('user');
-      if (user) return;
-      document.getElementById('authFormContainer').style.display = 'block';
-      document.getElementById('resetFormContainer').style.display = 'none';
-      authModal.classList.add('show');
+    avatarBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const u = getLocalUser();
+      if (u) return;         // 已登录则不弹
+      openAuthModal();
     });
   }
+
+  // 悬停卡片里"请先点击头像登录或注册"也可以点击打开弹窗
+  const popoverNotLoggedIn = document.getElementById('popoverNotLoggedIn');
+  if (popoverNotLoggedIn) {
+    popoverNotLoggedIn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openAuthModal();
+    });
+  }
+
   if (closeModal && authModal) {
     closeModal.addEventListener('click', () => authModal.classList.remove('show'));
     authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('show'); });
@@ -715,15 +815,17 @@ document.addEventListener('DOMContentLoaded', function () {
     tabLogin.addEventListener('click', () => {
       tabLogin.classList.add('active'); tabRegister.classList.remove('active');
       nicknameGroup.style.display = 'none';
-      document.getElementById('codeGroup').style.display = 'none';
-      codeInput.required = false;
+      const cg = document.getElementById('codeGroup');
+      if (cg) cg.style.display = 'none';
+      if (codeInput) codeInput.required = false;
       forgotPasswordLink.style.display = 'inline';
     });
     tabRegister.addEventListener('click', () => {
       tabRegister.classList.add('active'); tabLogin.classList.remove('active');
       nicknameGroup.style.display = 'block';
-      document.getElementById('codeGroup').style.display = 'block';
-      codeInput.required = true;
+      const cg = document.getElementById('codeGroup');
+      if (cg) cg.style.display = 'block';
+      if (codeInput) codeInput.required = true;
       forgotPasswordLink.style.display = 'none';
     });
   }
