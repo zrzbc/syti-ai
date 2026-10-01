@@ -1086,13 +1086,9 @@ document.addEventListener('DOMContentLoaded', function () {
     searchInput.addEventListener('input', () => {
       const keyword = searchInput.value.trim().toLowerCase();
       document.querySelectorAll('.resource-item').forEach(item => {
-        const title = (item.dataset.title || '').toLowerCase();
-        const desc = (item.dataset.desc || '').toLowerCase();
-        if (!keyword || title.includes(keyword) || desc.includes(keyword)) {
-          item.style.display = '';
-        } else {
-          item.style.display = 'none';
-        }
+        // 抓取整张卡片里所有可见文字
+        const fullText = item.textContent.toLowerCase();
+        item.style.display = (!keyword || fullText.includes(keyword)) ? '' : 'none';
       });
       // 如果某个类型下所有项目都隐藏了，隐藏该类型标题
       document.querySelectorAll('.type-section').forEach(section => {
