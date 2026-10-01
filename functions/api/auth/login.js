@@ -36,7 +36,12 @@ export async function onRequestPost(context) {
       signin_days: user.signin_days || 0,
       continuous_days: user.continuous_days || 0,
       last_signin_date: user.last_signin_date || null,
-      has_badge: user.has_badge || 0
+      has_badge: (user.badge_type && user.badge_expire_at && user.badge_expire_at > Date.now()) ? 1 : 0,
+      badge_type: (user.badge_expire_at && user.badge_expire_at > Date.now()) ? user.badge_type : null,
+      badge_name: (user.badge_expire_at && user.badge_expire_at > Date.now()) ? user.badge_name : null,
+      badge_expire_at: (user.badge_expire_at && user.badge_expire_at > Date.now()) ? user.badge_expire_at : null,
+      badge_update_count: user.badge_update_count || 0,
+      badge_update_month: user.badge_update_month || ''
     }
   });
 }
