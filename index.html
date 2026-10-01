@@ -63,7 +63,15 @@ button{font:inherit}
 }
 .logo{font-weight:800;letter-spacing:-.5px}
 .logo span{background:linear-gradient(90deg,var(--blue),var(--purple));-webkit-background-clip:text;color:transparent}
-.navlinks{display:flex;gap:4px}
+
+.navlinks{display:flex;gap:4px;align-items:center}
+.home-dropdown{position:relative;display:inline-block}
+.home-trigger{font-size:14px;color:#59627a;padding:8px 12px;border-radius:10px;cursor:pointer;transition:.2s;display:inline-block}
+.home-trigger:hover{background:#f0f3ff;color:#3f63d9}
+.home-dropdown .home-menu{display:none;position:absolute;top:100%;left:0;min-width:140px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(55,65,110,.14);padding:6px;z-index:30}
+.home-dropdown:hover .home-menu{display:block}
+.home-menu a{display:block;font-size:14px;color:#59627a;padding:8px 12px;border-radius:8px;transition:.2s}
+.home-menu a:hover{background:#f0f3ff;color:#3f63d9}
 .navlinks a{font-size:14px;color:#59627a;padding:8px 12px;border-radius:10px}
 .navlinks a:hover{background:#f0f3ff;color:#3f63d9}
 .hero{padding:170px 0 95px;min-height:760px;display:grid;grid-template-columns:0.9fr 1.1fr;gap:40px;align-items:center}
@@ -679,8 +687,15 @@ body.page-leaving {
   <a class="logo" href="#home">&nbsp;&nbsp;这人<span>针不错</span></a>
   <div class="nav-right">
     <div class="navlinks">
-      <a href="#works">作品</a><a href="#about">关于</a>
-      <a href="#community">社群</a><a href="#contact">联系</a>
+      <div class="home-dropdown">
+        <a href="#home" class="home-trigger">主页 ▾</a>
+        <div class="home-menu">
+          <a href="#works">作品</a>
+          <a href="#about">关于</a>
+          <a href="#community">社群</a>
+          <a href="#contact">联系</a>
+        </div>
+      </div>
       <a href="resources.html">资源</a>
       <a href="games.html">游戏</a>
     </div>
