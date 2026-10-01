@@ -474,4 +474,591 @@ body.page-leaving{opacity:0}
         </div>
         <div class="form-group" id="nicknameGroup" style="display: none;">
           <label>昵称</label>
-          <input type="text" id="nicknameInput" placeholder="设置一个独一无二的昵称
+          <input type="text" id="nicknameInput" placeholder="设置一个独一无二的昵称" maxlength="20">
+        </div>
+        <div class="form-group" id="codeGroup" style="display: none;">
+          <label>验证码</label>
+          <div class="code-row">
+            <input type="text" id="codeInput" placeholder="6位数字验证码" maxlength="6">
+            <button type="button" id="sendCodeBtn" class="send-code-btn">获取验证码</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="passwordInput" placeholder="至少8位，包含字母和数字" required>
+        </div>
+        <button type="submit" class="submit-btn" id="submitBtn">登录 / 注册</button>
+      </form>
+      <div class="modal-footer">
+        <a href="javascript:void(0)" id="forgotPasswordLink">忘记密码？</a>
+      </div>
+    </div>
+
+    <div id="resetFormContainer" style="display: none;">
+      <h3 style="margin-bottom: 20px; text-align: center;">重置密码</h3>
+      <form id="resetForm">
+        <div class="form-group">
+          <label>注册邮箱</label>
+          <input type="email" id="resetEmail" placeholder="请输入注册时的邮箱" required>
+        </div>
+        <div class="form-group">
+          <label>验证码</label>
+          <div class="code-row">
+            <input type="text" id="resetCode" placeholder="6位数字验证码" maxlength="6" required>
+            <button type="button" id="sendResetCodeBtn" class="send-code-btn">获取验证码</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>新密码</label>
+          <input type="password" id="newPassword" placeholder="至少8位，包含字母和数字" required>
+        </div>
+        <button type="submit" class="submit-btn" id="resetSubmitBtn">确认修改</button>
+      </form>
+      <div class="modal-footer">
+        <a href="javascript:void(0)" id="backToLoginLink">返回登录</a>
+      </div>
+    </div>
+
+    <div id="userPanel" style="display: none; text-align: center;">
+      <div class="avatar" id="userPanelAvatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px; border-radius: 26px; overflow: hidden; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4f7cff, #8a5cf6);">
+        <span id="userAvatarLetter" style="color: #fff;">U</span>
+      </div>
+      <h3 id="userNickname" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+        用户昵称
+      </h3>
+
+      <div style="margin: 15px 0 20px; font-size: 14px; color: #6f7890; text-align: left;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span>经验值：<span id="userExpText">0/200</span></span>
+          <span id="userLevelText" style="font-weight: bold; font-size: 14px; color: #4b5563;">Lv1</span>
+        </div>
+        <div style="width: 100%; height: 14px; background: #ffffff; border: 1px solid #e8ebf5; border-radius: 7px; overflow: hidden;">
+          <div id="expBarFill" style="height: 100%; width: 0%; background: #4b5563; border-radius: 7px; transition: width 0.5s ease, background-color 0.5s ease;"></div>
+        </div>
+      </div>
+
+      <button class="submit-btn" id="logoutBtn" style="background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
+    </div>
+  </div>
+</div>
+
+<!-- ★ 名牌命名弹窗 -->
+<div class="modal-overlay" id="badgeNameModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeBadgeNameModal">&times;</button>
+    <h3 style="text-align:center;margin-bottom:18px;" id="badgeNameModalTitle">修改名牌名称</h3>
+    <form id="badgeNameForm">
+      <div class="form-group">
+        <label>名牌名称（<span id="badgeNameMaxLen">4</span> 字以内）</label>
+        <input type="text" id="badgeNameInput" placeholder="请输入名牌显示的名称" maxlength="6">
+      </div>
+      <button type="submit" class="submit-btn" id="badgeNameSubmitBtn">确定</button>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <div>© 2026 这人针不错</div>
+  <div style="margin-top:6px">ZRZBC</div>
+</footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+  /* ===== 经验条渲染 ===== */
+  function renderExp(exp) {
+    const expNum = parseInt(exp) || 0;
+    const expBarFill = document.getElementById('expBarFill');
+    const userExpText = document.getElementById('userExpText');
+    const userLevelText = document.getElementById('userLevelText');
+    if (!expBarFill || !userExpText || !userLevelText) return;
+
+    let level = 1, nextExp = 200;
+    let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
+    if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
+    else if (expNum >= 6200) { level = 6; nextExp = 13200; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
+    else if (expNum >= 2800) { level = 5; nextExp = 6200; baseColor = '#f97316'; darkColor = '#c2410c'; }
+    else if (expNum >= 1200) { level = 4; nextExp = 2800; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
+    else if (expNum >= 500) { level = 3; nextExp = 1200; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
+    else if (expNum >= 200) { level = 2; nextExp = 500; baseColor = '#22c55e'; darkColor = '#15803d'; }
+    if (nextExp === Infinity) { userExpText.textContent = `${expNum}/∞`; expBarFill.style.width = '100%'; }
+    else { userExpText.textContent = `${expNum}/${nextExp}`; expBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
+    userLevelText.textContent = `Lv${level}`;
+    userLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
+    userLevelText.style.color = textColor;
+    userLevelText.style.padding = '2px 12px';
+    userLevelText.style.borderRadius = '8px';
+    userLevelText.style.display = 'inline-block';
+    expBarFill.style.background = baseColor;
+  }
+
+  /* ===== DOM ===== */
+  const avatarBtn = document.getElementById('avatarBtn');
+  const authModal = document.getElementById('authModal');
+  const closeModal = document.getElementById('closeModal');
+  const authFormContainer = document.getElementById('authFormContainer');
+  const resetFormContainer = document.getElementById('resetFormContainer');
+  const userPanel = document.getElementById('userPanel');
+  const tabLogin = document.getElementById('tabLogin');
+  const tabRegister = document.getElementById('tabRegister');
+  const authForm = document.getElementById('authForm');
+  const emailInput = document.getElementById('emailInput');
+  const codeInput = document.getElementById('codeInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const nicknameGroup = document.getElementById('nicknameGroup');
+  const nicknameInput = document.getElementById('nicknameInput');
+  const sendCodeBtn = document.getElementById('sendCodeBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+  const resetForm = document.getElementById('resetForm');
+  const resetEmail = document.getElementById('resetEmail');
+  const resetCode = document.getElementById('resetCode');
+  const newPassword = document.getElementById('newPassword');
+  const sendResetCodeBtn = document.getElementById('sendResetCodeBtn');
+  const resetSubmitBtn = document.getElementById('resetSubmitBtn');
+  const backToLoginLink = document.getElementById('backToLoginLink');
+  const userAvatarLetter = document.getElementById('userAvatarLetter');
+  const userNickname = document.getElementById('userNickname');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  function startCountdown(btn) {
+    let countdown = 60;
+    btn.disabled = true; btn.textContent = `${countdown}秒后重试`;
+    const timer = setInterval(() => {
+      countdown--;
+      if (countdown <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; }
+      else { btn.textContent = `${countdown}秒后重试`; }
+    }, 1000);
+  }
+  async function sendCode(email, btn) {
+    if (!email || !email.includes('@')) return alert('请输入有效的邮箱地址');
+    btn.disabled = true; btn.textContent = '发送中...';
+    try {
+      const res = await fetch('/api/auth/send-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      const data = await res.json();
+      if (data.success) { startCountdown(btn); }
+      else { alert(data.error || '发送失败'); btn.disabled = false; btn.textContent = '获取验证码'; }
+    } catch (err) { alert('网络错误'); btn.disabled = false; btn.textContent = '获取验证码'; }
+  }
+
+  /* ===== 自动登录初始化 ===== */
+  const savedUser = localStorage.getItem('user');
+  if (savedUser) {
+    try {
+      const userData = JSON.parse(savedUser);
+      const avatarBtnHTML = document.querySelector('#avatarBtn');
+      if (avatarBtnHTML) {
+        if (userData.avatar) {
+          avatarBtnHTML.innerHTML = `<img src="${userData.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        } else {
+          avatarBtnHTML.innerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
+        }
+      }
+      fetch('/api/auth/me', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userData.email })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.user) localStorage.setItem('user', JSON.stringify(data.user));
+      })
+      .catch(err => console.log('同步失败', err));
+    } catch(e) {}
+  }
+
+  /* ===== 头像点击 ===== */
+  if (avatarBtn && authModal) {
+    avatarBtn.addEventListener('click', async () => {
+      const user = localStorage.getItem('user');
+      if (user) { return; }
+      else {
+        authFormContainer.style.display = 'block';
+        resetFormContainer.style.display = 'none';
+        userPanel.style.display = 'none';
+        authModal.classList.add('show');
+      }
+    });
+  }
+
+  if (closeModal && authModal) {
+    closeModal.addEventListener('click', () => authModal.classList.remove('show'));
+    authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('show'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && authModal.classList.contains('show')) authModal.classList.remove('show'); });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('user'); alert('已退出登录');
+      authModal.classList.remove('show'); location.reload();
+    });
+  }
+
+  if (tabLogin && tabRegister) {
+    tabLogin.addEventListener('click', () => {
+      tabLogin.classList.add('active'); tabRegister.classList.remove('active');
+      nicknameGroup.style.display = 'none';
+      if (document.getElementById('codeGroup')) { document.getElementById('codeGroup').style.display = 'none'; if (codeInput) codeInput.required = false; }
+      forgotPasswordLink.style.display = 'inline';
+    });
+    tabRegister.addEventListener('click', () => {
+      tabRegister.classList.add('active'); tabLogin.classList.remove('active');
+      nicknameGroup.style.display = 'block';
+      if (document.getElementById('codeGroup')) { document.getElementById('codeGroup').style.display = 'block'; if (codeInput) codeInput.required = true; }
+      forgotPasswordLink.style.display = 'none';
+    });
+  }
+
+  if (forgotPasswordLink && backToLoginLink) {
+    forgotPasswordLink.addEventListener('click', () => { authFormContainer.style.display = 'none'; resetFormContainer.style.display = 'block'; });
+    backToLoginLink.addEventListener('click', () => { authFormContainer.style.display = 'block'; resetFormContainer.style.display = 'none'; });
+  }
+
+  if (sendCodeBtn) sendCodeBtn.addEventListener('click', () => sendCode(emailInput.value.trim(), sendCodeBtn));
+  if (sendResetCodeBtn) sendResetCodeBtn.addEventListener('click', () => sendCode(resetEmail.value.trim(), sendResetCodeBtn));
+
+  if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const code = codeInput.value.trim();
+      const password = passwordInput.value.trim();
+      const isRegister = tabRegister.classList.contains('active');
+      const nickname = isRegister && nicknameInput ? nicknameInput.value.trim() : '';
+      if (!email || !password) return alert('请填写邮箱和密码');
+      if (isRegister && !code) return alert('请填写验证码');
+      if (password.length < 8) return alert('密码至少8位');
+      if (isRegister && !nickname) return alert('请设置您的昵称');
+      submitBtn.disabled = true; submitBtn.textContent = '处理中...';
+      try {
+        const payload = isRegister ? { email, code, password, nickname } : { email, password };
+        const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (data.success) { alert(isRegister ? '注册成功！' : '登录成功！'); if (data.user) { localStorage.setItem('user', JSON.stringify(data.user)); location.reload(); } }
+        else { alert(data.error || '操作失败'); }
+      } catch (err) { alert('网络错误'); }
+      finally { submitBtn.disabled = false; submitBtn.textContent = '登录 / 注册'; }
+    });
+  }
+
+  if (resetForm) {
+    resetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = resetEmail.value.trim();
+      const code = resetCode.value.trim();
+      const password = newPassword.value.trim();
+      if (!email || !code || !password) return alert('请填写所有字段');
+      if (password.length < 8) return alert('密码至少8位');
+      resetSubmitBtn.disabled = true; resetSubmitBtn.textContent = '处理中...';
+      try {
+        const res = await fetch('/api/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, code, newPassword: password }) });
+        const data = await res.json();
+        if (data.success) { alert('密码重置成功！'); authFormContainer.style.display = 'block'; resetFormContainer.style.display = 'none'; }
+        else { alert(data.error || '重置失败'); }
+      } catch (err) { alert('网络错误'); }
+      finally { resetSubmitBtn.disabled = false; resetSubmitBtn.textContent = '确认修改'; }
+    });
+  }
+
+  /* ===== 悬停卡片逻辑 ===== */
+  const userCenter = document.getElementById('userCenter');
+  if (userCenter) {
+    userCenter.addEventListener('mouseenter', () => {
+      const user = localStorage.getItem('user');
+      const popoverLoggedIn = document.getElementById('popoverLoggedIn');
+      const popoverNotLoggedIn = document.getElementById('popoverNotLoggedIn');
+      
+      if (user) {
+        const userData = JSON.parse(user);
+        popoverLoggedIn.style.display = 'block';
+        popoverNotLoggedIn.style.display = 'none';
+
+        if (userData.avatar) {
+          document.getElementById('popoverAvatar').style.backgroundImage = `url(${userData.avatar})`;
+          document.getElementById('popoverAvatarLetter').style.display = 'none';
+        } else {
+          document.getElementById('popoverAvatar').style.backgroundImage = 'none';
+          document.getElementById('popoverAvatar').style.background = 'linear-gradient(135deg, #4f7cff, #8a5cf6)';
+          document.getElementById('popoverAvatarLetter').style.display = 'block';
+          document.getElementById('popoverAvatarLetter').style.color = '#fff';
+          document.getElementById('popoverAvatarLetter').textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
+        }
+        document.getElementById('popoverNickname').textContent = userData.nickname || '用户';
+        // 显示名牌（可点击修改）
+        const badgeEl = document.getElementById('popoverUserBadge');
+        if (badgeEl) {
+          if (userData.badge_type && userData.badge_name && userData.badge_expire_at && userData.badge_expire_at > Date.now()) {
+            badgeEl.innerHTML = `<span class="user-badge ${userData.badge_type} editable-badge" title="点击修改名牌名称">${userData.badge_name}</span>`;
+          } else {
+            badgeEl.innerHTML = '';
+          }
+        }
+        renderPopoverExp(userData.exp);
+      } else {
+        popoverLoggedIn.style.display = 'none';
+        popoverNotLoggedIn.style.display = 'block';
+      }
+    });
+  }
+
+  function renderPopoverExp(exp) {
+    const expNum = parseInt(exp) || 0;
+    const popoverExpText = document.getElementById('popoverExpText');
+    const popoverLevelText = document.getElementById('popoverLevelText');
+    const popoverExpBarFill = document.getElementById('popoverExpBarFill');
+    if (!popoverExpText || !popoverLevelText || !popoverExpBarFill) return;
+
+    let level = 1, nextExp = 200;
+    let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
+    if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
+    else if (expNum >= 6200) { level = 6; nextExp = 13200; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
+    else if (expNum >= 2800) { level = 5; nextExp = 6200; baseColor = '#f97316'; darkColor = '#c2410c'; }
+    else if (expNum >= 1200) { level = 4; nextExp = 2800; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
+    else if (expNum >= 500) { level = 3; nextExp = 1200; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
+    else if (expNum >= 200) { level = 2; nextExp = 500; baseColor = '#22c55e'; darkColor = '#15803d'; }
+    if (nextExp === Infinity) { popoverExpText.textContent = `${expNum}/∞`; popoverExpBarFill.style.width = '100%'; }
+    else { popoverExpText.textContent = `${expNum}/${nextExp}`; popoverExpBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
+    popoverLevelText.textContent = `Lv${level}`;
+    popoverLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
+    popoverLevelText.style.color = textColor;
+    popoverExpBarFill.style.background = baseColor;
+  }
+
+  /* ===== 上传头像 ===== */
+  const popoverAvatar = document.getElementById('popoverAvatar');
+  const avatarUploadInput = document.getElementById('avatarUploadInput');
+  if (popoverAvatar && avatarUploadInput) {
+    popoverAvatar.addEventListener('click', (e) => { e.stopPropagation(); avatarUploadInput.click(); });
+    avatarUploadInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 500 * 1024) return alert('图片不能超过 500KB，请压缩后再上传');
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target.result;
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        try {
+          const res = await fetch('/api/auth/update-avatar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, avatar: base64 }) });
+          const data = await res.json();
+          if (data.success) {
+            user.avatar = base64; localStorage.setItem('user', JSON.stringify(user));
+            document.getElementById('popoverAvatar').style.backgroundImage = `url(${base64})`;
+            document.getElementById('popoverAvatarLetter').style.display = 'none';
+            const avatarBtnHTML = document.querySelector('#avatarBtn');
+            if (avatarBtnHTML) avatarBtnHTML.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+            const userPanelAvatar = document.getElementById('userPanelAvatar');
+            if (userPanelAvatar) { userPanelAvatar.style.backgroundImage = `url(${base64})`; userAvatarLetter.style.display = 'none'; }
+            alert('头像修改成功！');
+          } else { alert(data.error || '上传失败'); }
+        } catch (err) { alert('网络错误'); }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* ===== 点击昵称修改 ===== */
+  const popoverNickname = document.getElementById('popoverNickname');
+  if (popoverNickname) {
+    popoverNickname.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user.email) return;
+      const newNickname = prompt('请输入新的昵称：', user.nickname);
+      if (!newNickname || newNickname.trim() === '' || newNickname === user.nickname) return;
+      try {
+        const res = await fetch('/api/auth/update-nickname', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, newNickname: newNickname.trim() }) });
+        const data = await res.json();
+        if (data.success) {
+          user.nickname = newNickname.trim(); localStorage.setItem('user', JSON.stringify(user));
+          document.getElementById('popoverNickname').textContent = user.nickname;
+          if (!user.avatar) {
+            document.getElementById('popoverAvatarLetter').textContent = user.nickname.charAt(0).toUpperCase();
+            userAvatarLetter.textContent = user.nickname.charAt(0).toUpperCase();
+            const avatarBtnHTML = document.querySelector('#avatarBtn');
+            if (avatarBtnHTML) avatarBtnHTML.innerHTML = `<span style="font-size:16px;font-weight:bold;">${user.nickname.charAt(0).toUpperCase()}</span>`;
+          }
+          alert('昵称修改成功！');
+        } else { alert(data.error || '修改失败'); }
+      } catch (err) { alert('网络错误'); }
+    });
+  }
+
+  /* ===== ★ 点击名牌修改（每月 3 次） ===== */
+  const popoverUserBadge = document.getElementById('popoverUserBadge');
+  const badgeNameModal = document.getElementById('badgeNameModal');
+  const closeBadgeNameModal = document.getElementById('closeBadgeNameModal');
+  const badgeNameForm = document.getElementById('badgeNameForm');
+  const badgeNameInput = document.getElementById('badgeNameInput');
+  const badgeNameMaxLen = document.getElementById('badgeNameMaxLen');
+  const badgeNameModalTitle = document.getElementById('badgeNameModalTitle');
+
+  function getBadgeMaxLen(type) {
+    return { normal: 4, premium: 6, ultimate: 6 }[type] || 6;
+  }
+  function openRenameBadgeModal() {
+    const u = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!u.email) return;
+    if (!u.badge_type) return alert('你还没有名牌');
+    if (u.badge_expire_at && u.badge_expire_at < Date.now()) return alert('名牌已过期');
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    let count = u.badge_update_count || 0;
+    if (u.badge_update_month !== currentMonth) count = 0;
+    if (u.badge_name && count >= 3) return alert('本月修改次数已用完（每月3次）');
+    badgeNameMaxLen.textContent = getBadgeMaxLen(u.badge_type);
+    badgeNameInput.maxLength = getBadgeMaxLen(u.badge_type);
+    badgeNameInput.value = u.badge_name || '';
+    badgeNameModalTitle.textContent = '修改名牌名称';
+    badgeNameModal.classList.add('show');
+  }
+
+  if (popoverUserBadge) {
+    popoverUserBadge.addEventListener('click', (e) => {
+      const badge = e.target.closest('.editable-badge');
+      if (!badge) return;
+      e.stopPropagation();
+      openRenameBadgeModal();
+    });
+  }
+
+  if (badgeNameForm) {
+    badgeNameForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!u.email) return alert('请先登录');
+      const newName = badgeNameInput.value.trim();
+      if (!newName) return alert('名称不能为空');
+      const btn = document.getElementById('badgeNameSubmitBtn');
+      btn.disabled = true; btn.textContent = '保存中...';
+      try {
+        const res = await fetch('/api/shop/update-badge-name', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: u.email, newName })
+        });
+        const data = await res.json();
+        if (data.success) {
+          badgeNameModal.classList.remove('show');
+          const meRes = await fetch('/api/auth/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: u.email }) });
+          const meData = await meRes.json();
+          if (meData.success && meData.user) localStorage.setItem('user', JSON.stringify(meData.user));
+          alert('名牌名称修改成功！');
+        } else alert(data.error || '修改失败');
+      } catch(err) { alert('网络错误'); }
+      finally { btn.disabled = false; btn.textContent = '确定'; }
+    });
+  }
+  if (closeBadgeNameModal) {
+    closeBadgeNameModal.addEventListener('click', () => badgeNameModal.classList.remove('show'));
+    badgeNameModal.addEventListener('click', (e) => { if (e.target === badgeNameModal) badgeNameModal.classList.remove('show'); });
+  }
+
+  /* ===== 悬停卡片退出登录 / 签到 ===== */
+  const popoverSigninBtn = document.getElementById('popoverSigninBtn');
+  if (popoverSigninBtn) {
+    popoverSigninBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.location.href = 'index.html#signin';
+    });
+  }
+
+  const popoverLogoutBtn = document.getElementById('popoverLogoutBtn');
+  if (popoverLogoutBtn) {
+    popoverLogoutBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); localStorage.removeItem('user'); alert('已退出登录'); window.location.reload();
+    });
+  }
+
+  /* ===== 页面切换淡入淡出 ===== */
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest('a');
+    if (!link) return;
+    var href = link.getAttribute('href');
+    if (!href) return;
+    if (href.startsWith('#') || href.startsWith('http') || link.target === '_blank' || href.startsWith('javascript:')) return;
+    e.preventDefault();
+    document.body.classList.add('page-leaving');
+    setTimeout(function () { window.location.href = href; }, 200);
+  });
+
+  /* ===== 语言切换 ===== */
+  var langBtn = document.getElementById('langBtn');
+  var langMenu = document.getElementById('langMenu');
+  var langSwitch = document.querySelector('.lang-switch');
+  if (langBtn && langMenu && langSwitch && typeof OpenCC !== 'undefined') {
+    var converters = { cn: null, hk: OpenCC.Converter({ from: 'cn', to: 'hk' }), tw: OpenCC.Converter({ from: 'cn', to: 'twp' }) };
+    var langNames = { cn: '简体中文 ▾', hk: '繁體中文（香港）▾', tw: '繁體中文（台灣）▾' };
+    var textNodes = [];
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+    var n;
+    while ((n = walker.nextNode())) {
+      if (!n.nodeValue || !n.nodeValue.trim()) continue;
+      var p = n.parentElement; if (!p) continue;
+      var tag = p.tagName; if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+      n.__original = n.nodeValue; textNodes.push(n);
+    }
+    var applyLang = function (lang) {
+      var converter = converters[lang];
+      for (var i = 0; i < textNodes.length; i++) {
+        var node = textNodes[i]; if (!node.isConnected) continue;
+        node.nodeValue = converter ? converter(node.__original) : node.__original;
+      }
+      langBtn.textContent = langNames[lang];
+      var btns = langMenu.querySelectorAll('button');
+      for (var j = 0; j < btns.length; j++) { btns[j].classList.toggle('active', btns[j].getAttribute('data-lang') === lang); }
+      document.documentElement.lang = lang === 'cn' ? 'zh-CN' : (lang === 'hk' ? 'zh-HK' : 'zh-TW');
+    };
+    langBtn.addEventListener('click', function (e) { e.stopPropagation(); langMenu.classList.toggle('open'); });
+    var menuBtns = langMenu.querySelectorAll('button');
+    for (var k = 0; k < menuBtns.length; k++) {
+      (function (btn) {
+        btn.addEventListener('click', function () { applyLang(btn.getAttribute('data-lang')); langMenu.classList.remove('open'); });
+      })(menuBtns[k]);
+    }
+    document.addEventListener('click', function (e) { if (!langSwitch.contains(e.target)) langMenu.classList.remove('open'); });
+  }
+
+  /* ===== 锚点滚动 ===== */
+  window.addEventListener('load', function () {
+    if (location.hash) {
+      var el = document.querySelector(location.hash);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  /* ===== 搜索功能 ===== */
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const keyword = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('.resource-item').forEach(item => {
+        const fullText = item.textContent.toLowerCase();
+        item.style.display = (!keyword || fullText.includes(keyword)) ? '' : 'none';
+      });
+      document.querySelectorAll('.type-section').forEach(section => {
+        const visible = Array.from(section.querySelectorAll('.resource-item'))
+          .some(item => item.style.display !== 'none');
+        section.style.display = visible ? '' : 'none';
+      });
+    });
+  }
+
+  /* ===== 右侧类型导航 ===== */
+  document.querySelectorAll('.type-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      const target = document.getElementById(dot.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  /* ===== 用户面板签到按钮 ===== */
+  const userPanelSigninBtn = document.getElementById('userPanelSigninBtn');
+  if (userPanelSigninBtn) {
+    userPanelSigninBtn.addEventListener('click', () => {
+      window.location.href = 'index.html#signin';
+    });
+  }
+
+});
+</script>
+</body>
+</html>
