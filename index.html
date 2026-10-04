@@ -1361,9 +1361,9 @@ if (u.badge_name && count >= maxTimes) return alert(`本月修改次数已用完
 
     const colorClass = `nick-${u.nickname_color}`;
 
-    // 第 1、2 名加白色描边
+    // 第 1、2 名加黑色描边
     if (rank === 1 || rank === 2) {
-      return `<span class="lb-nick-wrap lb-outline-white">
+      return `<span class="lb-nick-wrap lb-outline-black">
         <span class="lb-nick-outline">${nickname}</span>
         <span class="lb-nick-inner nick-colored ${colorClass}">${nickname}</span>
       </span>`;
