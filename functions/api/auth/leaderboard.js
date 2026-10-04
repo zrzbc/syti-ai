@@ -4,14 +4,14 @@ export async function onRequestPost(context) {
 
   // 获取排行榜前 10 名（按连续签到天数从高到低）
 const top10 = await env.DB.prepare(
-    'SELECT email, nickname, avatar, continuous_days, badge_type, badge_name, badge_expire_at FROM users ORDER BY continuous_days DESC LIMIT 10'
+    'SELECT email, nickname, avatar, continuous_days, badge_type, badge_name, badge_expire_at, nickname_color, nickname_color_expire_at, nickname_color_equipped FROM users ORDER BY continuous_days DESC LIMIT 10'
   ).all();
 
   // 获取当前用户信息（可能没上榜）
   let currentUser = null;
   if (email) {
 currentUser = await env.DB.prepare(
-      'SELECT email, nickname, avatar, continuous_days, badge_type, badge_name, badge_expire_at FROM users WHERE email = ?'
+      'SELECT email, nickname, avatar, continuous_days, badge_type, badge_name, badge_expire_at, nickname_color, nickname_color_expire_at, nickname_color_equipped FROM users WHERE email = ?'
     ).bind(email).first();
   }
 
