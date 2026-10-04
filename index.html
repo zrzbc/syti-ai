@@ -394,6 +394,21 @@ body.page-leaving { opacity: 0; }
 }
 .level-tooltip .lv-exp { color: #172033; margin-left: auto; text-align: right; }
 .popover-level-wrap:hover .level-tooltip { opacity: 1; transform: translateY(-50%) translateX(12px); }
+
+/* 昵称颜色 */
+.nick-colored{-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;display:inline-block}
+.nick-colored.nick-yellow{background-image:linear-gradient(135deg,#f5c518,#f0a500)}
+.nick-colored.nick-blue{background-image:linear-gradient(135deg,#4facfe,#00f2fe)}
+.nick-colored.nick-pink{background-image:linear-gradient(135deg,#ff6a88,#ff99ac)}
+.nick-colored.nick-purple{background-image:linear-gradient(135deg,#a855f7,#7e22ce)}
+
+/* 排行榜昵称描边：双层 */
+.lb-nick-wrap{position:relative;display:inline-block;vertical-align:middle}
+.lb-nick-outline{position:absolute;left:0;top:0;z-index:0;pointer-events:none}
+.lb-nick-inner{position:relative;z-index:1}
+.lb-outline-black .lb-nick-outline{color:transparent;-webkit-text-fill-color:transparent;-webkit-text-stroke:3px #000}
+.lb-outline-white .lb-nick-outline{color:transparent;-webkit-text-fill-color:transparent;-webkit-text-stroke:3px #fff}
+
 </style>
 </head>
 <body>
@@ -1010,7 +1025,17 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('popoverAvatarLetter').textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
         }
         
-        document.getElementById('popoverNickname').textContent = userData.nickname || '用户';
+const popoverNickEl = document.getElementById('popoverNickname');
+const nickText = userData.nickname || '用户';
+const hasNickColor = userData.nickname_color && userData.nickname_color_expire_at &&
+                     userData.nickname_color_expire_at > Date.now() &&
+                     userData.nickname_color_equipped !== 0;
+if (hasNickColor) {
+  popoverNickEl.innerHTML = `<span class="nick-colored nick-${userData.nickname_color}">${nickText}</span>`;
+} else {
+  popoverNickEl.textContent = nickText;
+}
+
         // 显示名牌（可点击修改）
         const badgeEl = document.getElementById('popoverUserBadge');
         if (badgeEl) {
@@ -1121,7 +1146,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentMonth = new Date().toISOString().slice(0, 7);
     let count = u.badge_update_count || 0;
     if (u.badge_update_month !== currentMonth) count = 0;
-    if (u.badge_name && count >= 3) return alert('本月修改次数已用完（每月3次）');
+const maxTimes = u.badge_type === 'ultimate' ? 5 : 3;
+if (u.badge_name && count >= maxTimes) return alert(`本月修改次数已用完（每月${maxTimes}次）`);
     badgeNameMaxLen.textContent = getBadgeMaxLen(u.badge_type);
     badgeNameInput.maxLength = getBadgeMaxLen(u.badge_type);
     badgeNameInput.value = u.badge_name || '';
@@ -1326,6 +1352,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const signinStatus = document.getElementById('signinStatus');
   const leaderboardList = document.getElementById('leaderboardList');
 
+  function buildNicknameHTML(u, rank) {
+    const nickname = u.nickname || '用户';
+    const hasColor = u.nickname_color && u.nickname_color_expire_at &&
+                     u.nickname_color_expire_at > Date.now() &&
+                     u.nickname_color_equipped !== 0;
+    if (!hasColor) return nickname;
+
+    const color = u.nickname_color;
+    const colorClass = `nick-${color}`;
+    let outline = null;
+    if (rank === 3) outline = 'white';
+    else if (rank === 1 && color === 'yellow') outline = 'black';
+    else if (rank === 2 && color === 'blue') outline = 'black';
+
+    if (!outline) {
+      return `<span class="nick-colored ${colorClass}">${nickname}</span>`;
+    }
+
+    return `<span class="lb-nick-wrap lb-outline-${outline}">
+      <span class="lb-nick-outline">${nickname}</span>
+      <span class="lb-nick-inner nick-colored ${colorClass}">${nickname}</span>
+    </span>`;
+  }
+
   async function loadLeaderboard() {
     if (!leaderboardList) return;
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -1346,10 +1396,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const letter = (u.nickname || 'U').charAt(0).toUpperCase();
         const badgeHtml = (u.badge_type && u.badge_name && u.badge_expire_at && u.badge_expire_at > Date.now())
           ? `<span class="user-badge ${u.badge_type}">${u.badge_name}</span>` : '';
+        const nicknameHtml = buildNicknameHTML(u, rank);
         html += `<div class="leaderboard-row ${rankClass}">
           <span style="width:20px;">${rank}</span>
           <div class="leaderboard-avatar" style="${avatarStyle}">${u.avatar ? '' : letter}</div>
-          <span class="leaderboard-name">${u.nickname || '用户'}${badgeHtml}</span>
+          <span class="leaderboard-name">${nicknameHtml}${badgeHtml}</span>
           <span class="leaderboard-days">${u.continuous_days || 0} 天</span>
         </div>`;
       });
