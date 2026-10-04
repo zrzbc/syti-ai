@@ -409,6 +409,8 @@ body.page-leaving { opacity: 0; }
 .lb-outline-black .lb-nick-outline{color:transparent;-webkit-text-fill-color:transparent;-webkit-text-stroke:2px #000}
 .lb-outline-white .lb-nick-outline{color:transparent;-webkit-text-fill-color:transparent;-webkit-text-stroke:2px #fff}
 
+.nick-shadow{filter:drop-shadow(2px 2px 2px rgba(0,0,0,.8))}
+
 </style>
 </head>
 <body>
@@ -1360,17 +1362,9 @@ if (u.badge_name && count >= maxTimes) return alert(`本月修改次数已用完
     if (!hasColor) return nickname;
 
     const colorClass = `nick-${u.nickname_color}`;
-
-    // 第 1、2 名加黑色描边
-    if (rank === 1 || rank === 2) {
-      return `<span class="lb-nick-wrap lb-outline-black">
-        <span class="lb-nick-outline">${nickname}</span>
-        <span class="lb-nick-inner nick-colored ${colorClass}">${nickname}</span>
-      </span>`;
-    }
-
-    // 其他名次无描边
-    return `<span class="nick-colored ${colorClass}">${nickname}</span>`;
+    // 前三名加黑色阴影，其他名次不加
+    const shadowClass = (rank === 1 || rank === 2 || rank === 3) ? ' nick-shadow' : '';
+    return `<span class="nick-colored ${colorClass}${shadowClass}">${nickname}</span>`;
   }
 
   async function loadLeaderboard() {
