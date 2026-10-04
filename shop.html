@@ -1528,14 +1528,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const viewBtn = card.querySelector('.code-view-btn');
     if (box) box.style.display = 'block';
     if (textEl) textEl.textContent = code;
-    if (viewBtn) { viewBtn.textContent = '隐藏'; viewBtn.dataset.shown = '1'; }
+    if (viewBtn) {
+      viewBtn.textContent = '隐藏';
+      viewBtn.dataset.shown = '1';
+    }
   }
 
   function hideCodeBox(card) {
     const box = card.querySelector('.code-box');
     const viewBtn = card.querySelector('.code-view-btn');
     if (box) box.style.display = 'none';
-    if (viewBtn) { viewBtn.textContent = '查看'; viewBtn.dataset.shown = '0'; }
+    if (viewBtn) {
+      viewBtn.textContent = '显示';
+      viewBtn.dataset.shown = '0';
+    }
   }
 
   async function copyText(text, boxEl) {
@@ -1605,18 +1611,29 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // 查看/隐藏 按钮
+    // 显示/隐藏 按钮
     const viewBtn = e.target.closest('.code-view-btn');
     if (viewBtn) {
       const card = viewBtn.closest('.code-card');
       const productType = card.dataset.codeProduct;
       const box = card.querySelector('.code-box');
-      const isShown = viewBtn.dataset.shown === '1' || (box && box.style.display !== 'none');
+
+      // ★ 用 dataset.shown 作为唯一判断依据，和 checkOwnedCodes 保持一致
+      const isShown = viewBtn.dataset.shown === '1';
+
       if (isShown) {
+        // 收起
         hideCodeBox(card);
         return;
       }
-      // 从服务器获取激活码
+
+      // 展开：如果框里已经有内容（购买后立即显示过），直接展开；否则从服务器拉
+      const textEl = card.querySelector('.code-text');
+      if (textEl && textEl.textContent) {
+        showCodeBox(card, textEl.textContent);
+        return;
+      }
+
       const u = getLocalUser();
       if (!u) return;
       viewBtn.disabled = true;
@@ -1632,11 +1649,11 @@ document.addEventListener('DOMContentLoaded', function () {
           showCodeBox(card, data.code);
         } else {
           alert(data.error || '获取失败');
-          viewBtn.textContent = '查看';
+          viewBtn.textContent = '显示';
         }
       } catch(err) {
         alert('网络错误');
-        viewBtn.textContent = '查看';
+        viewBtn.textContent = '显示';
       } finally {
         viewBtn.disabled = false;
       }
