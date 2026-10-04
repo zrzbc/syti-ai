@@ -127,6 +127,30 @@ h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
 .nick-colored.nick-purple{background-image:linear-gradient(90deg,#6a0dad 0%,#c77dff 100%)}
 .placeholder-block{background:#fff;border:1px solid #e8ebf5;border-radius:16px;padding:40px 20px;text-align:center;color:#6f7890;font-size:14px}
 
+/* ===== 激活码区 ===== */
+.code-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.code-card{background:#fff;border:1px solid #e8ebf5;border-radius:16px;padding:18px 20px;transition:transform .2s,box-shadow .2s}
+.code-card:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(60,70,120,.1)}
+.code-card-disabled{opacity:.55;pointer-events:none}
+.code-card-body{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
+.code-card-info h3{font-size:17px;margin-bottom:6px}
+.code-card-info p{font-size:13px;color:var(--muted);margin-bottom:6px}
+.code-card-actions{display:flex;flex-direction:column;gap:8px;min-width:100px}
+.code-box{margin-top:14px}
+.code-copy-box{
+  background:#fff;border:2px solid #000;border-radius:12px;
+  padding:12px 16px;font-family:'Courier New',monospace;
+  font-size:18px;font-weight:700;letter-spacing:3px;
+  text-align:center;cursor:pointer;user-select:none;
+  transition:background .15s,transform .15s;
+}
+.code-copy-box:hover{background:#f7f9ff;transform:translateY(-1px)}
+.code-copy-box.copied{background:#d1fae5;border-color:#10b981}
+.code-hint{margin-top:6px;font-size:11px;color:#9ca3af;text-align:center}
+@media(max-width:850px){
+  .code-grid{grid-template-columns:1fr}
+}
+
 footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
 body{opacity:1;transition:opacity .2s ease}
 body.page-leaving{opacity:0}
@@ -259,7 +283,7 @@ body.page-leaving{opacity:0}
   <div class="type-nav">
     <a class="type-dot" href="#category-badge" data-name="名牌"></a>
     <a class="type-dot" href="#category-nickname-color" data-name="昵称颜色"></a>
-    <a class="type-dot" href="#category-xxx" data-name="敬请期待"></a>
+    <a class="type-dot" href="#category-codes" data-name="激活码"></a>
   </div>
 
   <!-- 区域一：名牌 + 续期 -->
@@ -379,10 +403,99 @@ body.page-leaving{opacity:0}
     </div>
   </div>
 
-  <!-- 区域三：敬请期待 -->
-  <div id="category-xxx" class="type-section">
-    <h3 class="category-title">敬请期待</h3>
-    <div class="placeholder-block">更多商品正在开发中，敬请期待~</div>
+  <!-- 区域三：激活码 -->
+  <div id="category-codes" class="type-section">
+    <h3 class="category-title">激活码</h3>
+    <div class="code-grid">
+
+      <!-- 产品 1：抽号器 -->
+      <div class="code-card" data-code-product="draw" data-title="抽号器激活码" data-desc="抽号器 激活码 100经验">
+        <div class="code-card-body">
+          <div class="code-card-info">
+            <div class="badge-preview" style="background:#e0e7ff;color:#3730a3;">抽号器</div>
+            <h3>抽号器激活码</h3>
+            <p>购买后随机获得一个 6 位激活码，永久有效。</p>
+            <div class="shop-price">售价：<span>100</span> 经验</div>
+          </div>
+          <div class="code-card-actions">
+            <button class="shop-buy-btn code-buy-btn" data-code-product="draw">购买</button>
+            <button class="badge-sub-btn sub-load code-view-btn" data-code-product="draw" style="display:none;">查看</button>
+          </div>
+        </div>
+        <div class="code-box" style="display:none;">
+          <div class="code-copy-box" title="点击复制"><span class="code-text"></span></div>
+          <div class="code-hint">点击方框复制激活码</div>
+        </div>
+      </div>
+
+      <!-- 产品 2-6：暂定 -->
+      <div class="code-card code-card-disabled" data-code-product="p2">
+        <div class="code-card-body">
+          <div class="code-card-info">
+            <div class="badge-preview" style="background:#f3f4f6;color:#6b7280;">暂定</div>
+            <h3>敬请期待</h3>
+            <p>该产品尚未开放。</p>
+            <div class="shop-price">售价：<span>--</span> 经验</div>
+          </div>
+          <div class="code-card-actions">
+            <button class="shop-buy-btn" disabled>暂定</button>
+          </div>
+        </div>
+      </div>
+      <div class="code-card code-card-disabled" data-code-product="p3">
+        <div class="code-card-body">
+          <div class="code-card-info">
+            <div class="badge-preview" style="background:#f3f4f6;color:#6b7280;">暂定</div>
+            <h3>敬请期待</h3>
+            <p>该产品尚未开放。</p>
+            <div class="shop-price">售价：<span>--</span> 经验</div>
+          </div>
+          <div class="code-card-actions">
+            <button class="shop-buy-btn" disabled>暂定</button>
+          </div>
+        </div>
+      </div>
+      <div class="code-card code-card-disabled" data-code-product="p4">
+        <div class="code-card-body">
+          <div class="code-card-info">
+            <div class="badge-preview" style="background:#f3f4f6;color:#6b7280;">暂定</div>
+            <h3>敬请期待</h3>
+            <p>该产品尚未开放。</p>
+            <div class="shop-price">售价：<span>--</span> 经验</div>
+          </div>
+          <div class="code-card-actions">
+            <button class="shop-buy-btn" disabled>暂定</button>
+          </div>
+        </div>
+      </div>
+      <div class="code-card code-card-disabled" data-code-product="p5">
+        <div class="code-card-body">
+          <div class="code-card-info">
+            <div class="badge-preview" style="background:#f3f4f6;color:#6b7280;">暂定</div>
+            <h3>敬请期待</h3>
+            <p>该产品尚未开放。</p>
+            <div class="shop-price">售价：<span>--</span> 经验</div>
+          </div>
+          <div class="code-card-actions">
+            <button class="shop-buy-btn" disabled>暂定</button>
+          </div>
+        </div>
+      </div>
+      <div class="code-card code-card-disabled" data-code-product="p6">
+        <div class="code-card-body">
+          <div class="code-card-info">
+            <div class="badge-preview" style="background:#f3f4f6;color:#6b7280;">暂定</div>
+            <h3>敬请期待</h3>
+            <p>该产品尚未开放。</p>
+            <div class="shop-price">售价：<span>--</span> 经验</div>
+          </div>
+          <div class="code-card-actions">
+            <button class="shop-buy-btn" disabled>暂定</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 
 </div>
@@ -589,6 +702,7 @@ document.addEventListener('DOMContentLoaded', function () {
     updateAvatarButton(localUser);
     updateBuyButtons(localUser);
     renderPopover(localUser);
+    checkOwnedCodes(localUser);
 
     const freshUser = await refreshRealUser();
     if (freshUser) {
@@ -596,6 +710,7 @@ document.addEventListener('DOMContentLoaded', function () {
       updateAvatarButton(freshUser);
       updateBuyButtons(freshUser);
       renderPopover(freshUser);
+      checkOwnedCodes(freshUser);
     }
     return freshUser || localUser;
   }
@@ -1333,6 +1448,197 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     document.addEventListener('click', function (e) { if (!langSwitch.contains(e.target)) langMenu.classList.remove('open'); });
   }
+
+  /* ============================================================
+     ★ 激活码处理
+     ============================================================ */
+  const CODE_PRICES = { draw: 100 };
+  const CODE_NAMES = { draw: '抽号器激活码' };
+
+  async function checkOwnedCodes(user) {
+    // 先把所有可购买按钮复位
+    document.querySelectorAll('.code-card:not(.code-card-disabled)').forEach(card => {
+      const buyBtn = card.querySelector('.code-buy-btn');
+      const viewBtn = card.querySelector('.code-view-btn');
+      if (!buyBtn || !viewBtn) return;
+      if (!user) {
+        buyBtn.disabled = true;
+        buyBtn.textContent = '请先登录';
+        buyBtn.classList.remove('btn-owned');
+        viewBtn.style.display = 'none';
+        return;
+      }
+      const productType = card.dataset.codeProduct;
+      const price = CODE_PRICES[productType] || 0;
+      if ((user.exp || 0) < price) {
+        buyBtn.disabled = true;
+        buyBtn.textContent = '经验不足';
+        buyBtn.classList.remove('btn-owned');
+      } else {
+        buyBtn.disabled = false;
+        buyBtn.textContent = '购买';
+        buyBtn.classList.remove('btn-owned');
+      }
+      viewBtn.style.display = 'none';
+    });
+
+    if (!user) return;
+
+    try {
+      const res = await fetch('/api/shop/check-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email })
+      });
+      const data = await res.json();
+      if (data.success && data.owned) {
+        data.owned.forEach(productType => {
+          const card = document.querySelector(`.code-card[data-code-product="${productType}"]`);
+          if (!card) return;
+          const buyBtn = card.querySelector('.code-buy-btn');
+          const viewBtn = card.querySelector('.code-view-btn');
+          if (buyBtn) {
+            buyBtn.disabled = true;
+            buyBtn.textContent = '已购买';
+            buyBtn.classList.add('btn-owned');
+          }
+          if (viewBtn) viewBtn.style.display = 'block';
+        });
+      }
+    } catch(e) {}
+  }
+
+  function showCodeBox(card, code) {
+    const box = card.querySelector('.code-box');
+    const textEl = card.querySelector('.code-text');
+    const viewBtn = card.querySelector('.code-view-btn');
+    if (box) box.style.display = 'block';
+    if (textEl) textEl.textContent = code;
+    if (viewBtn) { viewBtn.textContent = '隐藏'; viewBtn.dataset.shown = '1'; }
+  }
+
+  function hideCodeBox(card) {
+    const box = card.querySelector('.code-box');
+    const viewBtn = card.querySelector('.code-view-btn');
+    if (box) box.style.display = 'none';
+    if (viewBtn) { viewBtn.textContent = '查看'; viewBtn.dataset.shown = '0'; }
+  }
+
+  async function copyText(text, boxEl) {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      if (boxEl) {
+        boxEl.classList.add('copied');
+        setTimeout(() => boxEl.classList.remove('copied'), 1200);
+      }
+    } catch(e) {
+      alert('复制失败，请手动选择复制');
+    }
+  }
+
+  // 事件委托：购买 / 查看 / 复制
+  document.addEventListener('click', async (e) => {
+    // 购买按钮
+    const buyBtn = e.target.closest('.code-buy-btn');
+    if (buyBtn) {
+      const card = buyBtn.closest('.code-card');
+      const productType = card.dataset.codeProduct;
+      const u = getLocalUser();
+      if (!u) return alert('请先登录！');
+      const price = CODE_PRICES[productType] || 0;
+      if (!confirm(`确定花费 ${price} 经验购买"${CODE_NAMES[productType] || '激活码'}"吗？`)) return;
+
+      buyBtn.disabled = true;
+      buyBtn.textContent = '处理中...';
+      try {
+        const res = await fetch('/api/shop/buy-activation-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: u.email, productType })
+        });
+        const data = await res.json();
+        if (data.success) {
+          buyBtn.textContent = '已购买';
+          buyBtn.classList.add('btn-owned');
+          const viewBtn = card.querySelector('.code-view-btn');
+          if (viewBtn) viewBtn.style.display = 'block';
+          showCodeBox(card, data.code);
+          // 更新本地经验并刷新其他按钮
+          u.exp = data.exp;
+          localStorage.setItem('user', JSON.stringify(u));
+          updateNavExp(u);
+          await refresh();
+          // refresh 可能复位状态，重新标记
+          await checkOwnedCodes(u);
+          showCodeBox(card, data.code);
+        } else {
+          alert(data.error || '购买失败');
+          await refresh();
+        }
+      } catch(err) {
+        alert('网络错误');
+        await refresh();
+      }
+      return;
+    }
+
+    // 查看/隐藏 按钮
+    const viewBtn = e.target.closest('.code-view-btn');
+    if (viewBtn) {
+      const card = viewBtn.closest('.code-card');
+      const productType = card.dataset.codeProduct;
+      const box = card.querySelector('.code-box');
+      const isShown = viewBtn.dataset.shown === '1' || (box && box.style.display !== 'none');
+      if (isShown) {
+        hideCodeBox(card);
+        return;
+      }
+      // 从服务器获取激活码
+      const u = getLocalUser();
+      if (!u) return;
+      viewBtn.disabled = true;
+      viewBtn.textContent = '加载中...';
+      try {
+        const res = await fetch('/api/shop/get-my-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: u.email, productType })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showCodeBox(card, data.code);
+        } else {
+          alert(data.error || '获取失败');
+          viewBtn.textContent = '查看';
+        }
+      } catch(err) {
+        alert('网络错误');
+        viewBtn.textContent = '查看';
+      } finally {
+        viewBtn.disabled = false;
+      }
+      return;
+    }
+
+    // 复制框点击
+    const copyBox = e.target.closest('.code-copy-box');
+    if (copyBox) {
+      const textEl = copyBox.querySelector('.code-text');
+      if (textEl && textEl.textContent) {
+        copyText(textEl.textContent, copyBox);
+      }
+    }
+  });
+
 
   refresh();
 
