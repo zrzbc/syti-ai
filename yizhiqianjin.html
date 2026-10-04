@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>一掷千金 · 宝箱交易商</title>
+    <title>一掷千金</title>
     <style>
         * {
             box-sizing: border-box;
@@ -513,6 +513,150 @@
             .chest::before { font-size: 1.8rem; }
             .money-item { font-size: 0.95rem; padding: 6px; }
             .buyer-section { padding: 12px; }
+        }
+
+        /* ===== 手机适配 ===== */
+        @media (max-width: 768px) {
+            body { padding: 8px; }
+
+            .game-container {
+                padding: 12px 14px;
+                border-radius: 28px;
+            }
+
+            .game-layout {
+                flex-direction: column;
+                gap: 14px;
+            }
+
+            .left-area, .right-area {
+                min-width: 0;
+                width: 100%;
+                flex: none;
+            }
+
+            /* ---- 宝箱区 ---- */
+            .chests-section {
+                padding: 10px 10px 14px;
+                border-radius: 28px;
+            }
+            .info-header {
+                padding: 8px 14px;
+                margin-bottom: 12px;
+                border-radius: 24px;
+            }
+            .round-stats { font-size: 0.95rem; }
+            .need-open-info { font-size: 0.8rem; margin-top: 3px; }
+
+            .chest-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 8px 6px;
+            }
+            .chest {
+                width: 100%;
+                height: 78px;
+                border-radius: 16px;
+                touch-action: manipulation;
+            }
+            .chest::before { font-size: 1.35rem; }
+            .chest-number {
+                font-size: 0.68rem;
+                padding: 1px 6px;
+                margin-bottom: 2px;
+            }
+            .chest .chest-label {
+                font-size: 0.58rem;
+                padding: 1px 5px;
+                margin-top: 2px;
+            }
+
+            /* ---- 商人报价区 ---- */
+            .buyer-section {
+                padding: 12px 14px;
+                border-radius: 24px;
+            }
+            .buyer-section.focused {
+                transform: none;              /* 手机上不做放大，避免溢出 */
+                box-shadow: 0 0 20px rgba(255,200,100,0.5);
+            }
+            .offer-price { font-size: 1.5rem; }
+            .btn-group {
+                gap: 10px;
+                margin-top: 10px;
+            }
+            .btn-group button {
+                padding: 9px 16px;
+                font-size: 0.9rem;
+            }
+
+            /* ---- 奖金池 ---- */
+            .money-board {
+                padding: 10px;
+                border-radius: 22px;
+                margin-top: 6px;
+            }
+            .money-title {
+                font-size: 1rem;
+                margin-bottom: 10px;
+            }
+            .money-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 6px 8px;
+            }
+            .money-item {
+                font-size: 0.72rem;
+                padding: 5px 2px;
+                border-left-width: 3px;
+                border-radius: 20px;
+            }
+
+            /* ---- 右上角图标 ---- */
+            .icon-group {
+                top: 12px;
+                right: 12px;
+                gap: 8px;
+            }
+            .icon-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 1rem;
+            }
+
+            /* ---- 按钮 / 页脚 ---- */
+            .reset-btn {
+                padding: 8px 16px;
+                font-size: 0.85rem;
+                margin-top: 10px;
+                touch-action: manipulation;
+            }
+            footer {
+                font-size: 0.65rem;
+                margin-top: 10px;
+            }
+
+            /* ---- 弹窗 ---- */
+            .modal-container {
+                border-radius: 28px;
+                max-height: 88vh;
+            }
+            .modal-header {
+                padding: 14px 18px;
+                font-size: 1.1rem;
+            }
+            .modal-body {
+                padding: 14px 18px;
+            }
+            .faq-question { font-size: 0.95rem; }
+            .faq-answer   { font-size: 0.85rem; }
+            .setting-row  { font-size: 0.95rem; margin-bottom: 18px; }
+        }
+
+        /* 超小屏（<380px）：宝箱每行 4 个，奖金池每行 3 个 */
+        @media (max-width: 380px) {
+            .chest-grid { grid-template-columns: repeat(4, 1fr); }
+            .money-grid { grid-template-columns: repeat(3, 1fr); }
+            .offer-price { font-size: 1.3rem; }
+            .btn-group button { padding: 8px 12px; font-size: 0.85rem; }
         }
     </style>
 </head>
