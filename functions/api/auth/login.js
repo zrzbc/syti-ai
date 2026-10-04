@@ -37,6 +37,7 @@ export async function onRequestPost(context) {
       continuous_days: user.continuous_days || 0,
       last_signin_date: user.last_signin_date || null,
       has_badge: (user.badge_type && user.badge_expire_at && user.badge_expire_at > Date.now()) ? 1 : 0,
+      badge_equipped: user.badge_equipped !== 0 ? 1 : 0,
       badge_type: (user.badge_expire_at && user.badge_expire_at > Date.now()) ? user.badge_type : null,
       badge_name: (user.badge_expire_at && user.badge_expire_at > Date.now()) ? user.badge_name : null,
       badge_expire_at: (user.badge_expire_at && user.badge_expire_at > Date.now()) ? user.badge_expire_at : null,
