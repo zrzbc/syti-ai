@@ -23,9 +23,10 @@ export async function onRequestPost(context) {
   let count = user.badge_update_count || 0;
   if (user.badge_update_month !== currentMonth) count = 0;
 
+  const maxTimes = user.badge_type === 'ultimate' ? 5 : 3;
   const isFirstTime = !user.badge_name;
-  if (!isFirstTime && count >= 3) {
-    return Response.json({ error: '本月修改次数已用完（每月3次）' }, { status: 400 });
+  if (!isFirstTime && count >= maxTimes) {
+    return Response.json({ error: `本月修改次数已用完（每月${maxTimes}次）` }, { status: 400 });
   }
 
   const newCount = isFirstTime ? 0 : count + 1;
