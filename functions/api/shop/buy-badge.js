@@ -17,7 +17,7 @@ export async function onRequestPost(context) {
   const expireAt = Date.now() + DURATIONS[type] * 24 * 60 * 60 * 1000;
 
   await env.DB.prepare(
-    'UPDATE users SET exp = ?, badge_type = ?, badge_name = ?, badge_expire_at = ?, badge_update_count = 0, badge_update_month = ? WHERE email = ?'
+    'UPDATE users SET exp = ?, badge_type = ?, badge_name = ?, badge_expire_at = ?, badge_update_count = 0, badge_update_month = ?, badge_equipped = 1 WHERE email = ?'
   ).bind(newExp, type, '', expireAt, new Date().toISOString().slice(0, 7), email).run();
 
   return Response.json({ success: true, exp: newExp, badge_type: type, badge_expire_at: expireAt });
