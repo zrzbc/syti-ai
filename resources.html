@@ -273,6 +273,13 @@ body.page-leaving{opacity:0}
 }
 .level-tooltip .lv-exp { color: #172033; margin-left: auto; text-align: right; }
 .popover-level-wrap:hover .level-tooltip { opacity: 1; transform: translateY(-50%) translateX(12px); }
+
+.nick-colored{-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;display:inline-block}
+.nick-colored.nick-yellow{background-image:linear-gradient(135deg,#f5c518,#f0a500)}
+.nick-colored.nick-blue{background-image:linear-gradient(135deg,#4facfe,#00f2fe)}
+.nick-colored.nick-pink{background-image:linear-gradient(135deg,#ff6a88,#ff99ac)}
+.nick-colored.nick-purple{background-image:linear-gradient(135deg,#a855f7,#7e22ce)}
+
 </style>
 </head>
 <body>
@@ -783,7 +790,16 @@ document.addEventListener('DOMContentLoaded', function () {
           document.getElementById('popoverAvatarLetter').style.color = '#fff';
           document.getElementById('popoverAvatarLetter').textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
         }
-        document.getElementById('popoverNickname').textContent = userData.nickname || '用户';
+const popoverNickEl = document.getElementById('popoverNickname');
+const nickText = userData.nickname || '用户';
+const hasNickColor = userData.nickname_color && userData.nickname_color_expire_at &&
+                     userData.nickname_color_expire_at > Date.now() &&
+                     userData.nickname_color_equipped !== 0;
+if (hasNickColor) {
+  popoverNickEl.innerHTML = `<span class="nick-colored nick-${userData.nickname_color}">${nickText}</span>`;
+} else {
+  popoverNickEl.textContent = nickText;
+}
         // 显示名牌（可点击修改）
         const badgeEl = document.getElementById('popoverUserBadge');
         if (badgeEl) {
