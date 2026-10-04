@@ -33,20 +33,14 @@ button{font:inherit}
 }
 .logo{font-weight:800;letter-spacing:-.5px}
 .logo span{background:linear-gradient(90deg,var(--blue),var(--purple));-webkit-background-clip:text;color:transparent}
-
 .nav-exp-badge{
   margin-left:10px;
   background:linear-gradient(110deg,#7c3aed 0%,#a855f7 100%);
   color:#ffffff;
-  font-size:12px;
-  font-weight:700;
-  padding:4px 10px;
-  border-radius:8px;
-  white-space:nowrap;
-  box-shadow:0 4px 14px rgba(138,92,246,.35);
+  font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;
+  white-space:nowrap;box-shadow:0 4px 14px rgba(138,92,246,.35);
   text-shadow:0 1px 2px rgba(0,0,0,.15);
 }
-
 .navlinks{display:flex;gap:4px;align-items:center}
 .navlinks a{font-size:14px;color:#59627a;padding:8px 12px;border-radius:10px}
 .navlinks a:hover{background:#f0f3ff;color:#3f63d9}
@@ -74,138 +68,64 @@ h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
 .search-box input{width:260px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;font-size:14px;background:#fff;outline:none;transition:border-color .2s}
 .search-box input:focus{border-color:#4f7cff;box-shadow:0 0 0 3px rgba(79,124,255,.12)}
 
-.shop-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.shop-category{margin-bottom:32px}
+/* 右侧圆圈导航 */
+.type-nav{position:fixed;right:24px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:16px;z-index:100}
+.type-dot{display:block;width:14px;height:14px;border-radius:50%;background:#c9d1e4;cursor:pointer;position:relative;transition:all .25s ease;text-decoration:none}
+.type-dot:hover{background:linear-gradient(135deg,#4f7cff,#8a5cf6);transform:scale(1.3)}
+.type-dot::after{content:attr(data-name);position:absolute;right:24px;top:50%;transform:translateY(-50%);background:rgba(23,32,51,.85);color:#fff;font-size:12px;padding:4px 10px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s ease}
+.type-dot:hover::after{opacity:1}
+.type-section{margin-top:50px;scroll-margin-top:120px}
+.type-section:first-of-type{margin-top:0}
+.type-title{font-size:22px;font-weight:700;margin-bottom:20px;padding-left:12px;border-left:4px solid #4f7cff;color:var(--ink)}
 .category-title{font-size:22px;font-weight:700;margin-bottom:20px;padding-left:12px;border-left:4px solid #4f7cff;color:var(--ink)}
+
+/* 名牌/续期 两列布局 */
+.shop-layout{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 .shop-items{display:flex;flex-direction:column;gap:14px}
-.shop-item{
-  display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;
-  background:#fff;border:1px solid #e8ebf5;border-radius:16px;
-  padding:18px 20px;transition:transform .2s,box-shadow .2s;
-}
+.shop-item{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;background:#fff;border:1px solid #e8ebf5;border-radius:16px;padding:18px 20px;transition:transform .2s,box-shadow .2s}
 .shop-item:hover{transform:translateY(-2px);box-shadow:0 12px 30px rgba(60,70,120,.1)}
 .badge-preview{display:inline-block;padding:4px 12px;border-radius:8px;font-size:14px;font-weight:700;margin-bottom:8px}
 .badge-preview.normal{background:#b8e9b8;color:#000}
 .badge-preview.premium{background:#ffd700;color:#000}
 .badge-preview.ultimate{background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff}
-/* ★ 续期卡标签：浅蓝底黑字 */
 .badge-preview.extend{background:#bfe4ff;color:#000}
-
 .shop-info h3{font-size:17px;margin-bottom:6px}
 .shop-info p{font-size:13px;color:var(--muted);margin-bottom:6px}
 .shop-price{font-size:13px;color:#f59e0b;font-weight:700}
 .shop-price span{font-size:16px}
 
-/* ★ 按钮列：可竖排多个按钮 */
-.shop-item .btn-stack{
-  display:flex;flex-direction:column;gap:8px;
-  min-width:110px;align-items:stretch;
-}
+.shop-item .btn-stack{display:flex;flex-direction:column;gap:8px;min-width:110px;align-items:stretch}
 
-.shop-buy-btn{
-  padding:10px 22px;border:none;border-radius:12px;
-  background:linear-gradient(110deg,#4f7cff,#8a5cf6);
-  color:#fff;font-size:14px;font-weight:700;cursor:pointer;
-  transition:transform .2s,box-shadow .2s;white-space:nowrap;
-  min-width: 100px;
-}
+.shop-buy-btn{padding:10px 22px;border:none;border-radius:12px;background:linear-gradient(110deg,#4f7cff,#8a5cf6);color:#fff;font-size:14px;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s;white-space:nowrap;min-width:100px}
 .shop-buy-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(91,100,230,.35)}
 .shop-buy-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;background:#e8ebf5;color:#6f7890}
+.shop-buy-btn.btn-owned,.shop-buy-btn.btn-owned:disabled{background:#d1d5db;color:#4b5563;opacity:1;cursor:not-allowed;transform:none;box-shadow:none;font-weight:700}
+.shop-buy-btn.btn-owned:hover{transform:none;box-shadow:none}
 
-.shop-buy-btn.btn-owned,
-.shop-buy-btn.btn-owned:disabled{
-  background:#d1d5db;
-  color:#4b5563;
-  opacity:1;
-  cursor:not-allowed;
-  transform:none;
-  box-shadow:none;
-  font-weight:700;
-}
-.shop-buy-btn.btn-owned:hover{transform:none;box-shadow:none;}
+.badge-sub-btn{padding:8px 14px;font-size:13px;font-weight:700;border-radius:10px;border:1px solid #ff7a8a;background:#fff;color:#ff2442;cursor:pointer;transition:transform .15s,background .15s;white-space:nowrap}
+.badge-sub-btn:hover{background:#fff0f3;transform:translateY(-1px)}
+.badge-sub-btn.sub-load{border-color:#4f7cff;color:#4f7cff}
+.badge-sub-btn.sub-load:hover{background:#f0f3ff}
+.badge-sub-btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
 
-/* ===== 右侧圆圈导航 ===== */
-.type-nav {
-  position: fixed;
-  right: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  z-index: 100;
-}
-.type-dot {
-  display: block;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #c9d1e4;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.25s ease;
-  text-decoration: none;
-}
-.type-dot:hover {
-  background: linear-gradient(135deg, #4f7cff, #8a5cf6);
-  transform: scale(1.3);
-}
-.type-dot::after {
-  content: attr(data-name);
-  position: absolute;
-  right: 24px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(23, 32, 51, 0.85);
-  color: #fff;
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-}
-.type-dot:hover::after {
-  opacity: 1;
-}
+/* 昵称颜色 2x2 */
+.color-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 
-/* 锚点滚动留出顶部空间 */
-.type-section {
-  scroll-margin-top: 120px;
-}
+/* 颜色预览 */
+.color-preview{display:inline-block;padding:8px 20px;border-radius:10px;font-size:24px;font-weight:800;margin-bottom:10px;background:#f7f9ff;border:1px dashed #d5dbea;line-height:1.3}
+.color-preview.nick-yellow{background:linear-gradient(90deg,#ff6a00 0%,#ffb800 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-color:#fff;border:none}
+.color-preview.nick-blue{background:linear-gradient(90deg,#0044cc 0%,#00b4ff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-color:#fff;border:none}
+.color-preview.nick-pink{background:linear-gradient(90deg,#d91e63 0%,#ff8fab 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-color:#fff;border:none}
+.color-preview.nick-purple{background:linear-gradient(90deg,#6a0dad 0%,#c77dff 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;background-color:#fff;border:none}
 
-/* 占位块 */
-.placeholder-block {
-  background: #fff;
-  border: 1px solid #e8ebf5;
-  border-radius: 16px;
-  padding: 40px 20px;
-  text-align: center;
-  color: #6f7890;
-  font-size: 14px;
-}
 
-/* ★ 卸下 / 装载 子按钮 */
-.badge-sub-btn{
-  padding:8px 14px;
-  font-size:13px;
-  font-weight:700;
-  border-radius:10px;
-  border:1px solid #ff7a8a;
-  background:#fff;
-  color:#ff2442;
-  cursor:pointer;
-  transition:transform .15s, background .15s;
-  white-space:nowrap;
-}
-.badge-sub-btn:hover{background:#fff0f3;transform:translateY(-1px);}
-.badge-sub-btn.sub-load{
-  border-color:#4f7cff;
-  color:#4f7cff;
-}
-.badge-sub-btn.sub-load:hover{background:#f0f3ff;}
-.badge-sub-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+/* 昵称渐变文字通用 */
+.nick-colored{-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;display:inline-block}
+.nick-colored.nick-yellow{background-image:linear-gradient(90deg,#ff6a00 0%,#ffb800 100%)}
+.nick-colored.nick-blue{background-image:linear-gradient(90deg,#0044cc 0%,#00b4ff 100%)}
+.nick-colored.nick-pink{background-image:linear-gradient(90deg,#d91e63 0%,#ff8fab 100%)}
+.nick-colored.nick-purple{background-image:linear-gradient(90deg,#6a0dad 0%,#c77dff 100%)}
+.placeholder-block{background:#fff;border:1px solid #e8ebf5;border-radius:16px;padding:40px 20px;text-align:center;color:#6f7890;font-size:14px}
 
 footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
 body{opacity:1;transition:opacity .2s ease}
@@ -214,37 +134,25 @@ body.page-leaving{opacity:0}
 @media(max-width:850px){
   .navlinks{display:none}
   .shop-layout{grid-template-columns:1fr}
+  .color-grid{grid-template-columns:1fr}
   section{padding:120px 0 70px}
   h2{font-size:31px}
 }
 
-/* ===== 头像按钮 & 悬停卡片 ===== */
+/* 头像 & 浮窗 */
 .user-center{position:relative;display:flex;align-items:center;margin-left:4px;padding-bottom:10px}
 .avatar-btn{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#8a5cf6);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;transition:transform .2s ease,box-shadow .2s ease;border:2px solid rgba(255,255,255,.8);overflow:hidden}
 .avatar-btn:hover{transform:scale(1.08);box-shadow:0 6px 16px rgba(79,124,255,.35)}
 .avatar-btn img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
-
-.user-popover{
-  position:absolute;top:100%;right:0;width:220px;
-  background:#fff;border:1px solid #e8ebf5;border-radius:16px;
-  box-shadow:0 10px 30px rgba(55,65,110,.15);
-  display:none;z-index:50;
-}
-.user-popover::before{
-  content:"";position:absolute;top:-6px;right:18px;
-  width:12px;height:12px;background:#fff;
-  border-top:1px solid #e8ebf5;border-left:1px solid #e8ebf5;
-  transform:rotate(45deg);
-}
+.user-popover{position:absolute;top:100%;right:0;width:220px;background:#fff;border:1px solid #e8ebf5;border-radius:16px;box-shadow:0 10px 30px rgba(55,65,110,.15);display:none;z-index:50}
+.user-popover::before{content:"";position:absolute;top:-6px;right:18px;width:12px;height:12px;background:#fff;border-top:1px solid #e8ebf5;border-left:1px solid #e8ebf5;transform:rotate(45deg)}
 .user-center:hover .user-popover{display:block}
-
 .user-badge{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;font-weight:700;margin-left:6px;vertical-align:middle}
 .user-badge.normal{background:#b8e9b8;color:#000}
 .user-badge.premium{background:#ffd700;color:#000}
 .user-badge.ultimate{background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff}
-
-.user-badge.editable-badge{cursor:pointer;transition:filter .15s ease, transform .15s ease;}
-.user-badge.editable-badge:hover{filter:brightness(1.08);transform:scale(1.05);}
+.user-badge.editable-badge{cursor:pointer;transition:filter .15s ease, transform .15s ease}
+.user-badge.editable-badge:hover{filter:brightness(1.08);transform:scale(1.05)}
 
 .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(23,32,51,.55);backdrop-filter:blur(6px);z-index:999;justify-content:center;align-items:center}
 .modal-overlay.show{display:flex}
@@ -309,9 +217,7 @@ body.page-leaving{opacity:0}
         </svg>
       </div>
       <div class="user-popover" id="userPopover">
-        <div id="popoverNotLoggedIn" style="display:none;padding:20px;text-align:center;color:#6f7890;font-size:14px;cursor:pointer;">
-          请先点击头像登录或注册
-        </div>
+        <div id="popoverNotLoggedIn" style="display:none;padding:20px;text-align:center;color:#6f7890;font-size:14px;cursor:pointer;">请先点击头像登录或注册</div>
         <div id="popoverLoggedIn" style="display:none;padding:16px;">
           <div style="text-align:center;margin-bottom:12px;">
             <div id="popoverAvatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#8a5cf6);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.1);background-size:cover;background-position:center;">
@@ -349,122 +255,139 @@ body.page-leaving{opacity:0}
     </div>
   </div>
 
-  <!-- ★ 右侧圆圈导航 -->
+  <!-- 右侧圆圈导航 -->
   <div class="type-nav">
     <a class="type-dot" href="#category-badge" data-name="名牌"></a>
     <a class="type-dot" href="#category-nickname-color" data-name="昵称颜色"></a>
     <a class="type-dot" href="#category-xxx" data-name="敬请期待"></a>
   </div>
 
-  <!-- ★ 区域一：名牌（把原来的 shop-layout 包起来） -->
+  <!-- 区域一：名牌 + 续期 -->
   <div id="category-badge" class="type-section">
     <div class="shop-layout">
-
-    <!-- 左列：名牌 -->
-    <div>
-      <div class="shop-category" id="category-badge">
-        <h3 class="category-title">名牌</h3>
-        <div class="shop-items" id="badgeItems">
-          <div class="shop-item" data-title="普通名牌 浅绿色 4字 60天" data-desc="普通名牌 浅绿色背景 有效期60天 字数4字以内">
-            <div class="shop-info">
-              <div class="badge-preview normal">这是一个可修改的普通名牌......</div>
-              <h3>普通名牌</h3>
-              <p>可输入最多4字 | 有效期60天</p>
-              <div class="shop-price">售价：<span>800</span> 经验</div>
+      <div>
+        <div>
+          <h3 class="category-title">名牌</h3>
+          <div class="shop-items" id="badgeItems">
+            <div class="shop-item" data-title="普通名牌" data-desc="普通名牌 浅绿色背景 有效期60天 4字以内">
+              <div class="shop-info">
+                <div class="badge-preview normal">这是一个可修改的普通名牌......</div>
+                <h3>普通名牌</h3>
+                <p>可输入最多4字 | 有效期60天</p>
+                <div class="shop-price">售价：<span>800</span> 经验</div>
+              </div>
+              <div class="btn-stack"><button class="shop-buy-btn" data-type="normal">购买</button></div>
             </div>
-            <div class="btn-stack">
-              <button class="shop-buy-btn" data-type="normal">购买</button>
+            <div class="shop-item" data-title="高级名牌" data-desc="高级名牌 黄色背景 有效期90天 6字以内">
+              <div class="shop-info">
+                <div class="badge-preview premium">这是一个可修改的高级名牌......</div>
+                <h3>高级名牌</h3>
+                <p>可输入最多6字 | 有效期90天</p>
+                <div class="shop-price">售价：<span>1200</span> 经验</div>
+              </div>
+              <div class="btn-stack"><button class="shop-buy-btn" data-type="premium">购买</button></div>
             </div>
-          </div>
-          <div class="shop-item" data-title="高级名牌 黄色 6字 90天" data-desc="高级名牌 黄色背景 有效期90天 字数6字以内">
-            <div class="shop-info">
-              <div class="badge-preview premium">这是一个可修改的高级名牌......</div>
-              <h3>高级名牌</h3>
-              <p>可输入最多6字 | 有效期90天</p>
-              <div class="shop-price">售价：<span>1200</span> 经验</div>
-            </div>
-            <div class="btn-stack">
-              <button class="shop-buy-btn" data-type="premium">购买</button>
-            </div>
-          </div>
-          <div class="shop-item" data-title="至尊名牌 紫色渐变 6字 120天" data-desc="至尊名牌 紫色渐变背景 有效期120天 字数6字以内">
-            <div class="shop-info">
-              <div class="badge-preview ultimate">这是一个可修改的高级名牌......</div>
-              <h3>至尊名牌</h3>
-              <p>可输入最多6字 | 有效期120天</p>
-              <div class="shop-price">售价：<span>1550</span> 经验</div>
-            </div>
-            <div class="btn-stack">
-              <button class="shop-buy-btn" data-type="ultimate">购买</button>
+            <div class="shop-item" data-title="至尊名牌" data-desc="至尊名牌 紫色渐变 有效期120天 6字以内">
+              <div class="shop-info">
+                <div class="badge-preview ultimate">这是一个可修改的至尊名牌......</div>
+                <h3>至尊名牌</h3>
+                <p>可输入最多6字 | 有效期120天</p>
+                <div class="shop-price">售价：<span>1550</span> 经验</div>
+              </div>
+              <div class="btn-stack"><button class="shop-buy-btn" data-type="ultimate">购买</button></div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <!-- 右列：续期 -->
-    <div>
-      <div class="shop-category" id="category-extra">
-        <h3 class="category-title">名牌续期</h3>
-        <div class="shop-items" id="extraItems">
-          <div class="shop-item" data-title="名牌续期 30天 650经验" data-desc="为当前名牌延长30天有效期">
-            <div class="shop-info">
-              <div class="badge-preview extend">短暂续期</div>
-              <h3>30 天</h3>
-              <p>为当前名牌延长 30 天有效期。</p>
-              <div class="shop-price">售价：<span>650</span> 经验</div>
+      <div>
+        <div>
+          <h3 class="category-title">名牌续期</h3>
+          <div class="shop-items" id="extraItems">
+            <div class="shop-item" data-title="名牌续期 30天" data-desc="为当前名牌延长30天有效期">
+              <div class="shop-info">
+                <div class="badge-preview extend">短暂续期</div>
+                <h3>名牌续期 · 30 天</h3>
+                <p>为当前名牌延长 30 天有效期。</p>
+                <div class="shop-price">售价：<span>650</span> 经验</div>
+              </div>
+              <div class="btn-stack"><button class="shop-buy-btn" data-item="extend30">购买</button></div>
             </div>
-            <div class="btn-stack">
-              <button class="shop-buy-btn" data-item="extend30">购买</button>
+            <div class="shop-item" data-title="名牌续期 90天" data-desc="为当前名牌延长90天有效期">
+              <div class="shop-info">
+                <div class="badge-preview extend">长久续期</div>
+                <h3>名牌续期 · 90 天</h3>
+                <p>为当前名牌延长 90 天有效期。</p>
+                <div class="shop-price">售价：<span>1100</span> 经验</div>
+              </div>
+              <div class="btn-stack"><button class="shop-buy-btn" data-item="extend90">购买</button></div>
             </div>
-          </div>
-          <div class="shop-item" data-title="名牌续期 90天 1100经验" data-desc="为当前名牌延长90天有效期">
-            <div class="shop-info">
-              <div class="badge-preview extend">长久续期</div>
-              <h3>90 天</h3>
-              <p>为当前名牌延长 90 天有效期。</p>
-              <div class="shop-price">售价：<span>1100</span> 经验</div>
-            </div>
-            <div class="btn-stack">
-              <button class="shop-buy-btn" data-item="extend90">购买</button>
-            </div>
-          </div>
-          <div class="shop-item" data-title="名牌续期 永久 3500经验" data-desc="将当前名牌永久续期，解锁全部样式，可免费更换">
-            <div class="shop-info">
-              <div class="badge-preview extend">长长久久续期</div>
-              <h3>永久</h3>
-              <p>名牌永久有效，同时解锁所有名牌样式，每月3次自由切换。</p>
-              <div class="shop-price">售价：<span>3500</span> 经验</div>
-            </div>
-            <div class="btn-stack">
-              <button class="shop-buy-btn" data-item="extendforever">购买</button>
+            <div class="shop-item" data-title="名牌续期 永久" data-desc="名牌永久有效，同时解锁所有样式">
+              <div class="shop-info">
+                <div class="badge-preview extend">长长久久续期</div>
+                <h3>名牌续期 · 永久</h3>
+                <p>名牌永久有效，同时解锁所有名牌样式，每月3次自由切换。</p>
+                <div class="shop-price">售价：<span>3500</span> 经验</div>
+              </div>
+              <div class="btn-stack"><button class="shop-buy-btn" data-item="extendforever">购买</button></div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  </div><!-- 关闭 #category-badge -->
 
-  <!-- ★ 区域二：昵称颜色 -->
+  <!-- 区域二：昵称颜色 -->
   <div id="category-nickname-color" class="type-section">
     <h3 class="category-title">昵称颜色</h3>
-    <div class="placeholder-block">
-      昵称颜色功能正在开发中，敬请期待~
+    <div class="color-grid">
+      <div class="shop-item" data-title="橙色渐变昵称" data-desc="昵称颜色 橙色渐变 有效期30天">
+        <div class="shop-info">
+          <div class="color-preview nick-yellow">这是一条示例昵称</div>
+          <h3>橙色主题</h3>
+          <p>有效期 30 天</p>
+          <div class="shop-price">售价：<span>450</span> 经验</div>
+        </div>
+        <div class="btn-stack"><button class="shop-buy-btn" data-color="yellow">购买</button></div>
+      </div>
+      <div class="shop-item" data-title="蓝色渐变昵称" data-desc="昵称颜色 蓝色渐变 有效期30天">
+        <div class="shop-info">
+          <div class="color-preview nick-blue">这是一条示例昵称</div>
+          <h3>蓝色主题</h3>
+          <p>有效期 30 天</p>
+          <div class="shop-price">售价：<span>450</span> 经验</div>
+        </div>
+        <div class="btn-stack"><button class="shop-buy-btn" data-color="blue">购买</button></div>
+      </div>
+      <div class="shop-item" data-title="粉色渐变昵称" data-desc="昵称颜色 粉色渐变 有效期30天">
+        <div class="shop-info">
+          <div class="color-preview nick-pink">这是一条示例昵称</div>
+          <h3>粉色主题</h3>
+          <p>有效期 30 天</p>
+          <div class="shop-price">售价：<span>600</span> 经验</div>
+        </div>
+        <div class="btn-stack"><button class="shop-buy-btn" data-color="pink">购买</button></div>
+      </div>
+      <div class="shop-item" data-title="紫色渐变昵称" data-desc="昵称颜色 紫色渐变 有效期30天">
+        <div class="shop-info">
+          <div class="color-preview nick-purple">这是一条示例昵称</div>
+          <h3>紫色主题</h3>
+          <p>有效期 30 天</p>
+          <div class="shop-price">售价：<span>600</span> 经验</div>
+        </div>
+        <div class="btn-stack"><button class="shop-buy-btn" data-color="purple">购买</button></div>
+      </div>
     </div>
   </div>
 
-  <!-- ★ 区域三：敬请期待 -->
+  <!-- 区域三：敬请期待 -->
   <div id="category-xxx" class="type-section">
     <h3 class="category-title">敬请期待</h3>
-    <div class="placeholder-block">
-      更多商品正在开发中，敬请期待~
-    </div>
+    <div class="placeholder-block">更多商品正在开发中，敬请期待~</div>
   </div>
 
 </div>
 </section>
 </main>
-
 
 <!-- 输入名牌名称的弹窗 -->
 <div class="modal-overlay" id="badgeNameModal">
@@ -529,9 +452,6 @@ body.page-leaving{opacity:0}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-  /* ============================================================
-     通用工具
-     ============================================================ */
   function getLocalUser() {
     try {
       const raw = localStorage.getItem('user');
@@ -545,6 +465,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const BADGE_PRICES = { normal: 800, premium: 1200, ultimate: 1550 };
   const EXTRA_PRICES = { extend30: 650, extend90: 1100, extendforever: 3500 };
   const EXTRA_NAMES  = { extend30: '名牌续期 · 30天', extend90: '名牌续期 · 90天', extendforever: '名牌续期 · 永久' };
+  const COLOR_PRICES = { yellow: 450, blue: 450, pink: 600, purple: 600 };
+  const COLOR_NAMES  = { yellow: '黄色渐变', blue: '蓝色渐变', pink: '粉色渐变', purple: '紫色渐变' };
   const PERMANENT_THRESHOLD = 9999999999999;
   const FREE_SWITCH_LIMIT = 3;
 
@@ -555,9 +477,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return { normal: '普通名牌', premium: '高级名牌', ultimate: '至尊名牌' }[type] || '名牌';
   }
 
-  /* ============================================================
-     头像按钮
-     ============================================================ */
+  /* 头像按钮 */
   function updateAvatarButton(user) {
     const el = document.getElementById('avatarBtn');
     if (!el) return;
@@ -576,9 +496,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  /* ============================================================
-     悬停浮窗渲染
-     ============================================================ */
+  /* 悬停浮窗 */
   function renderPopover(user) {
     const popoverLoggedIn   = document.getElementById('popoverLoggedIn');
     const popoverNotLogged = document.getElementById('popoverNotLoggedIn');
@@ -605,9 +523,19 @@ document.addEventListener('DOMContentLoaded', function () {
       avatarLetter.textContent = (user.nickname || 'U').charAt(0).toUpperCase();
     }
 
-    document.getElementById('popoverNickname').textContent = user.nickname || '用户';
+    // 昵称（带颜色）
+    const nickEl = document.getElementById('popoverNickname');
+    const nickText = user.nickname || '用户';
+    const hasColor = user.nickname_color && user.nickname_color_expire_at &&
+                     user.nickname_color_expire_at > Date.now() &&
+                     user.nickname_color_equipped !== 0;
+    if (hasColor) {
+      nickEl.innerHTML = `<span class="nick-colored nick-${user.nickname_color}">${nickText}</span>`;
+    } else {
+      nickEl.textContent = nickText;
+    }
 
-    // 名牌显示：必须佩戴中（badge_equipped !== 0）
+    // 名牌
     const isEquipped = user.badge_equipped !== 0;
     const hasActiveBadge = user.badge_type && user.badge_name &&
                            user.badge_expire_at && user.badge_expire_at > Date.now() &&
@@ -630,29 +558,20 @@ document.addEventListener('DOMContentLoaded', function () {
     else if (expNum >= 1200) { level = 4; nextExp = 2800; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
     else if (expNum >= 500) { level = 3; nextExp = 1200; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
     else if (expNum >= 200) { level = 2; nextExp = 500; baseColor = '#22c55e'; darkColor = '#15803d'; }
-    if (nextExp === Infinity) {
-      popoverExpText.textContent = `${expNum}/∞`;
-      popoverExpBarFill.style.width = '100%';
-    } else {
-      popoverExpText.textContent = `${expNum}/${nextExp}`;
-      popoverExpBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%';
-    }
+    if (nextExp === Infinity) { popoverExpText.textContent = `${expNum}/∞`; popoverExpBarFill.style.width = '100%'; }
+    else { popoverExpText.textContent = `${expNum}/${nextExp}`; popoverExpBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
     popoverLevelText.textContent = `Lv${level}`;
     popoverLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
     popoverLevelText.style.color = textColor;
     popoverExpBarFill.style.background = baseColor;
   }
 
-  /* ============================================================
-     拉取服务器最新数据
-     ============================================================ */
   async function refreshRealUser() {
     const u = getLocalUser();
     if (!u) return null;
     try {
       const res = await fetch('/api/auth/me', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: u.email })
       });
       const data = await res.json();
@@ -687,11 +606,9 @@ document.addEventListener('DOMContentLoaded', function () {
     el.textContent = user ? '经验：' + (user.exp || 0).toLocaleString() : '经验：--';
   }
 
-  /* ============================================================
-     ★ 卸下 / 装载 按钮的辅助函数
-     ============================================================ */
+  /* 卸下/装载 按钮辅助 */
   function clearSubButtons() {
-    document.querySelectorAll('.badge-sub-btn').forEach(el => el.remove());
+    document.querySelectorAll('.badge-sub-btn, .color-sub-btn').forEach(el => el.remove());
   }
 
   function addToggleBtn(btn, type, isEquipped) {
@@ -716,11 +633,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!u) return alert('请先登录');
 
     btn.disabled = true;
+    const origText = btn.textContent;
     btn.textContent = '处理中...';
     try {
       const res = await fetch('/api/shop/toggle-badge', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: u.email, type, action })
       });
       const data = await res.json();
@@ -737,41 +654,114 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  /* ============================================================
-     更新购买按钮状态
-     ============================================================ */
+  /* 颜色恢复/使用 按钮辅助 */
+  function addColorToggleBtn(btn, isEquipped) {
+    const stack = btn.closest('.btn-stack');
+    if (!stack) return;
+    const sub = document.createElement('button');
+    sub.type = 'button';
+    sub.className = 'badge-sub-btn color-sub-btn' + (isEquipped ? '' : ' sub-load');
+    sub.dataset.colorAction = isEquipped ? 'reset' : 'use';
+    sub.textContent = isEquipped ? '恢复默认' : '使用颜色';
+    sub.addEventListener('click', onToggleColor);
+    stack.appendChild(sub);
+  }
+
+  async function onToggleColor(e) {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const action = btn.dataset.colorAction;
+    const u = getLocalUser();
+    if (!u) return alert('请先登录');
+
+    btn.disabled = true;
+    btn.textContent = '处理中...';
+    try {
+      const res = await fetch('/api/shop/toggle-nickname-color', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: u.email, action })
+      });
+      const data = await res.json();
+      if (data.success) {
+        await refresh();
+        alert(action === 'reset' ? '昵称颜色已恢复默认' : '昵称颜色已启用');
+      } else {
+        alert(data.error || '操作失败');
+        await refresh();
+      }
+    } catch(err) {
+      alert('网络错误');
+      await refresh();
+    }
+  }
+
+  /* 更新所有按钮状态 */
   function updateBuyButtons(user) {
     const now = Date.now();
-
-    // 先清掉所有旧的子按钮
     clearSubButtons();
 
     document.querySelectorAll('.shop-buy-btn').forEach(btn => {
       const type = btn.dataset.type;
       const item = btn.dataset.item;
-
-      let price = 0;
-      if (type) price = BADGE_PRICES[type] || 0;
-      else if (item) price = EXTRA_PRICES[item] || 0;
-      if (!price) return;
+      const color = btn.dataset.color;
 
       btn.classList.remove('btn-owned');
 
-      if (!user) {
-        btn.disabled = true;
-        btn.textContent = '请先登录';
+      // ===== 昵称颜色按钮 =====
+      if (color) {
+        const price = COLOR_PRICES[color];
+        if (!user) {
+          btn.disabled = true;
+          btn.textContent = '请先登录';
+          return;
+        }
+        const colorValid = user.nickname_color_expire_at && user.nickname_color_expire_at > now;
+        const hasThisColor = user.nickname_color === color && colorValid;
+
+        if (hasThisColor) {
+          // 主按钮显示剩余天数
+          btn.disabled = true;
+          const daysLeft = Math.ceil((user.nickname_color_expire_at - now) / (24*60*60*1000));
+          btn.textContent = `剩余 ${daysLeft} 天`;
+          btn.classList.add('btn-owned');
+          // 子按钮：恢复默认 / 使用颜色
+          addColorToggleBtn(btn, user.nickname_color_equipped !== 0);
+          return;
+        }
+
+        // 用户有其他颜色，购买会替换
+        if (colorValid && user.nickname_color && user.nickname_color !== color) {
+          if ((user.exp || 0) < price) {
+            btn.disabled = true;
+            btn.textContent = '经验不足';
+          } else {
+            btn.disabled = false;
+            btn.textContent = '购买';
+          }
+          return;
+        }
+
+        // 无颜色 / 已过期
+        if ((user.exp || 0) < price) {
+          btn.disabled = true;
+          btn.textContent = '经验不足';
+        } else {
+          btn.disabled = false;
+          btn.textContent = '购买';
+        }
         return;
       }
 
-      const isPermanent = user.badge_expire_at && user.badge_expire_at >= PERMANENT_THRESHOLD;
-      const hasActiveBadge = user.badge_type && user.badge_expire_at && user.badge_expire_at > now;
-      const isEquipped = user.badge_equipped !== 0;
-
       // ===== 名牌按钮 =====
       if (type) {
-        // 用户拥有这个名牌（未过期）
+        const price = BADGE_PRICES[type];
+        if (!user) { btn.disabled = true; btn.textContent = '请先登录'; return; }
+
+        const isPermanent = user.badge_expire_at && user.badge_expire_at >= PERMANENT_THRESHOLD;
+        const hasActiveBadge = user.badge_type && user.badge_expire_at && user.badge_expire_at > now;
+        const isEquipped = user.badge_equipped !== 0;
+
         if (user.badge_type === type && hasActiveBadge) {
-          // ★ 主按钮文字：只按"是否永久"决定，永远不因卸下/装载改变
           btn.disabled = true;
           if (isPermanent) {
             btn.textContent = '使用中';
@@ -780,20 +770,15 @@ document.addEventListener('DOMContentLoaded', function () {
             btn.textContent = `剩余 ${daysLeft} 天`;
           }
           btn.classList.add('btn-owned');
-
-          // ★ 额外加一个子按钮：佩戴中→"卸下"，已卸下→"装载"
           addToggleBtn(btn, type, isEquipped);
           return;
         }
 
-        // 用户有其他名牌
         if (hasActiveBadge && user.badge_type !== type) {
-          // ★ 永久名牌：不管有没有卸下，都显示"更换"
           if (isPermanent) {
             btn.disabled = false;
             btn.textContent = '更换';
           } else {
-            // 普通购买
             if ((user.exp || 0) < price) {
               btn.disabled = true;
               btn.textContent = '经验不足';
@@ -805,7 +790,6 @@ document.addEventListener('DOMContentLoaded', function () {
           return;
         }
 
-        // 没有名牌
         if ((user.exp || 0) < price) {
           btn.disabled = true;
           btn.textContent = '经验不足';
@@ -816,8 +800,14 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      // ===== 续期卡按钮 =====
+      // ===== 续期卡 =====
       if (item) {
+        const price = EXTRA_PRICES[item];
+        if (!user) { btn.disabled = true; btn.textContent = '请先登录'; return; }
+
+        const isPermanent = user.badge_expire_at && user.badge_expire_at >= PERMANENT_THRESHOLD;
+        const hasActiveBadge = user.badge_type && user.badge_expire_at && user.badge_expire_at > now;
+
         if (!hasActiveBadge) {
           btn.disabled = true;
           btn.textContent = '需先拥有名牌';
@@ -840,9 +830,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ============================================================
-     悬停浮窗
-     ============================================================ */
+  /* 悬停浮窗 */
   const userCenter = document.getElementById('userCenter');
   if (userCenter) {
     userCenter.addEventListener('mouseenter', async () => {
@@ -859,9 +847,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ============================================================
-     登录入口
-     ============================================================ */
+  /* 登录入口 */
   const authModal = document.getElementById('authModal');
   function openAuthModal() {
     const formWrap = document.getElementById('authFormContainer');
@@ -899,9 +885,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ============================================================
-     登录 / 注册 / 重置密码
-     ============================================================ */
+  /* 登录/注册/重置密码 */
   const tabLogin = document.getElementById('tabLogin');
   const tabRegister = document.getElementById('tabRegister');
   const authForm = document.getElementById('authForm');
@@ -964,8 +948,7 @@ document.addEventListener('DOMContentLoaded', function () {
     btn.disabled = true; btn.textContent = '发送中...';
     try {
       const res = await fetch('/api/auth/send-code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
       const data = await res.json();
@@ -992,8 +975,7 @@ document.addEventListener('DOMContentLoaded', function () {
       try {
         const payload = isRegister ? { email, code, password, nickname } : { email, password };
         const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
         const data = await res.json();
@@ -1020,8 +1002,7 @@ document.addEventListener('DOMContentLoaded', function () {
       resetSubmitBtn.disabled = true; resetSubmitBtn.textContent = '处理中...';
       try {
         const res = await fetch('/api/auth/reset-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, code, newPassword: password })
         });
         const data = await res.json();
@@ -1032,9 +1013,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ============================================================
-     购买流程
-     ============================================================ */
+  /* 购买流程 */
   const badgeNameModal = document.getElementById('badgeNameModal');
   const closeBadgeNameModal = document.getElementById('closeBadgeNameModal');
   const badgeNameForm = document.getElementById('badgeNameForm');
@@ -1049,15 +1028,52 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const type = btn.dataset.type;
       const item = btn.dataset.item;
+      const color = btn.dataset.color;
       const now = Date.now();
 
-      // ---------- 名牌按钮 ----------
+      // ===== 昵称颜色购买 =====
+      if (color) {
+        const price = COLOR_PRICES[color];
+        const colorValid = u.nickname_color_expire_at && u.nickname_color_expire_at > now;
+        const hasOtherColor = colorValid && u.nickname_color && u.nickname_color !== color;
+
+        if (hasOtherColor) {
+          const oldName = COLOR_NAMES[u.nickname_color] || '原颜色';
+          const newName = COLOR_NAMES[color];
+          const oldDays = Math.ceil((u.nickname_color_expire_at - now) / (24*60*60*1000));
+          const ok = confirm(
+            `你当前已拥有【${oldName}】（剩余 ${oldDays} 天）\n` +
+            `购买【${newName}】将替换并清除原有颜色，是否继续？\n` +
+            `（所需经验：${price}）`
+          );
+          if (!ok) return;
+        } else {
+          if (!confirm(`确定花费 ${price} 经验购买"${COLOR_NAMES[color]}"吗？`)) return;
+        }
+
+        btn.disabled = true; btn.textContent = '处理中...';
+        try {
+          const res = await fetch('/api/shop/buy-nickname-color', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: u.email, color })
+          });
+          const data = await res.json();
+          if (data.success) {
+            await refresh();
+            alert('购买成功！昵称颜色已启用。');
+          } else {
+            alert(data.error || '购买失败');
+            await refresh();
+          }
+        } catch(e) { alert('网络错误'); await refresh(); }
+        return;
+      }
+
+      // ===== 名牌 =====
       if (type) {
         const isPermanent = u.badge_expire_at && u.badge_expire_at >= PERMANENT_THRESHOLD;
         const hasActiveBadge = u.badge_type && u.badge_expire_at && u.badge_expire_at > now;
-        const isEquipped = u.badge_equipped !== 0;
 
-        // 永久名牌 → 免费更换样式
         if (isPermanent && hasActiveBadge && u.badge_type !== type) {
           const currentMonth = new Date().toISOString().slice(0, 7);
           let count = u.badge_update_count || 0;
@@ -1071,36 +1087,27 @@ document.addEventListener('DOMContentLoaded', function () {
           btn.disabled = true; btn.textContent = '处理中...';
           try {
             const res = await fetch('/api/shop/switch-badge', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ email: u.email, type })
             });
             const data = await res.json();
-            if (data.success) {
-              await refresh();
-              alert('样式更换成功！');
-            } else {
-              alert(data.error || '更换失败');
-              await refresh();
-            }
+            if (data.success) { await refresh(); alert('样式更换成功！'); }
+            else { alert(data.error || '更换失败'); await refresh(); }
           } catch(e) { alert('网络错误'); await refresh(); }
           return;
         }
 
-        // 普通购买
         const price = BADGE_PRICES[type];
 
         if (hasActiveBadge && u.badge_type !== type) {
           const oldName = badgeTextByType(u.badge_type);
           const newName = badgeTextByType(type);
           const oldDays = Math.ceil((u.badge_expire_at - now) / (24 * 60 * 60 * 1000));
-
           const ok = confirm(
             `你当前已拥有【${oldName}】（剩余 ${oldDays} 天）\n` +
             `购买【${newName}】将替换并清除原有名牌，是否继续？\n` +
             `（所需经验：${price}）`
           );
-
           if (!ok) return;
         } else {
           if (!confirm(`确定花费 ${price} 经验购买"${badgeTextByType(type)}"吗？`)) return;
@@ -1109,8 +1116,7 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.disabled = true; btn.textContent = '处理中...';
         try {
           const res = await fetch('/api/shop/buy-badge', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: u.email, type })
           });
           const data = await res.json();
@@ -1129,15 +1135,14 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      // ---------- 续期卡 ----------
+      // ===== 续期卡 =====
       if (item) {
         const price = EXTRA_PRICES[item];
         if (!confirm(`确定花费 ${price} 经验购买"${EXTRA_NAMES[item]}"吗？`)) return;
         btn.disabled = true; btn.textContent = '处理中...';
         try {
           const res = await fetch('/api/shop/buy-extend', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: u.email, type: item })
           });
           const data = await res.json();
@@ -1148,9 +1153,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  /* ============================================================
-     名牌命名弹窗提交
-     ============================================================ */
+  /* 名牌命名弹窗提交 */
   if (badgeNameForm) {
     badgeNameForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1162,8 +1165,7 @@ document.addEventListener('DOMContentLoaded', function () {
       btn.disabled = true; btn.textContent = '保存中...';
       try {
         const res = await fetch('/api/shop/update-badge-name', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: u.email, newName })
         });
         const data = await res.json();
@@ -1181,9 +1183,7 @@ document.addEventListener('DOMContentLoaded', function () {
     badgeNameModal.addEventListener('click', (e) => { if (e.target === badgeNameModal) badgeNameModal.classList.remove('show'); });
   }
 
-  /* ============================================================
-     修改名牌名称（点名牌）
-     ============================================================ */
+  /* 修改名牌名称 */
   function openRenameBadgeModal() {
     const u = getLocalUser();
     if (!u) return;
@@ -1201,9 +1201,7 @@ document.addEventListener('DOMContentLoaded', function () {
     badgeNameModal.classList.add('show');
   }
 
-  /* ============================================================
-     浮窗内：点击昵称 → 修改昵称
-     ============================================================ */
+  /* 浮窗点击昵称修改 */
   const popoverNicknameEl = document.getElementById('popoverNickname');
   if (popoverNicknameEl) {
     popoverNicknameEl.addEventListener('click', async (e) => {
@@ -1214,8 +1212,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!newNickname || newNickname.trim() === '' || newNickname === u.nickname) return;
       try {
         const res = await fetch('/api/auth/update-nickname', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: u.email, newNickname: newNickname.trim() })
         });
         const data = await res.json();
@@ -1233,9 +1230,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ============================================================
-     浮窗内：点击名牌 → 修改名牌名称
-     ============================================================ */
+  /* 浮窗点击名牌修改 */
   const popoverBadgeWrap = document.getElementById('popoverBadgeWrap');
   if (popoverBadgeWrap) {
     popoverBadgeWrap.addEventListener('click', (e) => {
@@ -1246,9 +1241,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ============================================================
-     签到 / 退出登录
-     ============================================================ */
+  /* 签到 / 退出 */
   const popoverSigninBtn = document.getElementById('popoverSigninBtn');
   if (popoverSigninBtn) {
     popoverSigninBtn.addEventListener('click', (e) => {
@@ -1267,9 +1260,19 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  /* ============================================================
-     右侧圆圈导航：点击滚动到对应区域
-     ============================================================ */
+  /* 商店搜索 */
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const keyword = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('.shop-item').forEach(item => {
+        const fullText = item.textContent.toLowerCase();
+        item.style.display = (!keyword || fullText.includes(keyword)) ? '' : 'none';
+      });
+    });
+  }
+
+  /* 右侧圆圈导航 */
   document.querySelectorAll('.type-dot').forEach(dot => {
     dot.addEventListener('click', (e) => {
       const href = dot.getAttribute('href');
@@ -1282,24 +1285,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-
-  /* ============================================================
-     商店搜索
-     ============================================================ */
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', () => {
-      const keyword = searchInput.value.trim().toLowerCase();
-      document.querySelectorAll('.shop-item').forEach(item => {
-        const fullText = item.textContent.toLowerCase();
-        item.style.display = (!keyword || fullText.includes(keyword)) ? '' : 'none';
-      });
-    });
-  }
-
-  /* ============================================================
-     页面切换淡入淡出
-     ============================================================ */
+  /* 页面切换淡入淡出 */
   document.addEventListener('click', function (e) {
     var link = e.target.closest('a');
     if (!link) return;
@@ -1311,9 +1297,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setTimeout(function () { window.location.href = href; }, 200);
   });
 
-  /* ============================================================
-     语言切换
-     ============================================================ */
+  /* 语言切换 */
   var langBtn = document.getElementById('langBtn');
   var langMenu = document.getElementById('langMenu');
   var langSwitch = document.querySelector('.lang-switch');
@@ -1350,9 +1334,6 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('click', function (e) { if (!langSwitch.contains(e.target)) langMenu.classList.remove('open'); });
   }
 
-  /* ============================================================
-     启动 & 定时刷新
-     ============================================================ */
   refresh();
 
   setInterval(() => {
