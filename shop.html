@@ -603,7 +603,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.badge-sub-btn').forEach(el => el.remove());
   }
 
-  function addUnloadBtn(btn, type, isEquipped) {
+  function addToggleBtn(btn, type, isEquipped) {
     const stack = btn.closest('.btn-stack');
     if (!stack) return;
     const sub = document.createElement('button');
@@ -678,26 +678,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // ===== 名牌按钮 =====
       if (type) {
-        // 当前用户拥有这个名牌
+        // 用户拥有这个名牌（未过期）
         if (user.badge_type === type && hasActiveBadge) {
-          if (isEquipped) {
-            // 佩戴中
-            btn.disabled = true;
-            if (isPermanent) {
-              btn.textContent = '使用中';
-            } else {
-              const daysLeft = Math.ceil((user.badge_expire_at - now) / (24*60*60*1000));
-              btn.textContent = `剩余 ${daysLeft} 天`;
-            }
-            btn.classList.add('btn-owned');
-            addUnloadBtn(btn, type, true);
+          // ★ 主按钮文字：只按"是否永久"决定，永远不因卸下/装载改变
+          btn.disabled = true;
+          if (isPermanent) {
+            btn.textContent = '使用中';
           } else {
-            // 已卸下
-            btn.disabled = false;
-            btn.textContent = '装载';
-            btn.classList.remove('btn-owned');
-            addUnloadBtn(btn, type, false);
+            const daysLeft = Math.ceil((user.badge_expire_at - now) / (24*60*60*1000));
+            btn.textContent = `剩余 ${daysLeft} 天`;
           }
+          btn.classList.add('btn-owned');
+
+          // ★ 额外加一个子按钮：佩戴中→"卸下"，已卸下→"装载"
+          addToggleBtn(btn, type, isEquipped);
           return;
         }
 
