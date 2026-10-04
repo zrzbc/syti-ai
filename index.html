@@ -1358,22 +1358,7 @@ if (u.badge_name && count >= maxTimes) return alert(`本月修改次数已用完
                      u.nickname_color_expire_at > Date.now() &&
                      u.nickname_color_equipped !== 0;
     if (!hasColor) return nickname;
-
-    const color = u.nickname_color;
-    const colorClass = `nick-${color}`;
-    let outline = null;
-    if (rank === 3) outline = 'white';
-    else if (rank === 1 && color === 'yellow') outline = 'black';
-    else if (rank === 2 && color === 'blue') outline = 'black';
-
-    if (!outline) {
-      return `<span class="nick-colored ${colorClass}">${nickname}</span>`;
-    }
-
-    return `<span class="lb-nick-wrap lb-outline-${outline}">
-      <span class="lb-nick-outline">${nickname}</span>
-      <span class="lb-nick-inner nick-colored ${colorClass}">${nickname}</span>
-    </span>`;
+    return `<span class="nick-colored nick-${u.nickname_color}">${nickname}</span>`;
   }
 
   async function loadLeaderboard() {
