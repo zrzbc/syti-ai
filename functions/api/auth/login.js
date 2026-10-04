@@ -42,7 +42,11 @@ export async function onRequestPost(context) {
       badge_name: (user.badge_expire_at && user.badge_expire_at > Date.now()) ? user.badge_name : null,
       badge_expire_at: (user.badge_expire_at && user.badge_expire_at > Date.now()) ? user.badge_expire_at : null,
       badge_update_count: user.badge_update_count || 0,
-      badge_update_month: user.badge_update_month || ''
+      badge_update_month: user.badge_update_month || '',
+
+      nickname_color: (user.nickname_color && user.nickname_color_expire_at && user.nickname_color_expire_at > Date.now()) ? user.nickname_color : null,
+      nickname_color_expire_at: (user.nickname_color_expire_at && user.nickname_color_expire_at > Date.now()) ? user.nickname_color_expire_at : null,
+      nickname_color_equipped: user.nickname_color_equipped !== 0 ? 1 : 0
     }
   });
 }
