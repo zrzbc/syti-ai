@@ -423,9 +423,9 @@ body.page-leaving{opacity:0}
       <div class="code-card" data-code-product="draw" data-title="抽号器激活码" data-desc="抽号器 激活码 100经验">
         <div class="code-card-body">
           <div class="code-card-info">
-            <div class="badge-preview" style="background:#e0e7ff;color:#3730a3;">抽号器</div>
-            <h3>抽号器激活码</h3>
-            <p>购买后随机获得一个 6 位激活码，永久有效。</p>
+            <div class="badge-preview" style="background:#e0e7ff;color:#3730a3;">激活码</div>
+            <h3>抽号器</h3>
+            <p>激活码可以用于激活抽号器工具，永久有效。<br>请勿将激活码分享给其他用户！</p>
             <div class="shop-price">售价：<span>100</span> 经验</div>
           </div>
           <div class="code-card-actions">
@@ -716,17 +716,20 @@ document.addEventListener('DOMContentLoaded', function () {
     updateAvatarButton(localUser);
     updateBuyButtons(localUser);
     renderPopover(localUser);
-    checkOwnedCodes(localUser);
+    // ★ 无论有没有登录，都先复位激活码按钮
+    await checkOwnedCodes(localUser);
 
     const freshUser = await refreshRealUser();
-    if (freshUser) {
-      updateNavExp(freshUser);
-      updateAvatarButton(freshUser);
-      updateBuyButtons(freshUser);
-      renderPopover(freshUser);
-      checkOwnedCodes(freshUser);
+    const finalUser = freshUser || localUser;
+
+    if (finalUser) {
+      updateNavExp(finalUser);
+      updateAvatarButton(finalUser);
+      updateBuyButtons(finalUser);
+      renderPopover(finalUser);
+      await checkOwnedCodes(finalUser);
     }
-    return freshUser || localUser;
+    return finalUser;
   }
 
   function updateNavExp(user) {
@@ -1484,22 +1487,23 @@ document.addEventListener('DOMContentLoaded', function () {
         toggleBtn.dataset.shown = '0';
       }
 
+      // ★ 未登录：按钮"请先登录"并禁用（和其他按钮同样式）
       if (!user) {
         buyBtn.disabled = true;
         buyBtn.textContent = '请先登录';
         buyBtn.classList.remove('btn-owned');
         return;
       }
+      buyBtn.classList.remove('btn-owned');
+
       const productType = card.dataset.codeProduct;
       const price = CODE_PRICES[productType] || 0;
       if ((user.exp || 0) < price) {
         buyBtn.disabled = true;
         buyBtn.textContent = '经验不足';
-        buyBtn.classList.remove('btn-owned');
       } else {
         buyBtn.disabled = false;
         buyBtn.textContent = '购买';
-        buyBtn.classList.remove('btn-owned');
       }
     });
 
@@ -1599,19 +1603,22 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         const data = await res.json();
         if (data.success) {
-          buyBtn.textContent = '已购买';
-          buyBtn.classList.add('btn-owned');
-          const viewBtn = card.querySelector('.code-view-btn');
-          if (viewBtn) viewBtn.style.display = 'block';
-          showCodeBox(card, data.code);
-          // 更新本地经验并刷新其他按钮
+          // 更新本地经验
           u.exp = data.exp;
           localStorage.setItem('user', JSON.stringify(u));
           updateNavExp(u);
-          await refresh();
-          // refresh 可能复位状态，重新标记
-          await checkOwnedCodes(u);
+
+          // 标记按钮为已购买
+          buyBtn.textContent = '已购买';
+          buyBtn.classList.add('btn-owned');
+
+          // 直接显示复制框（不经过 refresh，避免异步覆盖）
           showCodeBox(card, data.code);
+
+          // 然后再静默刷新其他按钮状态，但不动这个复制框
+          // 只刷新名牌 / 昵称颜色等，不重新调用 checkOwnedCodes
+          updateBuyButtons(u);
+          renderPopover(u);
         } else {
           alert(data.error || '购买失败');
           await refresh();
