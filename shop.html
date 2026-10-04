@@ -1465,12 +1465,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const toggleBtn = card.querySelector('.code-toggle-btn');
       if (!buyBtn) return;
 
-      // 每次打开商店，复制框一律隐藏
+      // 每次打开商店，先隐藏复制框（未购买时保持隐藏）
       if (box) box.style.display = 'none';
-      if (toggleBtn) {
-        toggleBtn.textContent = '▼';
-        toggleBtn.dataset.shown = '0';
-      }
 
       // ★ 未登录：按钮"请先登录"并禁用（和其他按钮同样式）
       if (!user) {
@@ -1502,22 +1498,19 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       const data = await res.json();
       if (data.success && data.owned) {
-        data.owned.forEach(productType => {
+        Object.keys(data.owned).forEach(productType => {
           const card = document.querySelector(`.code-card[data-code-product="${productType}"]`);
           if (!card) return;
           const buyBtn = card.querySelector('.code-buy-btn');
           const box = card.querySelector('.code-box');
-          const toggleBtn = card.querySelector('.code-toggle-btn');
+          const textEl = card.querySelector('.code-text');
           if (buyBtn) {
             buyBtn.disabled = true;
             buyBtn.textContent = '已购买';
             buyBtn.classList.add('btn-owned');
           }
-          if (box) box.style.display = 'none';
-          if (toggleBtn) {
-            toggleBtn.textContent = '▼';
-            toggleBtn.dataset.shown = '0';
-          }
+          if (box) box.style.display = 'block';        // ★ 显示
+          if (textEl) textEl.textContent = data.owned[productType];  // ★ 填入激活码
         });
       }
     } catch(e) {}
