@@ -137,7 +137,9 @@ h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
 .code-card-info p{font-size:13px;color:var(--muted);margin-bottom:6px}
 .code-card-actions{display:flex;flex-direction:column;gap:8px;min-width:100px}
 .code-box{margin-top:14px}
+.code-box-row{display:flex;gap:8px;align-items:center}
 .code-copy-box{
+  flex:1;
   background:#fff;border:2px solid #000;border-radius:12px;
   padding:12px 16px;font-family:'Courier New',monospace;
   font-size:18px;font-weight:700;letter-spacing:3px;
@@ -146,6 +148,15 @@ h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
 }
 .code-copy-box:hover{background:#f7f9ff;transform:translateY(-1px)}
 .code-copy-box.copied{background:#d1fae5;border-color:#10b981}
+.code-toggle-btn{
+  width:38px;height:38px;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid #e8ebf5;border-radius:10px;background:#fff;
+  color:#4f7cff;font-size:14px;font-weight:700;
+  cursor:pointer;transition:background .15s,transform .15s;
+  flex-shrink:0;
+}
+.code-toggle-btn:hover{background:#f0f3ff;transform:translateY(-1px)}
 .code-hint{margin-top:6px;font-size:11px;color:#9ca3af;text-align:center}
 @media(max-width:850px){
   .code-grid{grid-template-columns:1fr}
@@ -423,7 +434,10 @@ body.page-leaving{opacity:0}
           </div>
         </div>
         <div class="code-box" style="display:none;">
-          <div class="code-copy-box" title="点击复制"><span class="code-text"></span></div>
+          <div class="code-box-row">
+            <div class="code-copy-box" title="点击复制"><span class="code-text"></span></div>
+            <button type="button" class="code-toggle-btn" title="折叠/展开">▲</button>
+          </div>
           <div class="code-hint">点击方框复制激活码</div>
         </div>
       </div>
@@ -1456,23 +1470,24 @@ document.addEventListener('DOMContentLoaded', function () {
   const CODE_NAMES = { draw: '抽号器激活码' };
 
   async function checkOwnedCodes(user) {
-    // 先把所有可购买按钮复位
+    // 先把所有可购买按钮复位，并隐藏复制框
     document.querySelectorAll('.code-card:not(.code-card-disabled)').forEach(card => {
       const buyBtn = card.querySelector('.code-buy-btn');
-      const viewBtn = card.querySelector('.code-view-btn');
-      if (!buyBtn || !viewBtn) return;
-
-      // ★ 每次打开商店，一律隐藏复制框，按钮显示"显示"
       const box = card.querySelector('.code-box');
+      const toggleBtn = card.querySelector('.code-toggle-btn');
+      if (!buyBtn) return;
+
+      // 每次打开商店，复制框一律隐藏
       if (box) box.style.display = 'none';
-      viewBtn.dataset.shown = '0';
-      viewBtn.textContent = '显示';
+      if (toggleBtn) {
+        toggleBtn.textContent = '▼';
+        toggleBtn.dataset.shown = '0';
+      }
 
       if (!user) {
         buyBtn.disabled = true;
         buyBtn.textContent = '请先登录';
         buyBtn.classList.remove('btn-owned');
-        viewBtn.style.display = 'none';
         return;
       }
       const productType = card.dataset.codeProduct;
@@ -1486,7 +1501,6 @@ document.addEventListener('DOMContentLoaded', function () {
         buyBtn.textContent = '购买';
         buyBtn.classList.remove('btn-owned');
       }
-      viewBtn.style.display = 'none';
     });
 
     if (!user) return;
@@ -1503,20 +1517,18 @@ document.addEventListener('DOMContentLoaded', function () {
           const card = document.querySelector(`.code-card[data-code-product="${productType}"]`);
           if (!card) return;
           const buyBtn = card.querySelector('.code-buy-btn');
-          const viewBtn = card.querySelector('.code-view-btn');
           const box = card.querySelector('.code-box');
-
+          const toggleBtn = card.querySelector('.code-toggle-btn');
           if (buyBtn) {
             buyBtn.disabled = true;
             buyBtn.textContent = '已购买';
             buyBtn.classList.add('btn-owned');
           }
-          if (viewBtn) {
-            viewBtn.style.display = 'block';
-            viewBtn.textContent = '显示';      // ★ 默认"显示"
-            viewBtn.dataset.shown = '0';
+          if (box) box.style.display = 'none';
+          if (toggleBtn) {
+            toggleBtn.textContent = '▼';
+            toggleBtn.dataset.shown = '0';
           }
-          if (box) box.style.display = 'none';  // ★ 默认收起
         });
       }
     } catch(e) {}
@@ -1525,22 +1537,22 @@ document.addEventListener('DOMContentLoaded', function () {
   function showCodeBox(card, code) {
     const box = card.querySelector('.code-box');
     const textEl = card.querySelector('.code-text');
-    const viewBtn = card.querySelector('.code-view-btn');
+    const toggleBtn = card.querySelector('.code-toggle-btn');
     if (box) box.style.display = 'block';
     if (textEl) textEl.textContent = code;
-    if (viewBtn) {
-      viewBtn.textContent = '隐藏';
-      viewBtn.dataset.shown = '1';
+    if (toggleBtn) {
+      toggleBtn.textContent = '▲';   // 展开状态显示 ▲
+      toggleBtn.dataset.shown = '1';
     }
   }
 
   function hideCodeBox(card) {
     const box = card.querySelector('.code-box');
-    const viewBtn = card.querySelector('.code-view-btn');
+    const toggleBtn = card.querySelector('.code-toggle-btn');
     if (box) box.style.display = 'none';
-    if (viewBtn) {
-      viewBtn.textContent = '显示';
-      viewBtn.dataset.shown = '0';
+    if (toggleBtn) {
+      toggleBtn.textContent = '▼';   // 隐藏状态显示 ▼
+      toggleBtn.dataset.shown = '0';
     }
   }
 
@@ -1611,33 +1623,30 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
-    // 显示/隐藏 按钮
-    const viewBtn = e.target.closest('.code-view-btn');
-    if (viewBtn) {
-      const card = viewBtn.closest('.code-card');
+    // ★ 折叠按钮：点击切换显示/隐藏
+    const toggleBtn = e.target.closest('.code-toggle-btn');
+    if (toggleBtn) {
+      const card = toggleBtn.closest('.code-card');
       const productType = card.dataset.codeProduct;
       const box = card.querySelector('.code-box');
-
-      // ★ 用 dataset.shown 作为唯一判断依据，和 checkOwnedCodes 保持一致
-      const isShown = viewBtn.dataset.shown === '1';
+      const isShown = toggleBtn.dataset.shown === '1';
 
       if (isShown) {
-        // 收起
         hideCodeBox(card);
         return;
       }
 
-      // 展开：如果框里已经有内容（购买后立即显示过），直接展开；否则从服务器拉
+      // 展开：如果框里已有内容就直接显示
       const textEl = card.querySelector('.code-text');
       if (textEl && textEl.textContent) {
         showCodeBox(card, textEl.textContent);
         return;
       }
 
+      // 没有内容 → 从服务器拉
       const u = getLocalUser();
       if (!u) return;
-      viewBtn.disabled = true;
-      viewBtn.textContent = '加载中...';
+      toggleBtn.disabled = true;
       try {
         const res = await fetch('/api/shop/get-my-code', {
           method: 'POST',
@@ -1649,13 +1658,11 @@ document.addEventListener('DOMContentLoaded', function () {
           showCodeBox(card, data.code);
         } else {
           alert(data.error || '获取失败');
-          viewBtn.textContent = '显示';
         }
       } catch(err) {
         alert('网络错误');
-        viewBtn.textContent = '显示';
       } finally {
-        viewBtn.disabled = false;
+        toggleBtn.disabled = false;
       }
       return;
     }
