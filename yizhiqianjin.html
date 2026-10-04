@@ -1,1296 +1,959 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>一掷千金</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            user-select: none;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=900, initial-scale=0.42, user-scalable=yes">
+<meta name="description" content="游戏专区">
+<title>游戏专区 - 这人针不错</title>
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
+<style>
+:root{
+  --blue:#4f7cff; --purple:#8a5cf6; --ink:#172033; --muted:#6f7890;
+  --line:#e8ebf5; --bg:#f7f9ff; --card:rgba(255,255,255,.78);
+  --shadow:0 18px 60px rgba(67,72,120,.10);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;
+  color:var(--ink);background:
+  radial-gradient(circle at 10% 5%,rgba(79,124,255,.14),transparent 28%),
+  radial-gradient(circle at 90% 10%,rgba(138,92,246,.13),transparent 30%),
+  var(--bg);
+  line-height:1.7;overflow-x:hidden;
+}
+a{text-decoration:none;color:inherit}
+button{font:inherit}
+.container{width:min(1160px,calc(100% - 40px));margin:auto}
+.nav{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  width:min(1120px,calc(100% - 32px));z-index:20;
+  background:rgba(255,255,255,.72);backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,.9);box-shadow:0 10px 35px rgba(55,65,110,.08);
+  border-radius:18px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;
+}
+.logo{font-weight:800;letter-spacing:-.5px}
+.logo span{background:linear-gradient(90deg,var(--blue),var(--purple));-webkit-background-clip:text;color:transparent}
+.navlinks{display:flex;gap:4px;align-items:center}
+.home-dropdown{position:relative;display:inline-block}
+.home-trigger{font-size:14px;color:#59627a;padding:8px 12px;border-radius:10px;cursor:pointer;transition:.2s;display:inline-block}
+.home-trigger:hover{background:#f0f3ff;color:#3f63d9}
+.home-dropdown .home-menu{display:none;position:absolute;top:100%;left:0;min-width:140px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(55,65,110,.14);padding:6px;z-index:30}
+.home-dropdown:hover .home-menu{display:block}
+.home-menu a{display:block;font-size:14px;color:#59627a;padding:8px 12px;border-radius:8px;transition:.2s}
+.home-menu a:hover{background:#f0f3ff;color:#3f63d9}
+.navlinks a{font-size:14px;color:#59627a;padding:8px 12px;border-radius:10px}
+.navlinks a:hover{background:#f0f3ff;color:#3f63d9}
+.nav-right{display:flex;align-items:center;gap:8px}
+.lang-switch{position:relative}
+.lang-btn{
+  font:inherit;font-size:13px;color:#59627a;
+  padding:8px 12px;border-radius:10px;background:#fff;
+  border:1px solid var(--line);cursor:pointer;transition:.2s;white-space:nowrap;
+}
+.lang-btn:hover{background:#f0f3ff;color:#3f63d9}
+.lang-menu{
+  position:absolute;top:calc(100% + 6px);right:0;min-width:168px;
+  background:#fff;border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 12px 30px rgba(55,65,110,.14);padding:6px;display:none;z-index:30;
+}
+.lang-menu.open{display:block}
+.lang-menu button{
+  display:block;width:100%;text-align:left;padding:8px 10px;
+  font:inherit;font-size:13px;color:#59627a;background:none;
+  border:0;border-radius:8px;cursor:pointer;
+}
+.lang-menu button:hover{background:#f0f3ff;color:#3f63d9}
+.lang-menu button.active{background:#eef2ff;color:#3f63d9;font-weight:600}
 
-        body {
-            background: radial-gradient(circle at 20% 30%, #0a0f1a, #03060c);
-            font-family: 'Segoe UI', 'Poppins', 'Orbitron', system-ui, monospace;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            margin: 0;
-            transition: all 0.2s;
-        }
+section{padding:140px 0 100px}
+.section-head{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:32px}
+.kicker{font-size:12px;text-transform:uppercase;letter-spacing:2px;color:#7180a5;font-weight:750}
+h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
+.search-box input {
+  width: 260px; padding: 10px 14px; border: 1px solid var(--line);
+  border-radius: 12px; font-size: 14px; background: #fff;
+  outline: none; transition: border-color 0.2s;
+}
+.search-box input:focus {
+  border-color: #4f7cff;
+  box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.12);
+}
 
-        .global-toast {
-            position: fixed;
-            top: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #0a1428ee;
-            backdrop-filter: blur(16px);
-            border: 1px solid #ffcd7a;
-            border-radius: 60px;
-            padding: 12px 32px;
-            color: #ffffff;
-            font-size: 2rem;
-            font-weight: bold;
-            font-family: monospace;
-            letter-spacing: 4px;
-            text-shadow: 0 0 8px #ffaa66;
-            z-index: 2000;
-            white-space: nowrap;
-            pointer-events: none;
-            transition: opacity 0.4s ease, transform 0.2s;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-            border-radius: 48px;
-        }
-        .global-toast.fade-out {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-12px);
-        }
+.game-list { display: flex; flex-direction: column; gap: 20px; }
+.game-card {
+  display: grid; grid-template-columns: 320px 1fr; gap: 24px;
+  background: var(--card); backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.95);
+  box-shadow: 0 12px 40px rgba(60,70,120,.07);
+  border-radius: 20px; padding: 20px; cursor: pointer;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.game-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px rgba(60,70,120,.15);
+}
 
-        .game-container {
-            max-width: 1500px;
-            width: 100%;
-            background: rgba(5, 12, 24, 0.7);
-            backdrop-filter: blur(3px);
-            border-radius: 56px;
-            border: 1px solid #ffcc6644;
-            box-shadow: 0 25px 45px rgba(0,0,0,0.5);
-            padding: 20px 26px;
-            height: auto;
-            transition: transform 0.3s ease;
-            position: relative;
-            z-index: 10;
-        }
+.game-card { position: relative; }
+.game-plays {
+  position: absolute; top: 28px; right: 28px;
+  background: rgba(23, 32, 51, 0.78); color: #fff;
+  font-size: 12px; font-weight: 600; padding: 4px 10px;
+  border-radius: 8px; letter-spacing: 1px;
+  backdrop-filter: blur(4px); z-index: 5; pointer-events: none;
+}
+.game-cover {
+  width: 100%; aspect-ratio: 16/9;
+  background-size: cover; background-position: center;
+  border-radius: 14px;
+}
+.game-info h3 { font-size: 20px; margin-bottom: 10px; }
+.game-info p { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
+.game-tags { margin-bottom: 10px; }
+.tag{display:inline-block;font-size:11px;padding:4px 8px;border-radius:7px;background:#eef2ff;color:#566cd2;margin-right:6px}
+.game-meta { font-size: 13px; color: #7a8398; }
+footer{padding:45px 0 70px;color:#8a92a5;font-size:13px;text-align:center}
 
-        .game-layout {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 28px;
-            align-items: stretch;
-        }
+body{opacity:1;transition:opacity .2s ease}
+body.page-leaving{opacity:0}
 
-        .left-area {
-            flex: 2.2;
-            min-width: 300px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            transition: all 0.3s ease;
-        }
+@media(max-width:850px){
+  .navlinks{display:none}
+  .game-card { grid-template-columns: 1fr; }
+  section{padding:120px 0 70px}
+  h2{font-size:31px}
+}
 
-        .chests-section {
-            background: rgba(0, 0, 0, 0.25);
-            border-radius: 48px;
-            padding: 16px 16px 20px 16px;
-        }
+/* 头像 */
+.user-center { position: relative; display: flex; align-items: center; margin-left: 4px; padding-bottom: 10px; }
+.avatar-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #4f7cff, #8a5cf6);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #fff; transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 2px solid rgba(255, 255, 255, 0.8); overflow: hidden;
+}
+.avatar-btn:hover { transform: scale(1.08); box-shadow: 0 6px 16px rgba(79, 124, 255, 0.35); }
+.user-popover {
+  position: absolute; top: 100%; right: 0; width: 220px;
+  background: #fff; border: 1px solid #e8ebf5; border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(55,65,110,0.15); display: none; z-index: 50;
+}
+.user-popover::before {
+  content: ""; position: absolute; top: -6px; right: 18px;
+  width: 12px; height: 12px; background: #fff; border-top: 1px solid #e8ebf5;
+  border-left: 1px solid #e8ebf5; transform: rotate(45deg);
+}
+.user-center:hover .user-popover { display: block; }
 
-        .info-header {
-            background: #0a1428cc;
-            border-radius: 48px;
-            padding: 10px 20px;
-            margin-bottom: 20px;
-            text-align: center;
-            backdrop-filter: blur(8px);
-            border: 1px solid #ffcd7a66;
-        }
+/* 名牌 */
+.user-badge{display:inline-block;padding:1px 8px;border-radius:6px;font-size:12px;font-weight:700;margin-left:6px;vertical-align:middle}
+.user-badge.normal{background:#b8e9b8;color:#000}
+.user-badge.premium{background:#ffd700;color:#000}
+.user-badge.ultimate{background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff}
+.user-badge.editable-badge{cursor:pointer;transition:filter .15s ease, transform .15s ease;}
+.user-badge.editable-badge:hover{filter:brightness(1.08);transform:scale(1.05);}
 
-        .round-stats {
-            font-size: 1.15rem;
-            font-weight: bold;
-            color: #ffffff;
-            letter-spacing: 1px;
-        }
-        .round-stats span {
-            color: #ffdd99;
-            margin: 0 4px;
-        }
-        .need-open-info {
-            font-size: 0.95rem;
-            color: #ffdd99;
-            margin-top: 5px;
-        }
+/* 模态框 */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(23, 32, 51, 0.55); backdrop-filter: blur(6px); z-index: 999;
+  justify-content: center; align-items: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-content {
+  background: #fff; border-radius: 24px; width: min(420px, calc(100% - 40px));
+  padding: 32px 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
+  position: relative; max-height: 90vh; overflow-y: auto;
+}
+.modal-close {
+  position: absolute; top: 16px; right: 20px; background: none; border: none;
+  font-size: 28px; color: #999; cursor: pointer; line-height: 1;
+}
+.modal-close:hover { color: #333; }
+.modal-tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+.modal-tab {
+  flex: 1; padding: 10px; border: 1px solid #e8ebf5; border-radius: 12px;
+  background: #f7f9ff; color: #6f7890; font-weight: 600; cursor: pointer; transition: 0.2s;
+}
+.modal-tab.active {
+  background: linear-gradient(110deg, #4f7cff, #8a5cf6); color: #fff; border-color: transparent;
+}
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; font-size: 13px; color: #6f7890; margin-bottom: 6px; font-weight: 600; }
+.form-group input {
+  width: 100%; padding: 12px 14px; border: 1px solid #e8ebf5; border-radius: 12px;
+  font-size: 15px; outline: none; transition: border-color 0.2s;
+}
+.form-group input:focus { border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79, 124, 255, 0.12); }
+.code-row { display: flex; gap: 10px; }
+.code-row input { flex: 1; }
+.send-code-btn {
+  white-space: nowrap; padding: 12px 16px; border: 1px solid #4f7cff; border-radius: 12px;
+  background: #fff; color: #4f7cff; font-weight: 600; font-size: 13px; cursor: pointer; transition: 0.2s;
+}
+.send-code-btn:hover { background: #f0f3ff; }
+.send-code-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.submit-btn {
+  width: 100%; padding: 14px; border: none; border-radius: 14px;
+  background: linear-gradient(110deg, #4f7cff, #8a5cf6);
+  color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(91, 100, 230, 0.35); }
+.modal-footer { text-align: center; margin-top: 16px; }
+.modal-footer a { font-size: 13px; color: #8a5cf6; }
 
-        .chest-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(92px, 98px));
-            justify-content: center;
-            gap: 14px 16px;
-        }
+#resetFormContainer h3 { color: #172033; }
+#backToLoginLink, #forgotPasswordLink { color: #8a5cf6; font-size: 13px; }
+#userNickname { font-size: 24px; margin-top: 10px; }
 
-        .chest {
-            background: radial-gradient(ellipse at 35% 40%, #2d2f3e, #131a26);
-            width: 92px;
-            height: 110px;
-            border-radius: 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.2, 0.95, 0.4, 1.1);
-            box-shadow: 0 10px 16px rgba(0, 0, 0, 0.5);
-            border: 1px solid #ffd58c88;
-            position: relative;
-            backdrop-filter: blur(2px);
-            transform: translateY(var(--y-offset, 0px)) translateX(var(--x-offset, 0px));
-            will-change: transform, opacity;
-        }
+.popover-level-wrap { position: relative; display: inline-block; }
+.level-tooltip {
+  position: absolute; left: 100%; top: 50%;
+  transform: translateY(-50%) translateX(6px);
+  background: #fff; color: #172033; font-size: 12px; line-height: 1.8;
+  padding: 10px 14px; border-radius: 10px; white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e8ebf5;
+}
+.level-tooltip::before {
+  content: ""; position: absolute; right: 100%; top: 50%;
+  transform: translateY(-50%); border: 6px solid transparent; border-right-color: #fff;
+}
+.level-tooltip .lv-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.level-tooltip .lv-row:last-child { margin-bottom: 0; }
+.level-tooltip .lv-badge {
+  display: inline-block; padding: 1px 8px; border-radius: 6px;
+  font-weight: bold; font-size: 12px; color: #fff; min-width: 36px; text-align: center;
+}
+.level-tooltip .lv-exp { color: #172033; margin-left: auto; text-align: right; }
+.popover-level-wrap:hover .level-tooltip { opacity: 1; transform: translateY(-50%) translateX(12px); }
 
-        .chest::before {
-            content: "🎁";
-            font-size: 2rem;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
-        }
+.nick-colored{-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;display:inline-block}
+.nick-colored.nick-yellow{background-image:linear-gradient(90deg,#ff6a00 0%,#ffb800 100%)}
+.nick-colored.nick-blue{background-image:linear-gradient(90deg,#0044cc 0%,#00b4ff 100%)}
+.nick-colored.nick-pink{background-image:linear-gradient(90deg,#d91e63 0%,#ff8fab 100%)}
+.nick-colored.nick-purple{background-image:linear-gradient(90deg,#6a0dad 0%,#c77dff 100%)}
 
-        .chest .chest-label {
-            font-size: 0.7rem;
-            margin-top: 4px;
-            background: #03060cee;
-            padding: 2px 6px;
-            border-radius: 40px;
-            color: #ffffff;
-            font-weight: bold;
-        }
-
-        .chest-number {
-            font-size: 0.85rem;
-            font-weight: bold;
-            background: #000000aa;
-            padding: 2px 8px;
-            border-radius: 30px;
-            margin-bottom: 4px;
-            color: #ffefcf;
-        }
-
-        .chest.selected-card {
-            background: radial-gradient(ellipse at 35% 40%, #594d2c, #2f280f);
-            border: 2px solid #ffbe4d;
-            box-shadow: 0 0 18px #ffaa44;
-            transform: scale(1.01);
-        }
-
-        /* 动画禁用时直接隐藏占位，无过渡 */
-        .chest.vanish-placeholder {
-            visibility: hidden;
-            opacity: 0;
-            pointer-events: none;
-            cursor: default;
-        }
-
-        .chest:active {
-            transform: scale(0.94);
-        }
-
-        .buyer-section {
-            background: #07111eee;
-            border-radius: 42px;
-            padding: 16px 18px;
-            border: 1px solid #ffcd7a55;
-            backdrop-filter: blur(12px);
-            position: relative;
-            z-index: 20;
-        }
-        /* 聚焦时无动画，仅样式变化（如果动画关闭则不会有过渡） */
-        .buyer-section.focused {
-            transform: scale(1.08) translateY(-8px);
-            box-shadow: 0 0 30px rgba(255,200,100,0.6);
-            border-color: #ffcc77;
-            z-index: 1001;
-        }
-
-        .offer-price {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #ffdd99;
-            text-align: center;
-            word-break: break-word;
-            font-family: monospace;
-            letter-spacing: 2px;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 16px;
-            margin-top: 14px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        button {
-            background: #232e44;
-            border: none;
-            padding: 8px 22px;
-            border-radius: 48px;
-            color: #ffffff;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-            font-family: inherit;
-            border: 2px solid transparent;
-        }
-        button:active {
-            transform: scale(0.95);
-        }
-        button:disabled {
-            opacity: 0.5;
-            transform: none;
-        }
-        .btn-accept {
-            background: #1e3a2f;
-            border-color: #2ecc71;
-            color: white;
-        }
-        .btn-reject {
-            background: #3e2222;
-            border-color: #e74c3c;
-            color: white;
-        }
-        .btn-primary {
-            background: #c97e2a;
-            color: #ffffff;
-            border-color: #ffdd99;
-        }
-        .reset-btn {
-            background: #1e2c3c;
-            width: 100%;
-            margin-top: 10px;
-            border-color: #5f7f9e;
-        }
-
-        .right-area {
-            flex: 1.1;
-            background: #07111eee;
-            border-radius: 42px;
-            padding: 18px 16px;
-            border: 1px solid #ffcd7a55;
-            backdrop-filter: blur(12px);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            position: relative;
-        }
-
-        .icon-group {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 12px;
-            z-index: 30;
-        }
-        .icon-btn {
-            background: #1e2a36aa;
-            backdrop-filter: blur(8px);
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: 0.2s;
-            border: 1px solid #ffcd7a88;
-            color: #ffeaac;
-            font-size: 1.3rem;
-            font-weight: bold;
-        }
-        .icon-btn:hover {
-            background: #ffcc55aa;
-            color: #0a0a1a;
-            transform: scale(1.05);
-        }
-
-        .money-board {
-            background: #020a16b3;
-            border-radius: 32px;
-            padding: 14px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            margin-top: 12px;
-        }
-        .money-title {
-            font-size: 1.3rem;
-            text-align: center;
-            color: #ffdf99;
-            border-bottom: 2px solid #ffbe4d;
-            display: inline-block;
-            width: 100%;
-            margin-bottom: 14px;
-            font-weight: bold;
-        }
-        .money-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px 22px;
-            overflow: visible;
-            flex: 1;
-            align-content: start;
-        }
-        .money-item {
-            background: #0a1828;
-            padding: 8px 6px;
-            text-align: center;
-            border-radius: 36px;
-            font-family: monospace;
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: #ffffff;
-            border-left: 4px solid #ffbb4a;
-            transition: none; /* 无动画 */
-        }
-        .money-item.eliminated {
-            background: #1a1f2c;
-            color: #b8c7e0;
-            text-decoration: line-through;
-            border-left-color: #2c3e44;
-            opacity: 0.75;
-        }
-        footer {
-            font-size: 0.7rem;
-            text-align: center;
-            margin-top: 18px;
-            opacity: 0.6;
-            color: #cccccc;
-        }
-        .chest {
-            --x-offset: 0px;
-            --y-offset: 0px;
-        }
-
-        /* 模态窗样式 (加大宽度) */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(8px);
-            z-index: 5000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            visibility: hidden;
-            opacity: 0;
-            transition: visibility 0.2s, opacity 0.2s;
-        }
-        .modal-overlay.active {
-            visibility: visible;
-            opacity: 1;
-        }
-        .modal-container {
-            background: #0f1a28ee;
-            border-radius: 48px;
-            width: 600px;
-            max-width: 90vw;
-            max-height: 85vh;
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #ffcd7a;
-            box-shadow: 0 20px 35px rgba(0,0,0,0.5);
-            backdrop-filter: blur(20px);
-            color: #f0f0f0;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 18px 24px;
-            border-bottom: 1px solid #ffcd7a66;
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: #ffdd99;
-        }
-        .modal-header .close-modal {
-            cursor: pointer;
-            font-size: 1.8rem;
-            line-height: 1;
-            background: none;
-            border: none;
-            color: #ffcd7a;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-        }
-        .modal-body {
-            padding: 20px 24px;
-            overflow-y: auto;
-            flex: 1;
-        }
-        .faq-search {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 40px;
-            background: #07111e;
-            border: 1px solid #ffcc77;
-            color: white;
-            font-size: 1rem;
-            margin-bottom: 20px;
-            outline: none;
-        }
-        .faq-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .faq-item {
-            background: #07111eaa;
-            border-radius: 28px;
-            padding: 8px 16px;
-            cursor: pointer;
-            border-left: 4px solid #ffcd7a;
-        }
-        .faq-question {
-            font-weight: bold;
-            color: #ffdd99;
-            font-size: 1rem;
-        }
-        .faq-answer {
-            color: #eef2ff;
-            font-size: 0.9rem;
-            margin-top: 8px;
-            padding-top: 6px;
-            border-top: 1px dashed #ffcd7a66;
-            display: none;
-        }
-        .faq-item.expanded .faq-answer {
-            display: block;
-        }
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            font-size: 1rem;
-        }
-        .setting-row label {
-            color: #ffdfaa;
-        }
-        .toggle-switch {
-            width: 48px;
-            height: 24px;
-            background: #2c3e50;
-            border-radius: 40px;
-            display: inline-block;
-            position: relative;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .toggle-switch.active {
-            background: #f0a500;
-        }
-        .toggle-switch::after {
-            content: '';
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 3px;
-            transition: 0.2s;
-        }
-        .toggle-switch.active::after {
-            left: 25px;
-        }
-        .number-selector {
-            background: #07111e;
-            border: 1px solid #ffcc77;
-            border-radius: 32px;
-            padding: 4px 12px;
-            color: white;
-            font-size: 1rem;
-            width: 80px;
-            text-align: center;
-        }
-        @media (max-height: 800px) {
-            .chest-grid { gap: 10px; }
-            .chest { width: 85px; height: 100px; }
-            .chest::before { font-size: 1.8rem; }
-            .money-item { font-size: 0.95rem; padding: 6px; }
-            .buyer-section { padding: 12px; }
-        }
-
-        /* ===== 手机适配 ===== */
-        @media (max-width: 768px) {
-            body { padding: 8px; }
-
-            .game-container {
-                padding: 12px 14px;
-                border-radius: 28px;
-            }
-
-            .game-layout {
-                flex-direction: column;
-                gap: 14px;
-            }
-
-            .left-area, .right-area {
-                min-width: 0;
-                width: 100%;
-                flex: none;
-            }
-
-            /* ---- 宝箱区 ---- */
-            .chests-section {
-                padding: 10px 10px 14px;
-                border-radius: 28px;
-            }
-            .info-header {
-                padding: 8px 14px;
-                margin-bottom: 12px;
-                border-radius: 24px;
-            }
-            .round-stats { font-size: 0.95rem; }
-            .need-open-info { font-size: 0.8rem; margin-top: 3px; }
-
-            .chest-grid {
-                grid-template-columns: repeat(5, 1fr);
-                gap: 8px 6px;
-            }
-            .chest {
-                width: 100%;
-                height: 78px;
-                border-radius: 16px;
-                touch-action: manipulation;
-            }
-            .chest::before { font-size: 1.35rem; }
-            .chest-number {
-                font-size: 0.68rem;
-                padding: 1px 6px;
-                margin-bottom: 2px;
-            }
-            .chest .chest-label {
-                font-size: 0.58rem;
-                padding: 1px 5px;
-                margin-top: 2px;
-            }
-
-            /* ---- 商人报价区 ---- */
-            .buyer-section {
-                padding: 12px 14px;
-                border-radius: 24px;
-            }
-            .buyer-section.focused {
-                transform: none;              /* 手机上不做放大，避免溢出 */
-                box-shadow: 0 0 20px rgba(255,200,100,0.5);
-            }
-            .offer-price { font-size: 1.5rem; }
-            .btn-group {
-                gap: 10px;
-                margin-top: 10px;
-            }
-            .btn-group button {
-                padding: 9px 16px;
-                font-size: 0.9rem;
-            }
-
-            /* ---- 奖金池 ---- */
-            .money-board {
-                padding: 10px;
-                border-radius: 22px;
-                margin-top: 6px;
-            }
-            .money-title {
-                font-size: 1rem;
-                margin-bottom: 10px;
-            }
-            .money-grid {
-                grid-template-columns: repeat(4, 1fr);
-                gap: 6px 8px;
-            }
-            .money-item {
-                font-size: 0.72rem;
-                padding: 5px 2px;
-                border-left-width: 3px;
-                border-radius: 20px;
-            }
-
-            /* ---- 右上角图标 ---- */
-            .icon-group {
-                top: 12px;
-                right: 12px;
-                gap: 8px;
-            }
-            .icon-btn {
-                width: 30px;
-                height: 30px;
-                font-size: 1rem;
-            }
-
-            /* ---- 按钮 / 页脚 ---- */
-            .reset-btn {
-                padding: 8px 16px;
-                font-size: 0.85rem;
-                margin-top: 10px;
-                touch-action: manipulation;
-            }
-            footer {
-                font-size: 0.65rem;
-                margin-top: 10px;
-            }
-
-            /* ---- 弹窗 ---- */
-            .modal-container {
-                border-radius: 28px;
-                max-height: 88vh;
-            }
-            .modal-header {
-                padding: 14px 18px;
-                font-size: 1.1rem;
-            }
-            .modal-body {
-                padding: 14px 18px;
-            }
-            .faq-question { font-size: 0.95rem; }
-            .faq-answer   { font-size: 0.85rem; }
-            .setting-row  { font-size: 0.95rem; margin-bottom: 18px; }
-        }
-
-        /* 超小屏（<380px）：宝箱每行 4 个，奖金池每行 3 个 */
-        @media (max-width: 380px) {
-            .chest-grid { grid-template-columns: repeat(4, 1fr); }
-            .money-grid { grid-template-columns: repeat(3, 1fr); }
-            .offer-price { font-size: 1.3rem; }
-            .btn-group button { padding: 8px 12px; font-size: 0.85rem; }
-        }
-    </style>
+</style>
 </head>
 <body>
-<div class="game-container" id="gameContainer">
-    <div class="game-layout">
-        <div class="left-area">
-            <div class="chests-section">
-                <div class="info-header">
-                    <div class="round-stats" id="roundStats">准备就绪</div>
-                    <div class="need-open-info" id="needOpenInfo">点击宝箱选择底牌</div>
-                </div>
-                <div class="chest-grid" id="chestGrid"></div>
-                <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
-                    <button id="forceResetBtn" class="reset-btn" style="width: auto; padding: 6px 20px;">重选底牌</button>
-                </div>
-            </div>
-            <div class="buyer-section" id="buyerPanel">
-                <div style="text-align:center; color:#ffefcf; letter-spacing: 1px;">神秘商人</div>
-                <div class="offer-price" id="offerAmount">—</div>
-                <div class="btn-group">
-                    <button id="acceptBtn" class="btn-accept">成交</button>
-                    <button id="rejectBtn" class="btn-reject">拒绝</button>
-                    <button id="bargainBtn" class="btn-primary">讲价</button>
-                </div>
-                <div id="bargainStatus" style="font-size: 0.7rem; text-align: center; margin-top: 8px; color:#dddddd;"></div>
-            </div>
-        </div>
 
-        <div class="right-area">
-            <div class="icon-group">
-                <div class="icon-btn" id="helpIconBtn">❔</div>
-                <div class="icon-btn" id="settingsIconBtn">⚙️</div>
-            </div>
-            <div class="money-board">
-                <div class="money-title">- 奖 金 池 -</div>
-                <div class="money-grid" id="moneyGrid"></div>
-            </div>
-            <button id="restartBtn" class="reset-btn" style="margin-top: 16px;">开启新对局</button>
+<nav class="nav">
+  <a class="logo" href="index.html">&nbsp;&nbsp;这人<span>针不错</span></a>
+  <div class="nav-right">
+    <div class="navlinks">
+      <div class="home-dropdown">
+        <a href="index.html" class="home-trigger">主页 ▾</a>
+        <div class="home-menu">
+          <a href="index.html#works">作品</a>
+          <a href="index.html#about">关于</a>
+          <a href="index.html#community">社群</a>
+          <a href="index.html#contact">联系</a>
         </div>
+      </div>
+      <a href="resources.html">资源</a>
+      <a href="games.html">游戏</a>
+      <a href="shop.html">商店</a>
     </div>
-    <footer>适度游戏益脑，沉迷游戏伤身</footer>
+    <div class="lang-switch">
+      <button class="lang-btn" id="langBtn" type="button">简体中文 ▾</button>
+      <div class="lang-menu" id="langMenu">
+        <button type="button" data-lang="cn" class="active">简体中文</button>
+        <button type="button" data-lang="hk">繁體中文（香港）</button>
+        <button type="button" data-lang="tw">繁體中文（台灣）</button>
+      </div>
+    </div>
+    <div class="user-center" id="userCenter">
+      <div class="avatar-btn" id="avatarBtn" title="个人中心">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <div class="user-popover" id="userPopover">
+        <div id="popoverNotLoggedIn" style="display:none; padding: 20px; text-align: center; color: #6f7890; font-size: 14px;">
+          请先点击头像登录或注册
+        </div>
+        <div id="popoverLoggedIn" style="display:none; padding: 16px;">
+          <div style="text-align: center; margin-bottom: 12px;">
+            <div id="popoverAvatar" style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #4f7cff, #8a5cf6); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background-size: cover; background-position: center; position: relative;">
+              <span id="popoverAvatarLetter" style="font-size: 28px; font-weight: bold; color: #fff;">U</span>
+              <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.5); color: #fff; font-size: 10px; text-align: center; padding: 2px 0;">修改</div>
+            </div>
+            <input type="file" id="avatarUploadInput" style="display: none;" accept="image/*">
+          </div>
+          <div style="text-align: center; font-size: 16px; font-weight: bold; color: #172033; margin-bottom: 4px;">
+            <span id="popoverNickname" style="cursor:pointer;" title="点击修改昵称">用户昵称</span><span id="popoverUserBadge"></span>
+          </div>
+          <div style="text-align: center; font-size: 12px; color: #9ca3af; margin-bottom: 16px;">点击昵称或名牌修改</div>
+          <div style="font-size: 12px; color: #6f7890;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span>经验值：<span id="popoverExpText">0/200</span></span>
+              <div class="popover-level-wrap">
+                <span id="popoverLevelText" style="font-weight: bold; padding: 1px 8px; border-radius: 6px; color: #fff; background: #4ade80;">Lv1</span>
+                <div class="level-tooltip">
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #4ade80, #22c55e); color: #fff;">Lv1</span><span class="lv-exp">0 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #22c55e, #15803d); color: #fff;">Lv2</span><span class="lv-exp">200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff;">Lv3</span><span class="lv-exp">500 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #facc15, #eab308); color: #1f2937;">Lv4</span><span class="lv-exp">1200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #f97316, #c2410c); color: #fff;">Lv5</span><span class="lv-exp">2800 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff;">Lv6</span><span class="lv-exp">6200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background: linear-gradient(135deg, #a855f7, #7e22ce); color: #fff;">Lv7</span><span class="lv-exp">13200 经验</span></div>
+                </div>
+              </div>
+            </div>
+            <div style="width: 100%; height: 8px; background: #fff; border: 1px solid #e8ebf5; border-radius: 4px; overflow: hidden;">
+              <div id="popoverExpBarFill" style="height: 100%; width: 0%; background: #4ade80; border-radius: 4px; transition: all 0.3s;"></div>
+            </div>
+          </div>
+          <button class="submit-btn" id="popoverSigninBtn" style="padding: 8px; font-size: 14px; margin-top: 16px; background: #fff; color: #172033; border: 1px solid #e8ebf5;">签到</button>
+          <button class="submit-btn" id="popoverLogoutBtn" style="padding: 8px; font-size: 14px; margin-top: 8px; background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main>
+<section id="games">
+<div class="container">
+  <div class="section-head">
+    <div><div class="kicker">Games</div><h2>游戏专区</h2></div>
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜索游戏的标题或简介...">
+    </div>
+  </div>
+
+  <div class="game-list" id="gameList">
+
+<a class="game-card game-item" href="laizishenyuan.html" target="_blank" rel="noopener" data-title="前方深渊" data-desc="像素风 冒险 动作 2D" data-tags="冒险 动作 像素风">
+<span class="game-plays" data-game-id="laizishenyuan">游玩次数：--</span>
+      <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/laizishenyuan.png');"></div>
+      <div class="game-info">
+<h3>前方深渊</h3>
+<p>深入地底，挑战极限！</p>
+        <div class="game-tags"><span class="tag">限电脑游玩</span><span class="tag">冒险</span><span class="tag">动作</span><span class="tag">像素风</span></div>
+        <div class="game-meta">化作一名冒险家，深入地底，面对未知的挑战！<br>期间，你可以吃蘑菇回血、捡骨头加子弹、收集水晶驯服宠物，用护盾和连击对抗越来越强的怪物。</div>
+      </div>
+    </a>
+
+<a class="game-card game-item" href="mimatiaozhanjiandan.html" target="_blank" rel="noopener" data-title="密码挑战简单" data-desc="免登录 推理 策略 烧脑" data-tags="免登录 推理 策略 烧脑">
+<span class="game-plays" data-game-id="mimatiaozhanjiandan">游玩次数：--</span>
+      <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/mimatiaozhan.png');"></div>
+      <div class="game-info">
+<h3>密码挑战 · 简单版（免登录）</h3>
+<p>风靡一时的密码挑战复刻版！</p>
+        <div class="game-tags"><span class="tag">免登录</span><span class="tag">推理</span><span class="tag">策略</span><span class="tag">烧脑</span></div>
+        <div class="game-meta">根据提示来修改你的密码，直到其同时满足15个条件。</div>
+      </div>
+    </a>
+
+<a class="game-card game-item" href="mimatiaozhankunnan.html" target="_blank" rel="noopener" data-title="密码挑战困难" data-desc="免登录 推理 策略 烧脑 ">
+<span class="game-plays" data-game-id="mimatiaozhankunnan">游玩次数：--</span>
+      <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/mimatiaozhan.png');"></div>
+      <div class="game-info">
+<h3>密码挑战 · 困难版（免登录）</h3>
+<p>风靡一时的密码挑战复刻版！</p>
+        <div class="game-tags"><span class="tag">免登录</span><span class="tag">推理</span><span class="tag">策略</span><span class="tag">烧脑</span></div>
+        <div class="game-meta">根据提示来修改你的密码，直到其同时满足20个条件。</div>
+      </div>
+    </a>
+
+<a class="game-card game-item" href="yizhiqianjin.html" target="_blank" rel="noopener" data-title="一掷千金" data-desc="免登录 推理 博弈 心理" data-tags="免登录 推理 博弈 心理">
+<span class="game-plays" data-game-id="yizhiqianjin">游玩次数：--</span>
+      <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/yizhiqianjin.png');"></div>
+      <div class="game-info">
+<h3>一掷千金（免登录）</h3>
+<p>深入地底，挑战极限！</p>
+        <div class="game-tags"><span class="tag">免登录</span><span class="tag">推理</span><span class="tag">博弈</span><span class="tag">心理</span></div>
+        <div class="game-meta">从26个宝箱中选择一个作为底牌，逐轮开箱排除金额。<br>一轮结束后商人会报价，可选择成交、拒绝或讲价；如撑到最后，则直接开底牌定输赢。</div>
+      </div>
+    </a>
+
+  </div>
+</div>
+</section>
+</main>
+
+<div class="modal-overlay" id="authModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeModal">&times;</button>
+    <div id="authFormContainer">
+      <div class="modal-tabs">
+        <button class="modal-tab active" data-tab="login" id="tabLogin">登录</button>
+        <button class="modal-tab" data-tab="register" id="tabRegister">注册</button>
+      </div>
+      <form id="authForm">
+        <div class="form-group">
+          <label>邮箱</label>
+          <input type="email" id="emailInput" placeholder="请输入邮箱地址" required>
+        </div>
+        <div class="form-group" id="nicknameGroup" style="display: none;">
+          <label>昵称</label>
+          <input type="text" id="nicknameInput" placeholder="设置一个独一无二的昵称" maxlength="20">
+        </div>
+        <div class="form-group" id="codeGroup" style="display: none;">
+          <label>验证码</label>
+          <div class="code-row">
+            <input type="text" id="codeInput" placeholder="6位数字验证码" maxlength="6">
+            <button type="button" id="sendCodeBtn" class="send-code-btn">获取验证码</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="passwordInput" placeholder="至少8位，包含字母和数字" required>
+        </div>
+        <button type="submit" class="submit-btn" id="submitBtn">登录 / 注册</button>
+      </form>
+      <div class="modal-footer">
+        <a href="javascript:void(0)" id="forgotPasswordLink">忘记密码？</a>
+      </div>
+    </div>
+
+    <div id="resetFormContainer" style="display: none;">
+      <h3 style="margin-bottom: 20px; text-align: center;">重置密码</h3>
+      <form id="resetForm">
+        <div class="form-group">
+          <label>注册邮箱</label>
+          <input type="email" id="resetEmail" placeholder="请输入注册时的邮箱" required>
+        </div>
+        <div class="form-group">
+          <label>验证码</label>
+          <div class="code-row">
+            <input type="text" id="resetCode" placeholder="6位数字验证码" maxlength="6" required>
+            <button type="button" id="sendResetCodeBtn" class="send-code-btn">获取验证码</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>新密码</label>
+          <input type="password" id="newPassword" placeholder="至少8位，包含字母和数字" required>
+        </div>
+        <button type="submit" class="submit-btn" id="resetSubmitBtn">确认修改</button>
+      </form>
+      <div class="modal-footer">
+        <a href="javascript:void(0)" id="backToLoginLink">返回登录</a>
+      </div>
+    </div>
+
+    <div id="userPanel" style="display: none; text-align: center;">
+      <div class="avatar" id="userPanelAvatar" style="width: 70px; height: 70px; margin: 0 auto 16px; font-size: 28px; border-radius: 26px; overflow: hidden; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #4f7cff, #8a5cf6);">
+        <span id="userAvatarLetter" style="color: #fff;">U</span>
+      </div>
+      <h3 id="userNickname">用户昵称</h3>
+      <div style="margin: 15px 0 20px; font-size: 14px; color: #6f7890; text-align: left;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span>经验值：<span id="userExpText">0/200</span></span>
+          <span id="userLevelText">Lv1</span>
+        </div>
+        <div style="width: 100%; height: 14px; background: #ffffff; border: 1px solid #e8ebf5; border-radius: 7px; overflow: hidden;">
+          <div id="expBarFill" style="height: 100%; width: 0%; background: #4ade80; border-radius: 7px; transition: width 0.5s ease, background-color 0.5s ease;"></div>
+        </div>
+      </div>
+      <button class="submit-btn" id="logoutBtn" style="background: linear-gradient(110deg, #ff7a8a, #ff2442);">退出登录</button>
+    </div>
+  </div>
 </div>
 
-<!-- 帮助模态窗 (FAQ) -->
-<div id="helpModal" class="modal-overlay">
-    <div class="modal-container">
-        <div class="modal-header">
-            <span>常见问题</span>
-            <button class="close-modal" id="closeHelpModal">✕</button>
-        </div>
-        <div class="modal-body">
-            <input type="text" id="faqSearchInput" class="faq-search" placeholder="搜索你想问的...">
-            <div class="faq-list" id="faqList"></div>
-        </div>
-    </div>
+<!-- ★ 名牌命名弹窗 -->
+<div class="modal-overlay" id="badgeNameModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeBadgeNameModal">&times;</button>
+    <h3 style="text-align:center;margin-bottom:18px;" id="badgeNameModalTitle">修改名牌名称</h3>
+    <form id="badgeNameForm">
+      <div class="form-group">
+        <label>名牌名称（<span id="badgeNameMaxLen">4</span> 字以内）</label>
+        <input type="text" id="badgeNameInput" placeholder="请输入名牌显示的名称" maxlength="6">
+      </div>
+      <button type="submit" class="submit-btn" id="badgeNameSubmitBtn">确定</button>
+    </form>
+  </div>
 </div>
 
-<!-- 设置模态窗 -->
-<div id="settingsModal" class="modal-overlay">
-    <div class="modal-container">
-        <div class="modal-header">
-            <span>游戏设置</span>
-            <button class="close-modal" id="closeSettingsModal">✕</button>
-        </div>
-        <div class="modal-body">
-            <div class="setting-row">
-                <label>·&nbsp;&nbsp;动画效果</label>
-                <div class="toggle-switch" id="animationToggle"></div>
-            </div>
-            <div class="setting-row">
-                <label>·&nbsp;&nbsp;讲价次数</label>
-                <input type="number" id="bargainCountInput" class="number-selector" min="1" max="3" step="1" value="1">
-            </div>
-            <div style="text-align:center; margin-top: 10px;"><small>设置即时生效</small></div>
-        </div>
-    </div>
-</div>
+<footer>
+  <div>© 2026 这人针不错</div>
+  <div style="margin-top:6px">ZRZBC</div>
+</footer>
 
 <script>
-    // ---------- 音效模块 (保证点击有声) ----------
-    let audioCtx = null;
-    function initAudio() {
-        if (audioCtx) return audioCtx;
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        return audioCtx;
-    }
-    function ensureAudioContext() {
-        const ctx = initAudio();
-        if (ctx.state === 'suspended') {
-            ctx.resume();
-        }
-    }
-    function playOpenBoxSound() {
-        try {
-            ensureAudioContext();
-            const ctx = initAudio();
-            const now = ctx.currentTime;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.type = 'sine';
-            osc.frequency.value = 880;
-            gain.gain.setValueAtTime(0.2, now);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
-            osc.start();
-            osc.stop(now + 0.4);
-        } catch(e) { console.warn(e); }
-    }
-    function playRevealSound() {
-        try {
-            ensureAudioContext();
-            const ctx = initAudio();
-            const now = ctx.currentTime;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.type = 'triangle';
-            osc.frequency.value = 660;
-            gain.gain.setValueAtTime(0.25, now);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
-            osc.start();
-            osc.stop(now + 0.3);
-            setTimeout(() => {
-                const osc2 = ctx.createOscillator();
-                const gain2 = ctx.createGain();
-                osc2.connect(gain2);
-                gain2.connect(ctx.destination);
-                osc2.type = 'sine';
-                osc2.frequency.value = 1320;
-                gain2.gain.setValueAtTime(0.15, ctx.currentTime);
-                gain2.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
-                osc2.start();
-                osc2.stop(ctx.currentTime + 0.25);
-            }, 120);
-        } catch(e) {}
-    }
-    function playRollingSound() {
-        try {
-            ensureAudioContext();
-            const ctx = initAudio();
-            const now = ctx.currentTime;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.type = 'sawtooth';
-            osc.frequency.value = 400;
-            gain.gain.setValueAtTime(0.08, now);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
-            osc.start();
-            osc.stop(now + 0.25);
-        } catch(e) {}
-    }
-    function playDealSound() {
-        try {
-            ensureAudioContext();
-            const ctx = initAudio();
-            const now = ctx.currentTime;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.type = 'square';
-            osc.frequency.value = 520;
-            gain.gain.setValueAtTime(0.2, now);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
-            osc.start();
-            osc.stop(now + 0.35);
-        } catch(e) {}
-    }
-    document.body.addEventListener('click', () => {
-        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-        else if (!audioCtx) initAudio().resume();
-    }, { once: true });
+document.addEventListener('DOMContentLoaded', function () {
 
-    // ---------- 游戏数据 ----------
-    const FULL_AMOUNTS = [0.1,1,5,10,25,50,75,100,200,300,400,500,750,1000,5000,10000,25000,50000,75000,100000,200000,300000,400000,500000,750000,1000000];
-    const ROUND_OPEN_COUNTS = [6,5,4,3,2,1,1];
-    const MAX_ROUND = ROUND_OPEN_COUNTS.length;
-
-    let chests = [];
-    let chestElements = [];
-    let playerChestId = -1;
-    let eliminatedSet = new Set();
-    let currentRound = 0;
-    let needOpenInThisRound = 0;
-    let gameActive = false;
-    let waitingBuyer = false;
-    let bargainTimesLeft = 1;
-    let bargainUsedCount = 0;
-    let currentOffer = 0;
-    let gameOverFlag = false;
-    let animationLock = false;
-    let rollingInterval = null;
-    let animationsEnabled = true;
-
-    // DOM
-    const chestGridDiv = document.getElementById('chestGrid');
-    const moneyGridDiv = document.getElementById('moneyGrid');
-    const offerAmountSpan = document.getElementById('offerAmount');
-    const roundStatsDiv = document.getElementById('roundStats');
-    const needOpenInfoSpan = document.getElementById('needOpenInfo');
-    const acceptBtn = document.getElementById('acceptBtn');
-    const rejectBtn = document.getElementById('rejectBtn');
-    const bargainBtn = document.getElementById('bargainBtn');
-    const restartBtn = document.getElementById('restartBtn');
-    const forceResetBtn = document.getElementById('forceResetBtn');
-    const buyerSection = document.getElementById('buyerPanel');
-    const helpModal = document.getElementById('helpModal');
-    const settingsModal = document.getElementById('settingsModal');
-    const animationToggle = document.getElementById('animationToggle');
-    const bargainCountInput = document.getElementById('bargainCountInput');
-
-    // FAQ 数据
-    const faqData = [
-        { q: "游戏规则是什么？", a: "游戏内共有26个宝箱，分别对应不同的金额，这些金额皆对玩家保密。游戏开始后，玩家需要先抽一个宝箱作为底牌。之后的每轮里，玩家都需要靠选择来打开指定数量的宝箱，每开一个就会在右侧的奖金池里划掉对应的金额。轮过后，下方会有商人买家来购买你的宝箱，他们会根据奖金池里剩余的金额来估价，玩家可以选择成交以拿走买家出价的金额，也可以继续游戏。若七轮后仍没有与买家成交，则直接打开底牌，拿走底牌对应的金额。" },
-        { q: "什么是讲价？", a: "在每局游戏中，买家都会给玩家1~3次讲价的机会（次数可在设置内更改），如果本轮玩家对买家的出价不满意，可以选择去使用。使用后，买家会根据当前局势的利弊来选择是提高价格还是保持原价。" },
-        { q: "如何判断当前局势是否对自己有利？", a: "判断局势是否有利，主要看奖金池里大额数值（如10万以上）和小额数值（如1万以下）的比例。剩余的大额越多、小额越少，说明玩家底牌更有可能是大额，买家为了获利，出价就会更高；反之剩余的小额居多，买家则要压低估价以防止亏损。简单来说，在每轮选择宝箱时，宝箱的数额越小对自己则越有利。" },
-        { q: "如何最大程度防止亏损？", a: "建议玩家不要轻易接受明显低于常规的报价，剩余大额较多时可拒绝成交，坚持开底牌以博取更高的收益，比如场上还剩下400、20万、30万、40万、75万，倘若买家报价10万，则可以选择拒绝成交，因为你的底牌大概率在20万及以上；此外，适时使用讲价卡迫使买家重新出价，若新价提升则有利，若不变则说明当前价格已较合理；第三，避免在剩余金额多为小额时硬撑，接受合理报价以防止空手而归。" },
-        { q: "底牌能不能换？", a: "不能，底牌在游戏开始前抽定后就不可更改。如果在游戏期间点击重选底牌，会重新开始游戏。" }
-    ];
-
-    // 辅助函数
-    function showInfoMessage(msg) {
-        const oldToast = document.querySelector('.global-toast');
-        if(oldToast) oldToast.remove();
-        const toast = document.createElement('div');
-        toast.className = 'global-toast';
-        toast.style.fontSize = '1.2rem';
-        toast.style.whiteSpace = 'nowrap';
-        toast.style.background = '#0a1428ee';
-        toast.textContent = msg;
-        document.body.appendChild(toast);
-        setTimeout(() => {
-            toast.classList.add('fade-out');
-            setTimeout(() => toast.remove(), 500);
-        }, 2000);
-    }
-
-    // 设置
-    function loadSettings() {
-        const savedAnim = localStorage.getItem('animationsEnabled');
-        if(savedAnim !== null) animationsEnabled = savedAnim === 'true';
-        const savedBargain = localStorage.getItem('bargainTimesLeftInit');
-        if(savedBargain !== null) bargainTimesLeft = parseInt(savedBargain) || 1;
-        else bargainTimesLeft = 1;
-        if(animationToggle) {
-            if(animationsEnabled) animationToggle.classList.add('active');
-            else animationToggle.classList.remove('active');
-        }
-        if(bargainCountInput) bargainCountInput.value = bargainTimesLeft;
-    }
-    function saveSettings() {
-        localStorage.setItem('animationsEnabled', animationsEnabled);
-        localStorage.setItem('bargainTimesLeftInit', bargainTimesLeft);
-    }
-    function resetBargainTimes() {
-        bargainTimesLeft = parseInt(bargainCountInput.value);
-        if(isNaN(bargainTimesLeft)) bargainTimesLeft = 1;
-        bargainTimesLeft = Math.min(3, Math.max(1, bargainTimesLeft));
-        bargainUsedCount = 0;
-        updateBargainButtonState();
-    }
-    function updateBargainButtonState() {
-        if(!gameActive || !waitingBuyer) bargainBtn.disabled = true;
-        else {
-            if(bargainUsedCount >= bargainTimesLeft) bargainBtn.disabled = true;
-            else bargainBtn.disabled = false;
-        }
-    }
-
-    // AI
-    function computeFairOffer(remainingList) {
-        if (!remainingList.length) return 0;
-        let amounts = [...remainingList];
-        amounts.sort((a,b)=>a-b);
-        const minVal = amounts[0];
-        const maxVal = amounts[amounts.length-1];
-        const avg = amounts.reduce((a,b)=>a+b,0) / amounts.length;
-        let riskFactor = 0.74;
-        if (minVal <= 100 && maxVal >= 100000) riskFactor = 0.55;
-        else if (minVal <= 500 && maxVal >= 500000) riskFactor = 0.62;
-        else if (minVal <= 5000 && maxVal >= 200000) riskFactor = 0.68;
-        else if (minVal / maxVal > 0.3) riskFactor = 0.86;
-        else riskFactor = 0.7;
-        if (amounts.length <= 5 && minVal > 50000) riskFactor = 0.92;
-        if (amounts.length <= 3 && minVal > 100000) riskFactor = 0.96;
-        let offer = Math.floor(avg * riskFactor);
-        offer = Math.max(offer, Math.floor(minVal * 0.35));
-        offer = Math.min(offer, Math.floor(maxVal * 0.85));
-        if (amounts.length === 4 && amounts[0] >= 300000 && amounts[3] >= 1000000) offer = Math.floor(avg * 0.72);
-        if (minVal <= 400 && maxVal >= 300000 && amounts.length > 5) offer = Math.floor(avg * 0.5);
-        return Math.max(offer, 1);
-    }
-    function bargainUpgrade(currentOfferVal, remainingList) {
-        let newOffer = computeFairOffer(remainingList);
-        const highCount = remainingList.filter(v => v >= 50000).length;
-        const total = remainingList.length;
-        const smallCount = remainingList.filter(v => v < 1000).length;
-        let willUpgrade = false;
-        if (newOffer > currentOfferVal) willUpgrade = true;
-        if (smallCount > total / 2) willUpgrade = false;
-        if (highCount > total / 2 && newOffer > currentOfferVal) willUpgrade = true;
-        if (currentOfferVal > (remainingList.reduce((a,b)=>a+b,0)/remainingList.length) * 0.7) willUpgrade = false;
-        return willUpgrade ? newOffer : currentOfferVal;
-    }
-    function getRemainingAmounts() { return FULL_AMOUNTS.filter(amt => !eliminatedSet.has(amt)); }
-
-    let moneyItemMap = new Map();
-    function buildMoneyGrid() {
-        moneyGridDiv.innerHTML = '';
-        moneyItemMap.clear();
-        const leftCol = FULL_AMOUNTS.slice(0,13);
-        const rightCol = FULL_AMOUNTS.slice(13,26);
-        for(let i=0;i<13;i++){
-            const lv=leftCol[i], rv=rightCol[i];
-            const ld=document.createElement('div'); ld.className='money-item';
-            if(eliminatedSet.has(lv)) ld.classList.add('eliminated');
-            ld.textContent=lv.toLocaleString();
-            moneyGridDiv.appendChild(ld); moneyItemMap.set(lv,ld);
-            const rd=document.createElement('div'); rd.className='money-item';
-            if(eliminatedSet.has(rv)) rd.classList.add('eliminated');
-            rd.textContent=rv.toLocaleString();
-            moneyGridDiv.appendChild(rd); moneyItemMap.set(rv,rd);
-        }
-    }
-    function updateMoneyUIWithAnimation(amount) {
-        const div = moneyItemMap.get(amount);
-        if(div && !div.classList.contains('eliminated')) {
-            // 无动画，直接添加消除样式
-            div.classList.add('eliminated');
-        } else if(div) div.classList.add('eliminated');
-    }
-
-    // 开箱 (无动画版本)
-    async function openChestWithAnimation(chestId) {
-        if (animationLock) return;
-        const chestObj = chests.find(c => c.id === chestId);
-        if (!chestObj || !chestObj.visible || playerChestId === chestId) return;
-        if (needOpenInThisRound <= 0) {
-            showInfoMessage("本轮开箱次数已达上限！");
-            return;
-        }
-        animationLock = true;
-        const chestDiv = chestElements[chestId];
-        if (chestDiv && animationsEnabled === false) {
-            // 无动画直接隐藏
-            chestDiv.classList.add('vanish-placeholder');
-        } else if (chestDiv && animationsEnabled) {
-            // 虽然有动画开关，但要求关闭动画时所有动画消失，因此直接不加动画类，仅设置占位
-            chestDiv.classList.add('vanish-placeholder');
-        } else {
-            if(chestDiv) chestDiv.classList.add('vanish-placeholder');
-        }
-        // 播放音效
-        playOpenBoxSound();
-        const amountValue = chestObj.amount;
-        showInfoMessage(`✨ ${amountValue.toLocaleString()} ✨`);
-        if (!eliminatedSet.has(amountValue)) {
-            eliminatedSet.add(amountValue);
-            updateMoneyUIWithAnimation(amountValue);
-        }
-        chestObj.visible = false;
-        if(chestDiv){
-            const labelSpan = chestDiv.querySelector('.chest-label');
-            if(labelSpan) labelSpan.textContent = '已开';
-        }
-        needOpenInThisRound--;
-        updateHeaderInfo();
-        if (needOpenInThisRound === 0 && gameActive && !waitingBuyer && !gameOverFlag) {
-            triggerBuyerRound();
-        }
-        animationLock = false;
-    }
-
-    function selectAsPlayerCard(chestId) {
-        if (playerChestId !== -1) return;
-        const chest = chests.find(c => c.id === chestId);
-        if (!chest || !chest.visible) return;
-        playerChestId = chestId;
-        chest.isPlayerCard = true;
-        gameActive = true;
-        currentRound = 1;
-        needOpenInThisRound = ROUND_OPEN_COUNTS[0];
-        waitingBuyer = false;
-        gameOverFlag = false;
-        bargainUsedCount = 0;
-        updateHeaderInfo();
-        offerAmountSpan.textContent = '—';
-        document.getElementById('bargainStatus').innerText = '';
-        const targetDiv = chestElements[chestId];
-        if(targetDiv) targetDiv.classList.add('selected-card');
-        showInfoMessage(`底牌已锁定为 ${chest.number} 号宝箱！`);
-        updateBargainButtonState();
-    }
-
-    async function triggerBuyerRound() {
-        if (!gameActive || gameOverFlag) return;
-        if (rollingInterval) clearInterval(rollingInterval);
-        buyerSection.classList.add('focused');
-        if (!animationsEnabled) {
-            // 无滚动动画，直接显示价格
-            const remaining = getRemainingAmounts();
-            const finalOffer = computeFairOffer(remaining);
-            currentOffer = finalOffer;
-            offerAmountSpan.textContent = currentOffer.toLocaleString() + " 💰";
-            playRevealSound();
-            waitingBuyer = true;
-            updateBargainButtonState();
-            document.getElementById('bargainStatus').innerText = '';
-            return;
-        }
-        // 有滚动动画
-        let rollCount = 0;
-        const totalSteps = 15;
-        const interval = setInterval(() => {
-            const fake = Math.floor(Math.random() * 1000000);
-            offerAmountSpan.textContent = `${fake.toString().slice(0,6)}`;
-            playRollingSound();
-            rollCount++;
-            if (rollCount >= totalSteps) {
-                clearInterval(interval);
-                const remaining = getRemainingAmounts();
-                const finalOffer = computeFairOffer(remaining);
-                currentOffer = finalOffer;
-                offerAmountSpan.textContent = currentOffer.toLocaleString() + " 💰";
-                playRevealSound();
-                waitingBuyer = true;
-                updateBargainButtonState();
-                document.getElementById('bargainStatus').innerText = '';
-            }
-        }, 100);
-        rollingInterval = interval;
-    }
-
-    function useBargain() {
-        if (!waitingBuyer || !gameActive) return;
-        if (bargainUsedCount >= bargainTimesLeft) {
-            document.getElementById('bargainStatus').innerText = '讲价次数已用完！';
-            return;
-        }
-        const remaining = getRemainingAmounts();
-        const newOffer = bargainUpgrade(currentOffer, remaining);
-        if (newOffer > currentOffer) {
-            currentOffer = newOffer;
-            offerAmountSpan.textContent = currentOffer.toLocaleString() + " 💰";
-            document.getElementById('bargainStatus').innerHTML = '商人重新估价，提高报价！';
-            showInfoMessage(`买家提价至 ${currentOffer.toLocaleString()}`);
-        } else {
-            document.getElementById('bargainStatus').innerHTML = '商人拒绝加价，维持原报价';
-            showInfoMessage(`讲价失败，价格不变`);
-        }
-        bargainUsedCount++;
-        updateBargainButtonState();
-    }
-
-    function settleWin(amountWon, isDeal = true) {
-        if (gameOverFlag) return;
-        gameActive = false;
-        waitingBuyer = false;
-        gameOverFlag = true;
-        if (rollingInterval) clearInterval(rollingInterval);
-        const playerChest = chests.find(c => c.id === playerChestId);
-        const actual = playerChest ? playerChest.amount : 0;
-        if (isDeal) {
-            showInfoMessage(`成交价: ${amountWon.toLocaleString()} 金币`);
-            roundStatsDiv.innerHTML = `成交！获得 ${amountWon.toLocaleString()}`;
-            needOpenInfoSpan.innerHTML = `底牌金额为 ${actual.toLocaleString()}`;
-            playDealSound();
-        } else {
-            showInfoMessage(`你的底牌价值: ${actual.toLocaleString()}`);
-            roundStatsDiv.innerHTML = `底牌揭晓: ${actual.toLocaleString()}`;
-            needOpenInfoSpan.innerHTML = `游戏结束`;
-            playDealSound();
-        }
-        offerAmountSpan.textContent = isDeal ? `成交 ${amountWon.toLocaleString()}` : `底牌 ${actual.toLocaleString()}`;
-        setTimeout(() => { buyerSection.classList.remove('focused'); }, 1000);
-        disableGameClicks();
-    }
-    function finalOpenPlayerChest() {
-        if (!gameActive) return;
-        const pc = chests.find(c => c.id === playerChestId);
-        settleWin(pc?.amount || 0, false);
-    }
-    function disableGameClicks() {
-        chestElements.forEach(el => el.style.pointerEvents = 'none');
-    }
-    function nextRound() {
-        if (!waitingBuyer) return;
-        if (currentRound >= MAX_ROUND) {
-            finalOpenPlayerChest();
-            return;
-        }
-        waitingBuyer = false;
-        currentRound++;
-        needOpenInThisRound = ROUND_OPEN_COUNTS[currentRound-1];
-        updateHeaderInfo();
-        if (needOpenInThisRound === 0) triggerBuyerRound();
-        else {
-            showInfoMessage(`进入第 ${currentRound} 轮，还需开启 ${needOpenInThisRound} 个宝箱`);
-            offerAmountSpan.textContent = '—';
-            document.getElementById('bargainStatus').innerText = '';
-        }
-        buyerSection.classList.remove('focused');
-    }
-    function updateHeaderInfo() {
-        if (!gameActive && playerChestId === -1) {
-            roundStatsDiv.innerHTML = `挑选底牌`;
-            needOpenInfoSpan.innerHTML = `请选择任意一个宝箱作为底牌`;
-        } else if (gameActive && !gameOverFlag) {
-            roundStatsDiv.innerHTML = `第 <span>${currentRound}</span> / <span>${MAX_ROUND}</span> 轮`;
-            needOpenInfoSpan.innerHTML = `本轮还需开启 <strong style="color:#ffcc77">${needOpenInThisRound}</strong> 个宝箱`;
-        }
-    }
-
-    function buildChestsDOM() {
-        chestGridDiv.innerHTML = '';
-        chestElements = [];
-        for (let i = 0; i < chests.length; i++) {
-            const chest = chests[i];
-            const div = document.createElement('div');
-            div.className = 'chest';
-            if (playerChestId === chest.id) div.classList.add('selected-card');
-            if (!chest.visible) div.classList.add('vanish-placeholder');
-            const yOff = (i % 5 === 0 ? -4 : (i % 7 === 0 ? 5 : 0));
-            const xOff = (i % 4 === 0 ? 5 : (i % 3 === 0 ? -4 : 0));
-            div.style.setProperty('--x-offset', `${xOff}px`);
-            div.style.setProperty('--y-offset', `${yOff}px`);
-            div.style.transform = `translate(var(--x-offset), var(--y-offset))`;
-            const numSpan = document.createElement('div');
-            numSpan.className = 'chest-number';
-            numSpan.textContent = `${chest.number}`;
-            const labelSpan = document.createElement('div');
-            labelSpan.className = 'chest-label';
-            if (playerChestId === chest.id && chest.visible) labelSpan.textContent = '⭐ 底牌 ⭐';
-            else if (!chest.visible) labelSpan.textContent = '已开';
-            else labelSpan.textContent = '宝箱';
-            div.appendChild(numSpan);
-            div.appendChild(labelSpan);
-            div.setAttribute('data-id', chest.id);
-            div.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (animationLock || gameOverFlag) return;
-                if (!gameActive && playerChestId === -1 && chest.visible) selectAsPlayerCard(chest.id);
-                else if (gameActive && !waitingBuyer && !gameOverFlag && chest.visible && playerChestId !== chest.id) openChestWithAnimation(chest.id);
-            });
-            chestGridDiv.appendChild(div);
-            chestElements.push(div);
-        }
-    }
-
-    function resetAndNewGame() {
-        if (rollingInterval) clearInterval(rollingInterval);
-        buyerSection.classList.remove('focused');
-        chests = []; playerChestId = -1; eliminatedSet.clear(); currentRound = 0;
-        needOpenInThisRound = 0; gameActive = false; waitingBuyer = false; gameOverFlag = false;
-        currentOffer = 0; animationLock = false;
-        bargainUsedCount = 0;
-        bargainTimesLeft = parseInt(bargainCountInput.value) || 1;
-        bargainTimesLeft = Math.min(3, Math.max(1, bargainTimesLeft));
-        let shuffled = [...FULL_AMOUNTS];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        for (let i = 0; i < 26; i++) {
-            chests.push({ id: i, number: i+1, amount: shuffled[i], visible: true, isPlayerCard: false });
-        }
-        buildMoneyGrid();
-        buildChestsDOM();
-        roundStatsDiv.innerHTML = `挑选底牌`;
-        needOpenInfoSpan.innerHTML = `请选择任意一个宝箱作为底牌`;
-        offerAmountSpan.textContent = '—';
-        document.getElementById('bargainStatus').innerText = '';
-        gameActive = false;
-        gameOverFlag = false;
-        waitingBuyer = false;
-        updateBargainButtonState();
-    }
-
-    // FAQ 构建
-    function buildFaqList(searchTerm = '') {
-        const container = document.getElementById('faqList');
-        container.innerHTML = '';
-        const filtered = faqData.filter(item => item.q.includes(searchTerm) || item.a.includes(searchTerm));
-        filtered.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'faq-item';
-            const qDiv = document.createElement('div');
-            qDiv.className = 'faq-question';
-            qDiv.textContent = item.q;
-            const aDiv = document.createElement('div');
-            aDiv.className = 'faq-answer';
-            aDiv.textContent = item.a;
-            div.appendChild(qDiv);
-            div.appendChild(aDiv);
-            div.addEventListener('click', () => div.classList.toggle('expanded'));
-            container.appendChild(div);
+  /* ===== 游玩次数统计 ===== */
+  async function loadPlayCounts() {
+    try {
+      const res = await fetch('/api/game/get-clicks', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+      });
+      const data = await res.json();
+      if (data.success) {
+        document.querySelectorAll('.game-plays').forEach(el => {
+          const id = el.dataset.gameId;
+          const count = data.data[id] || 0;
+          el.textContent = '游玩次数：' + count.toLocaleString();
         });
+      }
+    } catch(e) { console.log('加载游玩次数失败', e); }
+  }
+  function recordPlay(gameId) {
+    fetch('/api/game/add-click', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId }), keepalive: true
+    }).catch(function(){});
+  }
+  loadPlayCounts();
+  document.querySelectorAll('.game-item').forEach(card => {
+    card.addEventListener('click', () => {
+      const plays = card.querySelector('.game-plays');
+      if (plays) {
+        recordPlay(plays.dataset.gameId);
+        const cur = parseInt((plays.textContent.match(/[\d,]+/) || ['0'])[0].replace(/,/g, '')) || 0;
+        plays.textContent = '游玩次数：' + (cur + 1).toLocaleString();
+      }
+    });
+  });
+
+  /* ===== 搜索 ===== */
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const keyword = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('.game-item').forEach(item => {
+        const fullText = item.textContent.toLowerCase();
+        const match = !keyword || fullText.includes(keyword);
+        item.style.display = match ? '' : 'none';
+      });
+    });
+  }
+
+  /* ===== DOM ===== */
+  const avatarBtn = document.getElementById('avatarBtn');
+  const authModal = document.getElementById('authModal');
+  const closeModal = document.getElementById('closeModal');
+  const authFormContainer = document.getElementById('authFormContainer');
+  const resetFormContainer = document.getElementById('resetFormContainer');
+  const userPanel = document.getElementById('userPanel');
+  const tabLogin = document.getElementById('tabLogin');
+  const tabRegister = document.getElementById('tabRegister');
+  const authForm = document.getElementById('authForm');
+  const emailInput = document.getElementById('emailInput');
+  const codeInput = document.getElementById('codeInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const nicknameGroup = document.getElementById('nicknameGroup');
+  const nicknameInput = document.getElementById('nicknameInput');
+  const sendCodeBtn = document.getElementById('sendCodeBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+  const resetForm = document.getElementById('resetForm');
+  const resetEmail = document.getElementById('resetEmail');
+  const resetCode = document.getElementById('resetCode');
+  const newPassword = document.getElementById('newPassword');
+  const sendResetCodeBtn = document.getElementById('sendResetCodeBtn');
+  const resetSubmitBtn = document.getElementById('resetSubmitBtn');
+  const backToLoginLink = document.getElementById('backToLoginLink');
+  const userAvatarLetter = document.getElementById('userAvatarLetter');
+  const userNickname = document.getElementById('userNickname');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  function startCountdown(btn) {
+    let countdown = 60;
+    btn.disabled = true; btn.textContent = `${countdown}秒后重试`;
+    const timer = setInterval(() => {
+      countdown--;
+      if (countdown <= 0) { clearInterval(timer); btn.disabled = false; btn.textContent = '获取验证码'; }
+      else { btn.textContent = `${countdown}秒后重试`; }
+    }, 1000);
+  }
+  async function sendCode(email, btn) {
+    if (!email || !email.includes('@')) return alert('请输入有效的邮箱地址');
+    btn.disabled = true; btn.textContent = '发送中...';
+    try {
+      const res = await fetch('/api/auth/send-code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      const data = await res.json();
+      if (data.success) { startCountdown(btn); }
+      else { alert(data.error || '发送失败'); btn.disabled = false; btn.textContent = '获取验证码'; }
+    } catch (err) { alert('网络错误'); btn.disabled = false; btn.textContent = '获取验证码'; }
+  }
+
+  /* ===== 自动登录初始化 ===== */
+  const savedUser = localStorage.getItem('user');
+  if (savedUser) {
+    try {
+      const userData = JSON.parse(savedUser);
+      const avatarBtnHTML = document.querySelector('#avatarBtn');
+      if (avatarBtnHTML) {
+        if (userData.avatar) {
+          avatarBtnHTML.innerHTML = `<img src="${userData.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        } else {
+          avatarBtnHTML.innerHTML = `<span style="font-size:16px;font-weight:bold;">${(userData.nickname || 'U').charAt(0).toUpperCase()}</span>`;
+        }
+      }
+      fetch('/api/auth/me', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userData.email })
+      })
+      .then(res => res.json())
+      .then(data => { if (data.success && data.user) localStorage.setItem('user', JSON.stringify(data.user)); })
+      .catch(err => console.log('同步失败', err));
+    } catch(e) {}
+  }
+
+  /* ===== 头像点击 ===== */
+  if (avatarBtn && authModal) {
+    avatarBtn.addEventListener('click', async () => {
+      const user = localStorage.getItem('user');
+      if (user) { return; }
+      else {
+        authFormContainer.style.display = 'block';
+        resetFormContainer.style.display = 'none';
+        userPanel.style.display = 'none';
+        authModal.classList.add('show');
+      }
+    });
+  }
+
+  if (closeModal && authModal) {
+    closeModal.addEventListener('click', () => authModal.classList.remove('show'));
+    authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('show'); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && authModal.classList.contains('show')) authModal.classList.remove('show'); });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('user'); alert('已退出登录');
+      authModal.classList.remove('show'); location.reload();
+    });
+  }
+
+  if (tabLogin && tabRegister) {
+    tabLogin.addEventListener('click', () => {
+      tabLogin.classList.add('active'); tabRegister.classList.remove('active');
+      nicknameGroup.style.display = 'none';
+      if (document.getElementById('codeGroup')) { document.getElementById('codeGroup').style.display = 'none'; if (codeInput) codeInput.required = false; }
+      forgotPasswordLink.style.display = 'inline';
+    });
+    tabRegister.addEventListener('click', () => {
+      tabRegister.classList.add('active'); tabLogin.classList.remove('active');
+      nicknameGroup.style.display = 'block';
+      if (document.getElementById('codeGroup')) { document.getElementById('codeGroup').style.display = 'block'; if (codeInput) codeInput.required = true; }
+      forgotPasswordLink.style.display = 'none';
+    });
+  }
+
+  if (forgotPasswordLink && backToLoginLink) {
+    forgotPasswordLink.addEventListener('click', () => { authFormContainer.style.display = 'none'; resetFormContainer.style.display = 'block'; });
+    backToLoginLink.addEventListener('click', () => { authFormContainer.style.display = 'block'; resetFormContainer.style.display = 'none'; });
+  }
+
+  if (sendCodeBtn) sendCodeBtn.addEventListener('click', () => sendCode(emailInput.value.trim(), sendCodeBtn));
+  if (sendResetCodeBtn) sendResetCodeBtn.addEventListener('click', () => sendCode(resetEmail.value.trim(), sendResetCodeBtn));
+
+  if (authForm) {
+    authForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const code = codeInput.value.trim();
+      const password = passwordInput.value.trim();
+      const isRegister = tabRegister.classList.contains('active');
+      const nickname = isRegister && nicknameInput ? nicknameInput.value.trim() : '';
+      if (!email || !password) return alert('请填写邮箱和密码');
+      if (isRegister && !code) return alert('请填写验证码');
+      if (password.length < 8) return alert('密码至少8位');
+      if (isRegister && !nickname) return alert('请设置您的昵称');
+      submitBtn.disabled = true; submitBtn.textContent = '处理中...';
+      try {
+        const payload = isRegister ? { email, code, password, nickname } : { email, password };
+        const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (data.success) { alert(isRegister ? '注册成功！' : '登录成功！'); if (data.user) { localStorage.setItem('user', JSON.stringify(data.user)); location.reload(); } }
+        else { alert(data.error || '操作失败'); }
+      } catch (err) { alert('网络错误'); }
+      finally { submitBtn.disabled = false; submitBtn.textContent = '登录 / 注册'; }
+    });
+  }
+
+  if (resetForm) {
+    resetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = resetEmail.value.trim();
+      const code = resetCode.value.trim();
+      const password = newPassword.value.trim();
+      if (!email || !code || !password) return alert('请填写所有字段');
+      if (password.length < 8) return alert('密码至少8位');
+      resetSubmitBtn.disabled = true; resetSubmitBtn.textContent = '处理中...';
+      try {
+        const res = await fetch('/api/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, code, newPassword: password }) });
+        const data = await res.json();
+        if (data.success) { alert('密码重置成功！'); authFormContainer.style.display = 'block'; resetFormContainer.style.display = 'none'; }
+        else { alert(data.error || '重置失败'); }
+      } catch (err) { alert('网络错误'); }
+      finally { resetSubmitBtn.disabled = false; resetSubmitBtn.textContent = '确认修改'; }
+    });
+  }
+
+  /* ===== 悬停卡片逻辑 ===== */
+  const userCenter = document.getElementById('userCenter');
+  if (userCenter) {
+    userCenter.addEventListener('mouseenter', () => {
+      const user = localStorage.getItem('user');
+      const popoverLoggedIn = document.getElementById('popoverLoggedIn');
+      const popoverNotLoggedIn = document.getElementById('popoverNotLoggedIn');
+      
+      if (user) {
+        const userData = JSON.parse(user);
+        popoverLoggedIn.style.display = 'block';
+        popoverNotLoggedIn.style.display = 'none';
+
+        if (userData.avatar) {
+          document.getElementById('popoverAvatar').style.backgroundImage = `url(${userData.avatar})`;
+          document.getElementById('popoverAvatarLetter').style.display = 'none';
+        } else {
+          document.getElementById('popoverAvatar').style.backgroundImage = 'none';
+          document.getElementById('popoverAvatar').style.background = 'linear-gradient(135deg, #4f7cff, #8a5cf6)';
+          document.getElementById('popoverAvatarLetter').style.display = 'block';
+          document.getElementById('popoverAvatarLetter').style.color = '#fff';
+          document.getElementById('popoverAvatarLetter').textContent = (userData.nickname || 'U').charAt(0).toUpperCase();
+        }
+const popoverNickEl = document.getElementById('popoverNickname');
+const nickText = userData.nickname || '用户';
+const hasNickColor = userData.nickname_color && userData.nickname_color_expire_at &&
+                     userData.nickname_color_expire_at > Date.now() &&
+                     userData.nickname_color_equipped !== 0;
+if (hasNickColor) {
+  popoverNickEl.innerHTML = `<span class="nick-colored nick-${userData.nickname_color}">${nickText}</span>`;
+} else {
+  popoverNickEl.textContent = nickText;
+}
+        // 显示名牌（可点击修改）
+        const badgeEl = document.getElementById('popoverUserBadge');
+        if (badgeEl) {
+          if (userData.badge_type && userData.badge_name && userData.badge_expire_at && userData.badge_expire_at > Date.now()) {
+            badgeEl.innerHTML = `<span class="user-badge ${userData.badge_type} editable-badge" title="点击修改名牌名称">${userData.badge_name}</span>`;
+          } else {
+            badgeEl.innerHTML = '';
+          }
+        }
+        renderPopoverExp(userData.exp);
+      } else {
+        popoverLoggedIn.style.display = 'none';
+        popoverNotLoggedIn.style.display = 'block';
+      }
+    });
+  }
+
+  function renderPopoverExp(exp) {
+    const expNum = parseInt(exp) || 0;
+    const popoverExpText = document.getElementById('popoverExpText');
+    const popoverLevelText = document.getElementById('popoverLevelText');
+    const popoverExpBarFill = document.getElementById('popoverExpBarFill');
+    if (!popoverExpText || !popoverLevelText || !popoverExpBarFill) return;
+
+    let level = 1, nextExp = 200;
+    let baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
+    if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
+    else if (expNum >= 6200) { level = 6; nextExp = 13200; baseColor = '#ef4444'; darkColor = '#b91c1c'; }
+    else if (expNum >= 2800) { level = 5; nextExp = 6200; baseColor = '#f97316'; darkColor = '#c2410c'; }
+    else if (expNum >= 1200) { level = 4; nextExp = 2800; baseColor = '#facc15'; darkColor = '#eab308'; textColor = '#1f2937'; }
+    else if (expNum >= 500) { level = 3; nextExp = 1200; baseColor = '#3b82f6'; darkColor = '#1d4ed8'; }
+    else if (expNum >= 200) { level = 2; nextExp = 500; baseColor = '#22c55e'; darkColor = '#15803d'; }
+    if (nextExp === Infinity) { popoverExpText.textContent = `${expNum}/∞`; popoverExpBarFill.style.width = '100%'; }
+    else { popoverExpText.textContent = `${expNum}/${nextExp}`; popoverExpBarFill.style.width = Math.min((expNum / nextExp) * 100, 100) + '%'; }
+    popoverLevelText.textContent = `Lv${level}`;
+    popoverLevelText.style.background = `linear-gradient(135deg, ${baseColor}, ${darkColor})`;
+    popoverLevelText.style.color = textColor;
+    popoverExpBarFill.style.background = baseColor;
+  }
+
+  /* ===== 上传头像 ===== */
+  const popoverAvatar = document.getElementById('popoverAvatar');
+  const avatarUploadInput = document.getElementById('avatarUploadInput');
+  if (popoverAvatar && avatarUploadInput) {
+    popoverAvatar.addEventListener('click', (e) => { e.stopPropagation(); avatarUploadInput.click(); });
+    avatarUploadInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 500 * 1024) return alert('图片不能超过 500KB，请压缩后再上传');
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target.result;
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        try {
+          const res = await fetch('/api/auth/update-avatar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, avatar: base64 }) });
+          const data = await res.json();
+          if (data.success) {
+            user.avatar = base64; localStorage.setItem('user', JSON.stringify(user));
+            document.getElementById('popoverAvatar').style.backgroundImage = `url(${base64})`;
+            document.getElementById('popoverAvatarLetter').style.display = 'none';
+            const avatarBtnHTML = document.querySelector('#avatarBtn');
+            if (avatarBtnHTML) avatarBtnHTML.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+            alert('头像修改成功！');
+          } else { alert(data.error || '上传失败'); }
+        } catch (err) { alert('网络错误'); }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* ===== 点击昵称修改 ===== */
+  const popoverNickname = document.getElementById('popoverNickname');
+  if (popoverNickname) {
+    popoverNickname.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!user.email) return;
+      const newNickname = prompt('请输入新的昵称：', user.nickname);
+      if (!newNickname || newNickname.trim() === '' || newNickname === user.nickname) return;
+      try {
+        const res = await fetch('/api/auth/update-nickname', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, newNickname: newNickname.trim() }) });
+        const data = await res.json();
+        if (data.success) {
+          user.nickname = newNickname.trim(); localStorage.setItem('user', JSON.stringify(user));
+          document.getElementById('popoverNickname').textContent = user.nickname;
+          if (!user.avatar) {
+            document.getElementById('popoverAvatarLetter').textContent = user.nickname.charAt(0).toUpperCase();
+            const avatarBtnHTML = document.querySelector('#avatarBtn');
+            if (avatarBtnHTML) avatarBtnHTML.innerHTML = `<span style="font-size:16px;font-weight:bold;">${user.nickname.charAt(0).toUpperCase()}</span>`;
+          }
+          alert('昵称修改成功！');
+        } else { alert(data.error || '修改失败'); }
+      } catch (err) { alert('网络错误'); }
+    });
+  }
+
+  /* ===== ★ 点击名牌修改（每月 3 次） ===== */
+  const popoverUserBadge = document.getElementById('popoverUserBadge');
+  const badgeNameModal = document.getElementById('badgeNameModal');
+  const closeBadgeNameModal = document.getElementById('closeBadgeNameModal');
+  const badgeNameForm = document.getElementById('badgeNameForm');
+  const badgeNameInput = document.getElementById('badgeNameInput');
+  const badgeNameMaxLen = document.getElementById('badgeNameMaxLen');
+  const badgeNameModalTitle = document.getElementById('badgeNameModalTitle');
+
+  function getBadgeMaxLen(type) {
+    return { normal: 4, premium: 6, ultimate: 6 }[type] || 6;
+  }
+  function openRenameBadgeModal() {
+    const u = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!u.email) return;
+    if (!u.badge_type) return alert('你还没有名牌');
+    if (u.badge_expire_at && u.badge_expire_at < Date.now()) return alert('名牌已过期');
+    const currentMonth = new Date().toISOString().slice(0, 7);
+    let count = u.badge_update_count || 0;
+    if (u.badge_update_month !== currentMonth) count = 0;
+    if (u.badge_name && count >= 3) return alert('本月修改次数已用完（每月3次）');
+    badgeNameMaxLen.textContent = getBadgeMaxLen(u.badge_type);
+    badgeNameInput.maxLength = getBadgeMaxLen(u.badge_type);
+    badgeNameInput.value = u.badge_name || '';
+    badgeNameModalTitle.textContent = '修改名牌名称';
+    badgeNameModal.classList.add('show');
+  }
+
+  if (popoverUserBadge) {
+    popoverUserBadge.addEventListener('click', (e) => {
+      const badge = e.target.closest('.editable-badge');
+      if (!badge) return;
+      e.stopPropagation();
+      openRenameBadgeModal();
+    });
+  }
+
+  if (badgeNameForm) {
+    badgeNameForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!u.email) return alert('请先登录');
+      const newName = badgeNameInput.value.trim();
+      if (!newName) return alert('名称不能为空');
+      const btn = document.getElementById('badgeNameSubmitBtn');
+      btn.disabled = true; btn.textContent = '保存中...';
+      try {
+        const res = await fetch('/api/shop/update-badge-name', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: u.email, newName })
+        });
+        const data = await res.json();
+        if (data.success) {
+          badgeNameModal.classList.remove('show');
+          const meRes = await fetch('/api/auth/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: u.email }) });
+          const meData = await meRes.json();
+          if (meData.success && meData.user) localStorage.setItem('user', JSON.stringify(meData.user));
+          alert('名牌名称修改成功！');
+        } else alert(data.error || '修改失败');
+      } catch(err) { alert('网络错误'); }
+      finally { btn.disabled = false; btn.textContent = '确定'; }
+    });
+  }
+  if (closeBadgeNameModal) {
+    closeBadgeNameModal.addEventListener('click', () => badgeNameModal.classList.remove('show'));
+    badgeNameModal.addEventListener('click', (e) => { if (e.target === badgeNameModal) badgeNameModal.classList.remove('show'); });
+  }
+
+  /* ===== 悬停卡片签到 / 退出 ===== */
+  const popoverSigninBtn = document.getElementById('popoverSigninBtn');
+  if (popoverSigninBtn) {
+    popoverSigninBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      window.location.href = 'index.html#signin';
+    });
+  }
+  const popoverLogoutBtn = document.getElementById('popoverLogoutBtn');
+  if (popoverLogoutBtn) {
+    popoverLogoutBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); localStorage.removeItem('user'); alert('已退出登录'); window.location.reload();
+    });
+  }
+
+  /* ===== 页面切换淡入淡出 ===== */
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest('a');
+    if (!link) return;
+    var href = link.getAttribute('href');
+    if (!href) return;
+    if (href.startsWith('#') || href.startsWith('http') || link.target === '_blank' || href.startsWith('javascript:')) return;
+    e.preventDefault();
+    document.body.classList.add('page-leaving');
+    setTimeout(function () { window.location.href = href; }, 200);
+  });
+
+  /* ===== 语言切换 ===== */
+  var langBtn = document.getElementById('langBtn');
+  var langMenu = document.getElementById('langMenu');
+  var langSwitch = document.querySelector('.lang-switch');
+  if (langBtn && langMenu && langSwitch && typeof OpenCC !== 'undefined') {
+    var converters = { cn: null, hk: OpenCC.Converter({ from: 'cn', to: 'hk' }), tw: OpenCC.Converter({ from: 'cn', to: 'twp' }) };
+    var langNames = { cn: '简体中文 ▾', hk: '繁體中文（香港）▾', tw: '繁體中文（台灣）▾' };
+    var textNodes = [];
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+    var n;
+    while ((n = walker.nextNode())) {
+      if (!n.nodeValue || !n.nodeValue.trim()) continue;
+      var p = n.parentElement; if (!p) continue;
+      var tag = p.tagName; if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+      n.__original = n.nodeValue; textNodes.push(n);
     }
-
-    // 事件绑定
-    document.getElementById('helpIconBtn').onclick = () => { buildFaqList(''); helpModal.classList.add('active'); };
-    document.getElementById('settingsIconBtn').onclick = () => settingsModal.classList.add('active');
-    document.getElementById('closeHelpModal').onclick = () => helpModal.classList.remove('active');
-    document.getElementById('closeSettingsModal').onclick = () => settingsModal.classList.remove('active');
-    document.getElementById('faqSearchInput').addEventListener('input', (e) => buildFaqList(e.target.value));
-    animationToggle.onclick = () => {
-        animationsEnabled = !animationsEnabled;
-        if (animationsEnabled) animationToggle.classList.add('active');
-        else animationToggle.classList.remove('active');
-        saveSettings();
+    var applyLang = function (lang) {
+      var converter = converters[lang];
+      for (var i = 0; i < textNodes.length; i++) {
+        var node = textNodes[i]; if (!node.isConnected) continue;
+        node.nodeValue = converter ? converter(node.__original) : node.__original;
+      }
+      langBtn.textContent = langNames[lang];
+      var btns = langMenu.querySelectorAll('button');
+      for (var j = 0; j < btns.length; j++) { btns[j].classList.toggle('active', btns[j].getAttribute('data-lang') === lang); }
+      document.documentElement.lang = lang === 'cn' ? 'zh-CN' : (lang === 'hk' ? 'zh-HK' : 'zh-TW');
     };
-    bargainCountInput.onchange = () => {
-        let val = parseInt(bargainCountInput.value);
-        if (isNaN(val)) val = 1;
-        val = Math.min(3, Math.max(1, val));
-        bargainCountInput.value = val;
-        bargainTimesLeft = val;
-        saveSettings();
-        if (!gameActive && playerChestId === -1) bargainUsedCount = 0;
-        updateBargainButtonState();
-    };
-    acceptBtn.onclick = () => { if (waitingBuyer && gameActive && !gameOverFlag) settleWin(currentOffer, true); };
-    rejectBtn.onclick = () => { if (waitingBuyer && gameActive && !gameOverFlag) nextRound(); };
-    bargainBtn.onclick = () => { if (waitingBuyer && gameActive && !gameOverFlag) useBargain(); };
-    restartBtn.onclick = () => resetAndNewGame();
-    forceResetBtn.onclick = () => resetAndNewGame();
+    langBtn.addEventListener('click', function (e) { e.stopPropagation(); langMenu.classList.toggle('open'); });
+    var menuBtns = langMenu.querySelectorAll('button');
+    for (var k = 0; k < menuBtns.length; k++) {
+      (function (btn) {
+        btn.addEventListener('click', function () { applyLang(btn.getAttribute('data-lang')); langMenu.classList.remove('open'); });
+      })(menuBtns[k]);
+    }
+    document.addEventListener('click', function (e) { if (!langSwitch.contains(e.target)) langMenu.classList.remove('open'); });
+  }
 
-    loadSettings();
-    resetAndNewGame();
+});
 </script>
 </body>
 </html>
