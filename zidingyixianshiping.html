@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>讯息共享显示器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: #000;
+            font-family: 'Courier New', Courier, monospace;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        .pixel-board {
+            max-width: 1600px;
+            width: 100%;
+            background: #111;
+            border: 4px solid #ccc;
+            padding: 20px 16px;
+            box-shadow: 0 0 0 3px #333, 0 0 0 6px #686868;
+        }
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            margin-bottom: 24px;
+            border: 2px solid #3a3a3a;
+            background: #000;
+        }
+        #matrixCanvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #000;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+            border: none;
+            vertical-align: bottom;
+        }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+            background: #1a1a1a;
+            border: 2px solid #777;
+            padding: 16px;
+        }
+        .input-style-area {
+            flex: 2;
+            min-width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .input-row {
+            display: flex;
+            align-items: stretch;
+            gap: 6px;
+        }
+        #userText {
+            background: #111;
+            border: 2px solid #aaa;
+            color: #0f0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.4rem;
+            padding: 10px 12px;
+            flex: 1;
+        }
+        #userText:focus {
+            outline: none;
+            border-color: #fff;
+            background: #000;
+            color: #0f0;
+        }
+        .upload-btn {
+            background: #222;
+            border: 2px solid #bbb;
+            color: #eee;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.3rem;
+            padding: 0 24px;
+            cursor: pointer;
+        }
+        .upload-btn:hover {
+            background: #3c3c3c;
+            border-color: #fff;
+            color: #fff;
+        }
+        .style-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            align-items: center;
+            background: #1f1f1f;
+            border: 1px solid #585858;
+            padding: 8px 16px;
+        }
+        .style-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #ccc;
+        }
+        .style-item label {
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        .style-item input[type="color"] {
+            width: 40px;
+            height: 32px;
+            border: 2px solid #777;
+            background: #000;
+            cursor: pointer;
+        }
+        .style-item input[type="number"] {
+            background: #111;
+            border: 2px solid #777;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            padding: 6px 8px;
+            width: 80px;
+        }
+        .style-item.checkbox-group {
+            display: flex;
+            gap: 16px;
+        }
+        .style-check {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .style-check input {
+            width: 18px;
+            height: 18px;
+            accent-color: #0f0;
+        }
+        .default-color-btn {
+            background: #2a2a2a;
+            border: 2px solid #777;
+            color: #ddd;
+            font-family: 'Courier New', monospace;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .default-color-btn:hover {
+            background: #3c3c3c;
+            border-color: #aaa;
+        }
+        .action-group {
+            flex: 1;
+            min-width: 240px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .pixel-btn {
+            background: #222;
+            border: 2px solid #888;
+            color: #ddd;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 10px 16px;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 #444;
+        }
+        .pixel-btn:hover {
+            background: #333;
+            border-color: #eee;
+            color: #fff;
+            box-shadow: 2px 2px 0 #666;
+        }
+        .pixel-btn.small {
+            font-size: 0.95rem;
+            padding: 7px 12px;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #1c1c1c;
+            border: 4px solid #aaa;
+            padding: 25px 35px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 8px 8px 0 #0f0f0f;
+        }
+        .modal-content h3 {
+            color: #eee;
+            font-size: 1.8rem;
+            letter-spacing: 3px;
+            margin-bottom: 25px;
+            border-bottom: 2px dashed #777;
+            padding-bottom: 8px;
+        }
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            color: #ccc;
+            font-size: 1.2rem;
+        }
+        .setting-row label {
+            text-transform: uppercase;
+        }
+        .setting-row select, .setting-row input[type="checkbox"] {
+            background: #111;
+            border: 2px solid #777;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            padding: 5px 10px;
+            width: 130px;
+        }
+        .setting-row input[type="checkbox"] {
+            width: 25px;
+            height: 25px;
+            accent-color: #0f0;
+        }
+        .modal-actions {
+            display: flex;
+            flex-direction: row-reverse;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        .note {
+            color: #3a3a3a;
+            font-size: 0.75rem;
+            margin-top: 8px;
+            border-left: 4px solid #555;
+            padding-left: 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="pixel-board">
+<div class="canvas-wrapper" id="canvasWrapper">
+        <canvas id="matrixCanvas" width="2800" height="750"></canvas>
+<button id="exitFullscreenBtn" style="position: absolute; bottom: -80px; right: 40px; display: none; z-index: 1000; background: #222; border: 2px solid #888; color: #ddd; padding: 10px 20px; font-family: 'Courier New', monospace; cursor: pointer; box-shadow: 2px 2px 0 #444;">退出全屏</button>
+</button>
+    </div>
+    <div class="toolbar">
+        <div class="input-style-area">
+            <div class="input-row">
+                <input type="text" id="userText" maxlength="100" placeholder="输入文字" value="APPLE">
+                <button class="upload-btn" id="uploadBtn">上传</button>
+            </div>
+            <div class="style-panel">
+                <div class="style-item">
+                    <label>字色</label>
+                    <input type="color" id="colorPicker" value="#00ff00">
+                </div>
+                <button class="default-color-btn" id="defaultColorBtn">默认色</button>
+                <div class="style-item">
+                    <label>字号</label>
+                    <input type="number" id="fontSizeInput" min="8" max="500" value="498" step="10">
+                </div>
+ <div class="style-item">
+        <label>间距</label>
+        <input type="number" id="letterSpacingInput" min="0.1" max="3" value="0.4" step="0.05">
+    </div>
+                <div class="style-item checkbox-group">
+                    <div class="style-check">
+                        <label>粗体</label>
+                        <input type="checkbox" id="boldCheck">
+                    </div>
+                    <div class="style-check">
+                        <label>斜体</label>
+                        <input type="checkbox" id="italicCheck">
+                    </div>
+                </div>
+                <span style="color:#585858; font-size:0.75rem;">框选文字以更改样式，关闭后将不会保存</span>
+            </div>
+        </div>
+        <div class="action-group">
+            <button class="pixel-btn" id="settingsBtn">&nbsp;设置&nbsp;</button>
+            <button class="pixel-btn" id="exportBtn"> &nbsp;导出&nbsp; </button>
+            <button class="pixel-btn" id="importBtn"> &nbsp;导入&nbsp; </button>
+<button class="pixel-btn" id="sponsorBtn">&nbsp;赞助&nbsp;</button>
+            <input type="file" id="importFile" style="display: none;" accept=".pix,.json,application/json">
+        </div>
+    </div>
+    <div class="note">讯息共享显示器 | 这人针不错</div>
+</div>
+
+<!-- 添加导出询问弹窗 -->
+<div id="exportPromptModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <h3>&nbsp;导出选项&nbsp;</h3>
+        <div style="color: #ccc; font-size: 1.2rem; text-align: center; margin: 30px 0; padding: 20px;">
+            对方导入后是否自动全屏播放？
+        </div>
+        <div style="display: flex; justify-content: center; gap: 40px; margin: 20px 0;">
+            <button class="pixel-btn small" id="exportFullscreenYes">&nbsp;是&nbsp;</button>
+            <button class="pixel-btn small" id="exportFullscreenNo">&nbsp;否&nbsp;</button>
+        </div>
+    </div>
+</div>
+
+<div id="settingsModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <h3>设置</h3>
+        <div class="setting-row">
+            <label>滚动</label>
+            <input type="checkbox" id="scrollToggle" checked>
+        </div>
+        <div class="setting-row">
+            <label>速度</label>
+            <select id="speedSelect">
+                <option value="3">0.5x</option>
+                <option value="5">1x</option>
+                <option value="8">1.5x</option>
+                <option value="10">2x</option>
+                <option value="25">5x</option>
+            </select>
+        </div>
+ <div class="setting-row">
+            <label>全屏</label>
+            <input type="checkbox" id="fullscreenToggle">
+        </div>
+              <div class="modal-actions">
+            <button class="pixel-btn small" id="resetDefaultsBtn">默认</button>
+            <button class="pixel-btn small" id="closeModalBtn">确定</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const COLS = 280, ROWS = 75;
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = COLS * 10;
+        canvas.height = ROWS * 10;
+
+        // 状态
+        let currentText = "你好世界！";
+        let textSegments = [];                // {char, color, fontSize, bold, italic}
+        let globalSettings = {
+            scrollEnabled: true,
+            speed: 5,
+        };
+
+        // 当前样式 (用于框选)
+        let selectedColor = '#00ff00';
+        let selectedFontSize = 498;
+        let selectedLetterSpacing = 0.4;
+        let selectedBold = false;
+        let selectedItalic = false;
+
+        // 动画
+        let offset = 0;            // 像素偏移
+        let lastTimestamp = 0;
+        const BASE_SPEED = 80;
+        let animationFrame = null;
+
+        // 显示字符串 (自动加3空格)
+        let displayStr = '';
+
+        // DOM
+        const userInput = document.getElementById('userText');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const colorPicker = document.getElementById('colorPicker');
+        const fontSizeInput = document.getElementById('fontSizeInput');
+        const boldCheck = document.getElementById('boldCheck');
+        const italicCheck = document.getElementById('italicCheck');
+        const defaultColorBtn = document.getElementById('defaultColorBtn');
+        const letterSpacingInput = document.getElementById('letterSpacingInput');
+const canvasWrapper = document.getElementById('canvasWrapper');
+const exitFullscreenBtn = document.getElementById('exitFullscreenBtn');
+const fullscreenToggle = document.getElementById('fullscreenToggle');
+const toolbar = document.querySelector('.toolbar');
+const note = document.querySelector('.note');
+
+        // 弹窗
+        const settingsModal = document.getElementById('settingsModal');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const scrollToggle = document.getElementById('scrollToggle');
+        const speedSelect = document.getElementById('speedSelect');
+        const resetDefaultsBtn = document.getElementById('resetDefaultsBtn');
+
+        // 导出导入
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const importFile = document.getElementById('importFile');
+
+// ✅ 导入按钮事件 - 放在最前面
+importBtn.addEventListener('click', () => importFile.click());
+
+// ✅ 添加导出询问弹窗相关变量
+const exportPromptModal = document.getElementById('exportPromptModal');
+const exportFullscreenYes = document.getElementById('exportFullscreenYes');
+const exportFullscreenNo = document.getElementById('exportFullscreenNo');
+let pendingExportData = null;  // 暂存要导出的数据
+let exportWithFullscreen = false;  // 是否标记全屏
+
+// 新增赞助相关
+const sponsorBtn = document.getElementById('sponsorBtn');
+
+// 创建感谢弹窗
+const thankYouModal = document.createElement('div');
+thankYouModal.className = 'modal-overlay';
+thankYouModal.id = 'thankYouModal';
+thankYouModal.style.display = 'none';
+thankYouModal.innerHTML = `
+    <div class="modal-content">
+        <h3>&nbsp;致谢&nbsp;</h3>
+        <div style="color: #0f0; font-size: 1.5rem; text-align: center; margin: 30px 0; padding: 20px; border: 2px solid #0f0; background: #003300;">
+            &nbsp;感谢您的赞助！
+        </div>
+        <div style="display: flex; justify-content: center; margin: 20px 0;">
+            <button class="pixel-btn small" id="closeThankYouBtn">&nbsp;确定&nbsp;</button>
+        </div>
+    </div>
+`;
+document.body.appendChild(thankYouModal);
+
+// 赞助按钮点击事件
+sponsorBtn.addEventListener('click', () => {
+    // 打开赞助链接
+    window.open('https://ifdian.net/order/create?user_id=f0e98abe6a0c11f0a6c352540025c377&remark=&affiliate_code=&fr=afcom', '_blank');
+    
+    // 2秒后显示感谢弹窗
+    setTimeout(() => {
+        thankYouModal.style.display = 'flex';
+    }, 500);
+});
+
+// 关闭感谢弹窗
+const closeThankYouBtn = document.getElementById('closeThankYouBtn');
+closeThankYouBtn.addEventListener('click', () => {
+    thankYouModal.style.display = 'none';
+});
+
+// 点击弹窗外区域关闭
+window.addEventListener('click', (e) => {
+    if (e.target === thankYouModal) {
+        thankYouModal.style.display = 'none';
+    }
+    if (e.target === exportPromptModal) {
+        exportPromptModal.style.display = 'none';
+        pendingExportData = null;
+    }
+});
+        // ---------- 辅助函数 ----------
+        function rebuildSegmentsFromText(newText) {
+            const old = textSegments;
+            const segs = [];
+            for (let i = 0; i < newText.length; i++) {
+                const ch = newText[i];
+                if (i < old.length && old[i].char === ch) {
+                    segs.push({ ...old[i] });
+                } else {
+                    segs.push({
+                        char: ch,
+                        color: selectedColor,
+                        fontSize: selectedFontSize,
+                        bold: selectedBold,
+                        italic: selectedItalic,
+                        letterSpacing: selectedLetterSpacing
+                    });
+                }
+            }
+            return segs;
+        }
+
+        function buildDisplayFromSegments(segments) {
+            let str = '';
+            for (let i = 0; i < segments.length; i++) {
+                str += segments[i].char;
+                if (i < segments.length - 1) str += '   ';
+            }
+            return str;
+        }
+
+        function updateDisplayString() {
+            displayStr = buildDisplayFromSegments(textSegments);
+        }
+
+        function syncSegmentsWithInput() {
+            const newVal = userInput.value;
+            if (newVal === currentText && textSegments.length === newVal.length) return;
+            textSegments = rebuildSegmentsFromText(newVal);
+            currentText = newVal;
+            updateDisplayString();
+        }
+
+        // 应用当前样式到框选 (无弹窗)
+        function applyStyleToSelection() {
+            const start = userInput.selectionStart;
+            const end = userInput.selectionEnd;
+            if (start === null || end === null || start === end) return; // 无弹窗，静默忽略
+            if (textSegments.length !== currentText.length) syncSegmentsWithInput();
+            for (let i = start; i < end && i < textSegments.length; i++) {
+                textSegments[i].color = selectedColor;
+                textSegments[i].fontSize = selectedFontSize;
+                textSegments[i].bold = selectedBold;
+                textSegments[i].italic = selectedItalic;
+                textSegments[i].letterSpacing = selectedLetterSpacing;
+            }
+            updateDisplayString();
+        }
+
+        // 计算显示字符串中第pos个字符对应的真实索引
+        function realIndex(dispPos) {
+            let cnt = 0;
+            for (let i = 0; i <= dispPos; i++) {
+                if (displayStr[i] !== ' ') cnt++;
+            }
+            return cnt - 1;
+        }
+
+  // 测量总宽度
+// 测量总宽度
+function measureDisplayWidth() {
+    let total = 0;
+    ctx.save();
+    for (let i = 0; i < displayStr.length; i++) {
+        const ch = displayStr[i];
+        let style = null;
+        if (ch === ' ') {
+            for (let j = i; j >= 0; j--) {
+                if (displayStr[j] !== ' ') {
+                    const idx = realIndex(j);
+                    if (idx >= 0 && idx < textSegments.length) style = textSegments[idx];
+                    break;
+                }
+            }
+            if (!style) style = textSegments[0];
+        } else {
+            const idx = realIndex(i);
+            style = textSegments[idx] || textSegments[0];
+        }
+        if (!style) continue;
+
+        // 修改点：使用和中文字体完全一样的设置
+        let fontStr = (style.italic ? 'italic ' : '') + (style.bold ? 'bold ' : '') + style.fontSize + 'px ';
+        fontStr += `'Courier New', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'STHeiti', 'WenQuanYi Micro Hei', 'MS Gothic', monospace`;
+        ctx.font = fontStr;
+        
+        // 直接使用measureText测量宽度，不要特殊处理中文字符
+        const metrics = ctx.measureText(ch);
+        let charWidth = metrics.width;
+        
+        total += charWidth * (style.letterSpacing || 1.0);
+    }
+    ctx.restore();
+    return total;
+}
+        // 全屏控制函数
+        function enterFullscreen() {
+            toolbar.style.display = 'none';
+            note.style.display = 'none';
+            exitFullscreenBtn.style.display = 'block';
+            document.body.style.padding = '0';
+            document.querySelector('.pixel-board').style.border = 'none';
+            document.querySelector('.pixel-board').style.boxShadow = 'none';
+            document.querySelector('.pixel-board').style.padding = '0';
+            canvasWrapper.style.marginBottom = '0';
+        }
+
+        function exitFullscreen() {
+            toolbar.style.display = 'flex';
+            note.style.display = 'block';
+            exitFullscreenBtn.style.display = 'none';
+            document.body.style.padding = '16px';
+            document.querySelector('.pixel-board').style.border = '4px solid #ccc';
+            document.querySelector('.pixel-board').style.boxShadow = '0 0 0 3px #333, 0 0 0 6px #686868';
+            document.querySelector('.pixel-board').style.padding = '20px 16px';
+            canvasWrapper.style.marginBottom = '24px';
+            if (fullscreenToggle) fullscreenToggle.checked = false;
+        }
+
+        // ESC键退出全屏
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && exitFullscreenBtn.style.display === 'block') {
+                exitFullscreen();
+            }
+        });
+
+        // 退出按钮点击事件
+        exitFullscreenBtn.addEventListener('click', exitFullscreen);
+
+// 绘制画布
+function drawCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // 网格
+    ctx.strokeStyle = '#222';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= COLS; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i*10, 0); ctx.lineTo(i*10, canvas.height);
+        ctx.strokeStyle = '#2a2a2a'; ctx.stroke();
+    }
+    for (let i = 0; i <= ROWS; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, i*10); ctx.lineTo(canvas.width, i*10);
+        ctx.strokeStyle = '#2a2a2a'; ctx.stroke();
+    }
+
+    if (!displayStr || displayStr.length === 0 || textSegments.length === 0) return;
+
+    // 垂直居中 (固定高度750, 字体大小可变, 但基线设置为中间)
+    const penBaseY = canvas.height / 2;  // 375px
+
+    // 计算起始X (考虑滚动/居中)
+    let startX;
+    const totalW = measureDisplayWidth();
+    if (!globalSettings.scrollEnabled) {
+        // 关闭滚动：居中显示
+        startX = (canvas.width - totalW) / 2;
+    } else {
+        // 修改这里：固定从右到左滚动，从画布右侧开始
+        startX = canvas.width - offset;
+    }
+
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    let penX = startX;
+
+    for (let i = 0; i < displayStr.length; i++) {
+        const ch = displayStr[i];
+        let style = null;
+        if (ch === ' ') {
+            for (let j = i; j >= 0; j--) {
+                if (displayStr[j] !== ' ') {
+                    const idx = realIndex(j);
+                    if (idx >= 0 && idx < textSegments.length) { style = textSegments[idx]; break; }
+                }
+            }
+            if (!style) style = textSegments[0];
+        } else {
+            const idx = realIndex(i);
+            style = textSegments[idx] || textSegments[0];
+        }
+        if (!style) continue;
+
+        // ✅ 修复：确保中文字体正确加载
+        let fontStr = (style.italic ? 'italic ' : '') + (style.bold ? 'bold ' : '') + style.fontSize + 'px ';
+        fontStr += `'Courier New', 'Microsoft YaHei', 'SimHei', 'PingFang SC', 'STHeiti', 'WenQuanYi Micro Hei', 'MS Gothic', monospace`;
+        ctx.font = fontStr;
+        ctx.fillStyle = style.color;
+        ctx.fillText(ch, penX, penBaseY);
+        const metrics = ctx.measureText(ch);
+        penX += metrics.width * (style.letterSpacing || 1.0);
+    }
+}
+
+// 动画循环 (支持循环滚动)
+function animate(ts) {
+    if (!lastTimestamp) { 
+        lastTimestamp = ts; 
+        animationFrame = requestAnimationFrame(animate); 
+        return; 
+    }
+    const delta = Math.min(100, ts - lastTimestamp);
+    if (globalSettings.scrollEnabled) {
+        const step = (delta / 1000) * BASE_SPEED * globalSettings.speed;
+        offset += step;
+        
+        // 修改这里：动态计算当前文字的实际宽度
+        const currentTextWidth = measureDisplayWidth();
+        
+        // 当offset超过文字总宽度 + 画布宽度时才重置
+        // 这样文字会完全滚出画布左侧后再重新出现
+        if (offset > currentTextWidth + canvas.width) {
+            offset = 0;
+            console.log('重置offset，文字宽度：', currentTextWidth);
+        }
+    }
+    drawCanvas();
+    lastTimestamp = ts;
+    animationFrame = requestAnimationFrame(animate);
+}
+        // 启动动画
+        animationFrame = requestAnimationFrame(animate);
+
+        // ---------- 事件绑定 ----------
+        uploadBtn.addEventListener('click', () => {
+            syncSegmentsWithInput();
+            offset = 0; // 重置偏移，让新文字从边缘出现
+        });
+
+        // 样式更改时应用到选取 (静默)
+        colorPicker.addEventListener('input', (e) => { selectedColor = e.target.value; applyStyleToSelection(); });
+        fontSizeInput.addEventListener('input', (e) => { selectedFontSize = parseInt(e.target.value) || 36; applyStyleToSelection(); });
+        letterSpacingInput.addEventListener('input', (e) => { selectedLetterSpacing = parseFloat(e.target.value) || 0.4; applyStyleToSelection(); });
+        boldCheck.addEventListener('change', (e) => { selectedBold = e.target.checked; applyStyleToSelection(); });
+        italicCheck.addEventListener('change', (e) => { selectedItalic = e.target.checked; applyStyleToSelection(); });
+
+        // 默认色 (#00ff00)
+        defaultColorBtn.addEventListener('click', () => {
+            selectedColor = '#00ff00';
+            colorPicker.value = '#00ff00';
+            applyStyleToSelection();
+        });
+
+        // 设置弹窗
+        settingsBtn.addEventListener('click', () => {
+            scrollToggle.checked = globalSettings.scrollEnabled;
+            speedSelect.value = globalSettings.speed;
+fullscreenToggle.checked = (exitFullscreenBtn.style.display === 'block');
+            settingsModal.style.display = 'flex';
+        });
+
+        closeModalBtn.addEventListener('click', () => {  // 确定按钮
+            globalSettings.scrollEnabled = scrollToggle.checked;
+            globalSettings.speed = parseFloat(speedSelect.value);
+            if (letterSpacingInput) letterSpacingInput.value = selectedLetterSpacing;
+
+ if (fullscreenToggle.checked) {
+                enterFullscreen();
+            } else {
+                exitFullscreen();
+            }
+
+            // 如果关闭滚动，强制偏移置零并居中绘制
+            if (!globalSettings.scrollEnabled) offset = 0;
+            settingsModal.style.display = 'none';
+            drawCanvas();
+        });
+
+        resetDefaultsBtn.addEventListener('click', () => {
+            scrollToggle.checked = true;
+            speedSelect.value = '5';
+if (letterSpacingInput) letterSpacingInput.value = '0.4';
+        });
+
+        // 导出
+        exportBtn.addEventListener('click', () => {
+            // 准备要导出的数据
+            pendingExportData = {
+                text: currentText,
+                segments: textSegments,
+                settings: globalSettings
+            };
+            // 显示询问弹窗
+            exportPromptModal.style.display = 'flex';
+        });
+
+        // 导出询问 - 是（标记全屏）
+        exportFullscreenYes.addEventListener('click', () => {
+            if (pendingExportData) {
+                // 添加全屏标记
+                pendingExportData.fullscreen = true;
+                performExport(pendingExportData);
+            }
+            exportPromptModal.style.display = 'none';
+            pendingExportData = null;
+        });
+
+        // 导出询问 - 否（不标记全屏）
+        exportFullscreenNo.addEventListener('click', () => {
+            if (pendingExportData) {
+                pendingExportData.fullscreen = false;
+                performExport(pendingExportData);
+            }
+            exportPromptModal.style.display = 'none';
+            pendingExportData = null;
+        });
+
+        // 执行导出的函数
+        function performExport(data) {
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pixel_matrix.pix';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+               importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if (data.text !== undefined && data.segments) {
+                        // 更新文本和分段
+                        currentText = data.text;
+                        textSegments = data.segments;
+                        userInput.value = currentText;
+                        
+                        // 更新全局设置
+                        if (data.settings) {
+                            globalSettings = { ...globalSettings, ...data.settings };
+                        }
+                        
+                        // 更新字间距输入框的值（使用第一个字符的间距作为当前选中值）
+                        if (textSegments.length > 0) {
+                            selectedLetterSpacing = textSegments[0].letterSpacing || 0.35;
+                            if (letterSpacingInput) {
+                                letterSpacingInput.value = selectedLetterSpacing;
+                            }
+                        }
+                        
+                        // 更新显示字符串
+                        updateDisplayString();
+                        
+                        // 重置偏移并重绘画布
+                        offset = 0;
+                        drawCanvas();
+                        
+                        // 如果导出时标记了全屏，则自动进入全屏
+                        if (data.fullscreen) {
+                            enterFullscreen();
+                        } else {
+                            // 确保退出全屏状态
+                            exitFullscreen();
+                        }
+                    }
+                } catch (ex) { 
+                    alert('无效文件：' + ex.message); 
+                }
+                importFile.value = '';
+            };
+            reader.readAsText(file);
+        });
+
+        // 初始化
+        (function init() {
+            userInput.value = currentText;
+            textSegments = rebuildSegmentsFromText(currentText);
+            updateDisplayString();
+            drawCanvas();
+        })();
+    })();
+</script>
+</body>
+</html>
