@@ -298,25 +298,34 @@ body.page-leaving{opacity:0}
     <!-- 右列：道具 -->
     <div>
       <div class="shop-category" id="category-extra">
-        <h3 class="category-title">道具</h3>
+        <h3 class="category-title">名牌续期</h3>
         <div class="shop-items" id="extraItems">
-          <div class="shop-item" data-title="名牌续期卡 30天 600经验" data-desc="为当前名牌延长30天有效期">
+          <div class="shop-item" data-title="名牌续期卡 30天 650经验" data-desc="为当前名牌延长30天有效期">
             <div class="shop-info">
-              <div class="badge-preview extend">续期</div>
-              <h3>名牌续期卡 · 30 天</h3>
-              <p>为自己当前的名牌延长 30 天有效期（需已拥有且未过期）。</p>
-              <div class="shop-price">售价：<span>600</span> 经验</div>
+              <div class="badge-preview extend">短暂续期</div>
+              <h3>名牌续期 · 30 天</h3>
+              <p>为当前名牌延长 30 天有效期。</p>
+              <div class="shop-price">售价：<span>650</span> 经验</div>
             </div>
             <button class="shop-buy-btn" data-item="extend30">购买</button>
           </div>
-          <div class="shop-item" data-title="名牌续期卡 90天 1500经验" data-desc="为当前名牌延长90天有效期">
+          <div class="shop-item" data-title="名牌续期卡 90天 1100经验" data-desc="为当前名牌延长90天有效期">
             <div class="shop-info">
-              <div class="badge-preview extend">续期</div>
-              <h3>名牌续期卡 · 90 天</h3>
-              <p>为自己当前的名牌延长 90 天有效期（需已拥有且未过期）。</p>
-              <div class="shop-price">售价：<span>1500</span> 经验</div>
+              <div class="badge-preview extend">长久续期</div>
+              <h3>名牌续期 · 90 天</h3>
+              <p>为当前名牌延长 90 天有效期。</p>
+              <div class="shop-price">售价：<span>1100</span> 经验</div>
             </div>
             <button class="shop-buy-btn" data-item="extend90">购买</button>
+          </div>
+          <div class="shop-item" data-title="名牌续期卡 永久 3500经验" data-desc="将当前名牌永久续期，解锁全部样式，可免费更换">
+            <div class="shop-info">
+              <div class="badge-preview extend">长长久久续期</div>
+              <h3>名牌续期 · 永久</h3>
+              <p>名牌永久有效，同时解锁所有名牌样式，每月3次自由切换。</p>
+              <div class="shop-price">售价：<span>3500</span> 经验</div>
+            </div>
+            <button class="shop-buy-btn" data-item="extendforever">购买</button>
           </div>
         </div>
       </div>
@@ -403,8 +412,10 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   const BADGE_PRICES = { normal: 800, premium: 1200, ultimate: 1550 };
-  const EXTRA_PRICES = { extend30: 600, extend90: 1500 };
-  const EXTRA_NAMES  = { extend30: '名牌续期卡 · 30天', extend90: '名牌续期卡 · 90天' };
+  const EXTRA_PRICES = { extend30: 650, extend90: 1100, extendforever: 3500 };
+  const EXTRA_NAMES  = { extend30: '名牌续期卡 · 30天', extend90: '名牌续期卡 · 90天', extendforever: '名牌续期卡 · 永久' };
+  const PERMANENT_THRESHOLD = 9999999999999;   // >= 此值视为永久名牌
+  const FREE_SWITCH_LIMIT = 3;                 // 永久名牌每月免费更换样式次数
 
   function getBadgeMaxLen(type) {
     return { normal: 4, premium: 6, ultimate: 6 }[type] || 6;
@@ -570,27 +581,67 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      if (type) {
-        const isOwnedActive =
-          user.badge_type === type &&
-          user.badge_expire_at &&
-          user.badge_expire_at > now;
+      const isPermanent = user.badge_expire_at && user.badge_expire_at >= PERMANENT_THRESHOLD;
+      const hasActiveBadge = user.badge_type && user.badge_expire_at && user.badge_expire_at > now;
 
-        if (isOwnedActive) {
+      // ===== 名牌按钮 =====
+      if (type) {
+        // 永久名牌 → 其他样式显示"更换"，当前样式显示"使用中"
+        if (isPermanent && hasActiveBadge) {
+          if (user.badge_type === type) {
+            btn.disabled = true;
+            btn.textContent = '使用中';
+            btn.classList.add('btn-owned');
+          } else {
+            btn.disabled = false;
+            btn.textContent = '更换';
+          }
+          return;
+        }
+
+        // 未过期名牌：显示剩余天数
+        if (user.badge_type === type && user.badge_expire_at && user.badge_expire_at > now) {
           const daysLeft = Math.ceil((user.badge_expire_at - now) / (24 * 60 * 60 * 1000));
           btn.disabled = true;
           btn.textContent = `剩余 ${daysLeft} 天`;
           btn.classList.add('btn-owned');
           return;
         }
+
+        // 普通购买
+        if ((user.exp || 0) < price) {
+          btn.disabled = true;
+          btn.textContent = '经验不足';
+        } else {
+          btn.disabled = false;
+          btn.textContent = '购买';
+        }
+        return;
       }
 
-      if ((user.exp || 0) < price) {
-        btn.disabled = true;
-        btn.textContent = '经验不足';
-      } else {
-        btn.disabled = false;
-        btn.textContent = '购买';
+      // ===== 续期卡按钮 =====
+      if (item) {
+        // 没有名牌 / 已过期
+        if (!hasActiveBadge) {
+          btn.disabled = true;
+          btn.textContent = '需先拥有名牌';
+          return;
+        }
+        // 已是永久
+        if (isPermanent) {
+          btn.disabled = true;
+          btn.textContent = '已是永久';
+          btn.classList.add('btn-owned');
+          return;
+        }
+        // 经验判断
+        if ((user.exp || 0) < price) {
+          btn.disabled = true;
+          btn.textContent = '经验不足';
+        } else {
+          btn.disabled = false;
+          btn.textContent = '购买';
+        }
       }
     });
   }
@@ -806,14 +857,43 @@ document.addEventListener('DOMContentLoaded', function () {
       const item = btn.dataset.item;
       const now = Date.now();
 
-      // ---------- 购买名牌 ----------
+      // ---------- 名牌按钮 ----------
       if (type) {
-        const price = BADGE_PRICES[type];
+        const isPermanent = u.badge_expire_at && u.badge_expire_at >= PERMANENT_THRESHOLD;
+        const hasActiveBadge = u.badge_type && u.badge_expire_at && u.badge_expire_at > now;
 
-        const hasActiveBadge =
-          u.badge_type &&
-          u.badge_expire_at &&
-          u.badge_expire_at > now;
+        // ===== 永久名牌 → 免费更换样式（每月 3 次） =====
+        if (isPermanent && hasActiveBadge && u.badge_type !== type) {
+          const currentMonth = new Date().toISOString().slice(0, 7);
+          let count = u.badge_update_count || 0;
+          if (u.badge_update_month !== currentMonth) count = 0;
+          if (count >= FREE_SWITCH_LIMIT) {
+            return alert(`本月免费更换次数已用完（每月 ${FREE_SWITCH_LIMIT} 次）`);
+          }
+          const remaining = FREE_SWITCH_LIMIT - count;
+          if (!confirm(`确定免费更换为【${badgeTextByType(type)}】吗？\n（本月剩余更换次数：${remaining} 次，不消耗经验）`)) return;
+
+          btn.disabled = true; btn.textContent = '处理中...';
+          try {
+            const res = await fetch('/api/shop/switch-badge', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: u.email, type })
+            });
+            const data = await res.json();
+            if (data.success) {
+              await refresh();
+              alert('样式更换成功！');
+            } else {
+              alert(data.error || '更换失败');
+              await refresh();
+            }
+          } catch(e) { alert('网络错误'); await refresh(); }
+          return;
+        }
+
+        // ===== 普通购买名牌 =====
+        const price = BADGE_PRICES[type];
 
         if (hasActiveBadge && u.badge_type !== type) {
           const oldName = badgeTextByType(u.badge_type);
@@ -917,7 +997,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const currentMonth = new Date().toISOString().slice(0, 7);
     let count = u.badge_update_count || 0;
     if (u.badge_update_month !== currentMonth) count = 0;
-    if (u.badge_name && count >= 3) return alert('本月修改次数已用完（每月3次）');
+    const maxTimes = u.badge_type === 'ultimate' ? 5 : 3;
+    if (u.badge_name && count >= maxTimes) return alert(`本月修改次数已用完（每月${maxTimes}次）`);
     badgeNameMaxLen.textContent = getBadgeMaxLen(u.badge_type);
     badgeNameInput.maxLength = getBadgeMaxLen(u.badge_type);
     badgeNameInput.value = u.badge_name || '';
