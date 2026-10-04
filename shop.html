@@ -124,6 +124,68 @@ h2{font-size:38px;letter-spacing:-1.5px;line-height:1.15;margin-top:7px}
 }
 .shop-buy-btn.btn-owned:hover{transform:none;box-shadow:none;}
 
+/* ===== 右侧圆圈导航 ===== */
+.type-nav {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 100;
+}
+.type-dot {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #c9d1e4;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+.type-dot:hover {
+  background: linear-gradient(135deg, #4f7cff, #8a5cf6);
+  transform: scale(1.3);
+}
+.type-dot::after {
+  content: attr(data-name);
+  position: absolute;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(23, 32, 51, 0.85);
+  color: #fff;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.type-dot:hover::after {
+  opacity: 1;
+}
+
+/* 锚点滚动留出顶部空间 */
+.type-section {
+  scroll-margin-top: 120px;
+}
+
+/* 占位块 */
+.placeholder-block {
+  background: #fff;
+  border: 1px solid #e8ebf5;
+  border-radius: 16px;
+  padding: 40px 20px;
+  text-align: center;
+  color: #6f7890;
+  font-size: 14px;
+}
+
 /* ★ 卸下 / 装载 子按钮 */
 .badge-sub-btn{
   padding:8px 14px;
@@ -287,7 +349,17 @@ body.page-leaving{opacity:0}
     </div>
   </div>
 
-  <div class="shop-layout">
+  <!-- ★ 右侧圆圈导航 -->
+  <div class="type-nav">
+    <a class="type-dot" href="#category-badge" data-name="名牌"></a>
+    <a class="type-dot" href="#category-nickname-color" data-name="昵称颜色"></a>
+    <a class="type-dot" href="#category-xxx" data-name="敬请期待"></a>
+  </div>
+
+  <!-- ★ 区域一：名牌（把原来的 shop-layout 包起来） -->
+  <div id="category-badge" class="type-section">
+    <div class="shop-layout">
+
     <!-- 左列：名牌 -->
     <div>
       <div class="shop-category" id="category-badge">
@@ -337,7 +409,7 @@ body.page-leaving{opacity:0}
           <div class="shop-item" data-title="名牌续期 30天 650经验" data-desc="为当前名牌延长30天有效期">
             <div class="shop-info">
               <div class="badge-preview extend">短暂续期</div>
-              <h3>名牌续期 · 30 天</h3>
+              <h3>30 天</h3>
               <p>为当前名牌延长 30 天有效期。</p>
               <div class="shop-price">售价：<span>650</span> 经验</div>
             </div>
@@ -348,7 +420,7 @@ body.page-leaving{opacity:0}
           <div class="shop-item" data-title="名牌续期 90天 1100经验" data-desc="为当前名牌延长90天有效期">
             <div class="shop-info">
               <div class="badge-preview extend">长久续期</div>
-              <h3>名牌续期 · 90 天</h3>
+              <h3>90 天</h3>
               <p>为当前名牌延长 90 天有效期。</p>
               <div class="shop-price">售价：<span>1100</span> 经验</div>
             </div>
@@ -359,7 +431,7 @@ body.page-leaving{opacity:0}
           <div class="shop-item" data-title="名牌续期 永久 3500经验" data-desc="将当前名牌永久续期，解锁全部样式，可免费更换">
             <div class="shop-info">
               <div class="badge-preview extend">长长久久续期</div>
-              <h3>名牌续期 · 永久</h3>
+              <h3>永久</h3>
               <p>名牌永久有效，同时解锁所有名牌样式，每月3次自由切换。</p>
               <div class="shop-price">售价：<span>3500</span> 经验</div>
             </div>
@@ -371,9 +443,28 @@ body.page-leaving{opacity:0}
       </div>
     </div>
   </div>
+  </div><!-- 关闭 #category-badge -->
+
+  <!-- ★ 区域二：昵称颜色 -->
+  <div id="category-nickname-color" class="type-section">
+    <h3 class="category-title">昵称颜色</h3>
+    <div class="placeholder-block">
+      昵称颜色功能正在开发中，敬请期待~
+    </div>
+  </div>
+
+  <!-- ★ 区域三：敬请期待 -->
+  <div id="category-xxx" class="type-section">
+    <h3 class="category-title">敬请期待</h3>
+    <div class="placeholder-block">
+      更多商品正在开发中，敬请期待~
+    </div>
+  </div>
+
 </div>
 </section>
 </main>
+
 
 <!-- 输入名牌名称的弹窗 -->
 <div class="modal-overlay" id="badgeNameModal">
@@ -697,8 +788,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // 用户有其他名牌
         if (hasActiveBadge && user.badge_type !== type) {
-          if (isPermanent && isEquipped) {
-            // 永久名牌，可免费更换
+          // ★ 永久名牌：不管有没有卸下，都显示"更换"
+          if (isPermanent) {
             btn.disabled = false;
             btn.textContent = '更换';
           } else {
@@ -967,7 +1058,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const isEquipped = u.badge_equipped !== 0;
 
         // 永久名牌 → 免费更换样式
-        if (isPermanent && hasActiveBadge && isEquipped && u.badge_type !== type) {
+        if (isPermanent && hasActiveBadge && u.badge_type !== type) {
           const currentMonth = new Date().toISOString().slice(0, 7);
           let count = u.badge_update_count || 0;
           if (u.badge_update_month !== currentMonth) count = 0;
@@ -1175,6 +1266,22 @@ document.addEventListener('DOMContentLoaded', function () {
       window.location.reload();
     });
   }
+
+  /* ============================================================
+     右侧圆圈导航：点击滚动到对应区域
+     ============================================================ */
+  document.querySelectorAll('.type-dot').forEach(dot => {
+    dot.addEventListener('click', (e) => {
+      const href = dot.getAttribute('href');
+      if (!href || !href.startsWith('#')) return;
+      const target = document.querySelector(href);
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
 
   /* ============================================================
      商店搜索
