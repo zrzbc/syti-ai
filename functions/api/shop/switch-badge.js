@@ -37,7 +37,7 @@ export async function onRequestPost(context) {
   if (newName.length > maxLen) newName = newName.slice(0, maxLen);
 
   await env.DB.prepare(
-    'UPDATE users SET badge_type = ?, badge_name = ?, badge_update_count = ?, badge_update_month = ? WHERE email = ?'
+    'UPDATE users SET badge_type = ?, badge_name = ?, badge_update_count = ?, badge_update_month = ?, badge_equipped = 1 WHERE email = ?'
   ).bind(type, newName, count + 1, currentMonth, email).run();
 
   return Response.json({
