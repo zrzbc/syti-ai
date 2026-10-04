@@ -1461,6 +1461,13 @@ document.addEventListener('DOMContentLoaded', function () {
       const buyBtn = card.querySelector('.code-buy-btn');
       const viewBtn = card.querySelector('.code-view-btn');
       if (!buyBtn || !viewBtn) return;
+
+      // ★ 每次打开商店，一律隐藏复制框，按钮显示"显示"
+      const box = card.querySelector('.code-box');
+      if (box) box.style.display = 'none';
+      viewBtn.dataset.shown = '0';
+      viewBtn.textContent = '显示';
+
       if (!user) {
         buyBtn.disabled = true;
         buyBtn.textContent = '请先登录';
@@ -1497,12 +1504,19 @@ document.addEventListener('DOMContentLoaded', function () {
           if (!card) return;
           const buyBtn = card.querySelector('.code-buy-btn');
           const viewBtn = card.querySelector('.code-view-btn');
+          const box = card.querySelector('.code-box');
+
           if (buyBtn) {
             buyBtn.disabled = true;
             buyBtn.textContent = '已购买';
             buyBtn.classList.add('btn-owned');
           }
-          if (viewBtn) viewBtn.style.display = 'block';
+          if (viewBtn) {
+            viewBtn.style.display = 'block';
+            viewBtn.textContent = '显示';      // ★ 默认"显示"
+            viewBtn.dataset.shown = '0';
+          }
+          if (box) box.style.display = 'none';  // ★ 默认收起
         });
       }
     } catch(e) {}
