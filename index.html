@@ -1358,18 +1358,11 @@ if (u.badge_name && count >= maxTimes) return alert(`本月修改次数已用完
   const signinStatus = document.getElementById('signinStatus');
   const leaderboardList = document.getElementById('leaderboardList');
 
-  function buildNicknameHTML(u, rank) {
-    const nickname = u.nickname || '用户';
-    const hasColor = u.nickname_color && u.nickname_color_expire_at &&
-                     u.nickname_color_expire_at > Date.now() &&
-                     u.nickname_color_equipped !== 0;
-    if (!hasColor) return nickname;
-
-    const colorClass = `nick-${u.nickname_color}`;
-    // 前三名加黑色阴影，其他名次不加
-    const shadowClass = (rank === 1 || rank === 2 || rank === 3) ? ' nick-shadow' : '';
-    return `<span class="nick-colored ${colorClass}${shadowClass}">${nickname}</span>`;
-  }
+function buildNicknameHTML(u, rank) {
+  const nickname = u.nickname || '用户';
+  const color = rank === 1 ? '#000' : '#fff';
+  return `<span style="color:${color};">${nickname}</span>`;
+}
 
   async function loadLeaderboard() {
     if (!leaderboardList) return;
