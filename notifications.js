@@ -3,20 +3,60 @@
 
   const READ_KEY = 'zrzbc_notification_read_id';
 
-  // 1. 拉取最新通知
+  // ===== 简单的 HTML 白名单清理（防止管理员密码泄露后被注入脚本） =====
+  function sanitizeHTML(html) {
+    const ALLOWED_TAGS = ['B','I','U','S','SPAN','FONT','BR','DIV','P','STRONG','EM','A'];
+    const ALLOWED_ATTRS = ['style','face','color','size'];
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+
+    function walk(node) {
+      const children = [...node.childNodes];
+      for (const child of children) {
+        if (child.nodeType === 1) {
+          const tag = child.tagName;
+          if (!ALLOWED_TAGS.includes(tag)) {
+            // 不允许的标签，保留文字
+            const text = document.createTextNode(child.textContent);
+            child.replaceWith(text);
+            continue;
+          }
+          // 去掉所有危险属性
+          [...child.attributes].forEach(attr => {
+            const name = attr.name.toLowerCase();
+            const isAllowed = ALLOWED_ATTRS.includes(name);
+            if (!isAllowed || name.startsWith('on') || name.startsWith('javascript')) {
+              child.removeAttribute(attr.name);
+            }
+          });
+          // style 里去掉危险的
+          if (child.getAttribute('style')) {
+            const safe = child.getAttribute('style')
+              .replace(/expression\s*\(/gi, '')
+              .replace(/javascript:/gi, '')
+              .replace(/url\s*\(/gi, '');
+            child.setAttribute('style', safe);
+          }
+          walk(child);
+        }
+      }
+    }
+    walk(doc.body);
+    return doc.body.innerHTML;
+  }
+
+  // ===== 拉取最新通知 =====
   fetch('/api/notification/get')
     .then(r => r.json())
     .then(data => {
       if (!data.success || !data.notification) return;
       const noti = data.notification;
       const readId = localStorage.getItem(READ_KEY);
-      if (readId && String(readId) === String(noti.id)) return;  // 已读，不弹
+      if (readId && String(readId) === String(noti.id)) return;
       showNotification(noti);
     })
     .catch(() => {});
 
   function showNotification(noti) {
-    // 2. 动态创建弹窗 DOM
     const overlay = document.createElement('div');
     overlay.id = 'zrzbcNotificationOverlay';
     overlay.innerHTML = `
@@ -29,12 +69,13 @@
     `;
     document.body.appendChild(overlay);
 
-    // 内容用 textContent 防止 XSS，用 pre-wrap 保留换行
+    // ★ 富文本用 innerHTML 渲染（先清理）
     const contentEl = overlay.querySelector('.zrzbc-noti-content');
-    contentEl.textContent = noti.content;
+    contentEl.innerHTML = sanitizeHTML(noti.content);
     contentEl.style.whiteSpace = 'pre-wrap';
+    contentEl.style.wordBreak = 'break-word';
 
-    // 3. 注入样式（只注入一次）
+    // ===== 样式 =====
     if (!document.getElementById('zrzbcNotificationStyle')) {
       const style = document.createElement('style');
       style.id = 'zrzbcNotificationStyle';
@@ -49,14 +90,12 @@
           padding: 24px;
           animation: zrzbcNotiFadeIn .2s ease;
         }
-        @keyframes zrzbcNotiFadeIn {
-          from { opacity: 0; } to { opacity: 1; }
-        }
+        @keyframes zrzbcNotiFadeIn { from { opacity: 0; } to { opacity: 1; } }
         .zrzbc-noti-card {
           position: relative;
           background: #fff;
           border-radius: 20px;
-          width: min(440px, 100%);
+          width: min(460px, 100%);
           max-height: 80vh;
           overflow-y: auto;
           padding: 26px 24px 20px;
@@ -91,6 +130,7 @@
           color: #172033;
           margin-bottom: 18px;
         }
+        .zrzbc-noti-content img { max-width: 100%; height: auto; border-radius: 8px; }
         .zrzbc-noti-ok {
           display: block; width: 100%; padding: 11px;
           border: none; border-radius: 12px;
@@ -104,7 +144,6 @@
       document.head.appendChild(style);
     }
 
-    // 4. 关闭逻辑：写入已读，移除弹窗
     function close() {
       try { localStorage.setItem(READ_KEY, String(noti.id)); } catch (e) {}
       overlay.style.animation = 'zrzbcNotiFadeIn .18s ease reverse';
@@ -114,8 +153,6 @@
     overlay.querySelector('.zrzbc-noti-close').addEventListener('click', close);
     overlay.querySelector('.zrzbc-noti-ok').addEventListener('click', close);
     overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-
-    // ESC 关闭
     document.addEventListener('keydown', function esc(e) {
       if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
     });
