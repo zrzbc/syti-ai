@@ -12,22 +12,85 @@
          min-height: 100vh; display: flex; align-items: center; justify-content: center;
          padding: 24px; margin: 0; color: #172033; }
   .box { background: #fff; border-radius: 22px; padding: 30px 28px;
-         width: min(500px,100%); box-shadow: 0 24px 60px rgba(55,65,110,.14); }
+         width: min(640px,100%); box-shadow: 0 24px 60px rgba(55,65,110,.14); }
   h1 { font-size: 20px; margin: 0 0 6px; }
   p.sub { color: #6f7890; font-size: 13px; margin: 0 0 22px; }
   label { display: block; font-size: 13px; font-weight: 600; color: #6f7890; margin-bottom: 6px; }
-  input, textarea { width: 100%; box-sizing: border-box; padding: 12px 14px;
+  input[type="password"] { width: 100%; box-sizing: border-box; padding: 12px 14px;
          border: 1px solid #e8ebf5; border-radius: 12px;
          font-size: 14px; outline: none; font-family: inherit; }
-  input:focus, textarea:focus { border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79,124,255,.12); }
-  textarea { min-height: 130px; resize: vertical; line-height: 1.6; }
+  input[type="password"]:focus { border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79,124,255,.12); }
   .row { margin-bottom: 16px; }
-  button { width: 100%; padding: 13px; border: none; border-radius: 13px;
-           background: linear-gradient(110deg,#4f7cff,#8a5cf6); color: #fff;
-           font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 6px;
-           transition: transform .2s, box-shadow .2s; }
-  button:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(91,100,230,.35); }
-  button:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+  /* ===== 工具栏 ===== */
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 8px 10px;
+    background: #f7f9ff;
+    border: 1px solid #e8ebf5;
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+    align-items: center;
+  }
+  .toolbar button {
+    width: 32px; height: 32px;
+    border: 1px solid #e8ebf5; background: #fff;
+    border-radius: 8px; cursor: pointer;
+    font-size: 14px; display: flex; align-items: center; justify-content: center;
+    color: #172033; transition: all .15s;
+  }
+  .toolbar button:hover { background: #f0f3ff; border-color: #4f7cff; }
+  .toolbar button.active { background: #4f7cff; color: #fff; border-color: #4f7cff; }
+  .toolbar select {
+    height: 32px; padding: 0 8px; border: 1px solid #e8ebf5;
+    border-radius: 8px; background: #fff; font-size: 13px;
+    cursor: pointer; outline: none; color: #172033;
+    font-family: inherit;
+  }
+  .toolbar select:hover { border-color: #4f7cff; }
+  .toolbar .color-wrap {
+    display: flex; align-items: center; gap: 5px;
+    height: 32px; padding: 0 8px;
+    border: 1px solid #e8ebf5; border-radius: 8px; background: #fff;
+    font-size: 12px; color: #6f7890; cursor: pointer;
+  }
+  .toolbar .color-wrap:hover { border-color: #4f7cff; }
+  .toolbar .color-wrap input[type="color"] {
+    width: 22px; height: 22px; border: none; padding: 0;
+    background: none; cursor: pointer;
+  }
+  .toolbar .divider { width: 1px; height: 20px; background: #e8ebf5; margin: 0 2px; }
+
+  /* ===== 编辑区 ===== */
+  #editor {
+    min-height: 160px;
+    padding: 14px 16px;
+    border: 1px solid #e8ebf5;
+    border-radius: 0 0 12px 12px;
+    font-size: 14px;
+    line-height: 1.7;
+    outline: none;
+    background: #fff;
+    color: #172033;
+    overflow-y: auto;
+    max-height: 400px;
+  }
+  #editor:focus { border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79,124,255,.12); }
+  #editor:empty::before {
+    content: attr(data-placeholder);
+    color: #b6bcc9;
+    pointer-events: none;
+  }
+
+  /* ===== 发布按钮 ===== */
+  button.publish {
+    width: 100%; padding: 13px; border: none; border-radius: 13px;
+    background: linear-gradient(110deg,#4f7cff,#8a5cf6); color: #fff;
+    font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 18px;
+    transition: transform .2s, box-shadow .2s;
+  }
+  button.publish:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(91,100,230,.35); }
+  button.publish:disabled { opacity: .5; cursor: not-allowed; transform: none; }
   .msg { margin-top: 12px; font-size: 13px; text-align: center; }
   .msg.ok { color: #22c55e; }
   .msg.err { color: #ef4444; }
@@ -37,53 +100,229 @@
   <div class="box">
     <h1>📢 发布新通知</h1>
     <p class="sub">用户下次打开网页时会弹窗显示，关闭后不再重复提醒。</p>
+
     <div class="row">
       <label>管理员密码</label>
       <input type="password" id="pwd" placeholder="请输入密码">
     </div>
+
     <div class="row">
-      <label>通知内容</label>
-      <textarea id="content" placeholder="支持多行文本，直接换行即可"></textarea>
+      <label>通知内容（可选中文字后调整样式）</label>
+      <div class="toolbar" id="toolbar">
+        <button type="button" data-cmd="bold" title="加粗"><b>B</b></button>
+        <button type="button" data-cmd="italic" title="斜体"><i>I</i></button>
+        <button type="button" data-cmd="underline" title="下划线"><u>U</u></button>
+
+        <span class="divider"></span>
+
+        <select id="fontFamily" title="字体">
+          <option value="">默认字体</option>
+          <option value="'Microsoft YaHei','微软雅黑',sans-serif">微软雅黑</option>
+          <option value="'SimHei','黑体',sans-serif">黑体</option>
+          <option value="'KaiTi','楷体',serif">楷体</option>
+          <option value="'SimSun','宋体',serif">宋体</option>
+        </select>
+
+        <select id="fontSize" title="字号">
+          <option value="">默认字号</option>
+          <option value="12">12px 小</option>
+          <option value="14">14px 正常</option>
+          <option value="16">16px 中</option>
+          <option value="18">18px 大</option>
+          <option value="22">22px 特大</option>
+          <option value="28">28px 超大</option>
+        </select>
+
+        <label class="color-wrap" title="文字颜色">
+          字色<input type="color" id="foreColor" value="#172033">
+        </label>
+        <label class="color-wrap" title="背景颜色">
+          底色<input type="color" id="backColor" value="#ffffff">
+        </label>
+
+        <span class="divider"></span>
+
+        <button type="button" id="clearBg" title="清除背景色" style="font-size:12px;">清底</button>
+        <button type="button" id="clearFormat" title="清除所有格式" style="font-size:12px;">清格式</button>
+      </div>
+      <div id="editor" contenteditable="true" data-placeholder="支持多行文本，可选中后设置字体 / 颜色 / 加粗等"></div>
     </div>
-    <button id="btn">发布通知</button>
+
+    <button class="publish" id="btn">发布通知</button>
     <div class="msg" id="msg"></div>
   </div>
 
 <script>
-document.getElementById('btn').addEventListener('click', async () => {
-  const password = document.getElementById('pwd').value;
-  const content = document.getElementById('content').value;
-  const msg = document.getElementById('msg');
-  const btn = document.getElementById('btn');
-  if (!password || !content.trim()) {
-    msg.className = 'msg err';
-    msg.textContent = '请填写密码和内容';
-    return;
-  }
-  btn.disabled = true; btn.textContent = '发布中...';
-  msg.textContent = '';
-  try {
-    const res = await fetch('/api/notification/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password, content })
-    });
-    const data = await res.json();
-    if (data.success) {
-      msg.className = 'msg ok';
-      msg.textContent = '✅ 发布成功！用户下次打开页面就会看到。';
-      document.getElementById('content').value = '';
-    } else {
-      msg.className = 'msg err';
-      msg.textContent = data.error || '发布失败';
+(function () {
+  const editor = document.getElementById('editor');
+  const foreColorInput = document.getElementById('foreColor');
+  const backColorInput = document.getElementById('backColor');
+  const fontFamilySel = document.getElementById('fontFamily');
+  const fontSizeSel = document.getElementById('fontSize');
+
+  // ===== 让编辑区始终保持 focus =====
+  editor.focus();
+
+  // ===== 保存/恢复选区（点颜色选择器后会丢焦点） =====
+  let savedRange = null;
+  function saveRange() {
+    const sel = window.getSelection();
+    if (sel.rangeCount && editor.contains(sel.anchorNode)) {
+      savedRange = sel.getRangeAt(0).cloneRange();
     }
-  } catch (e) {
-    msg.className = 'msg err';
-    msg.textContent = '网络错误';
-  } finally {
-    btn.disabled = false; btn.textContent = '发布通知';
   }
-});
+  function restoreRange() {
+    if (!savedRange) return false;
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+    return true;
+  }
+  editor.addEventListener('keyup', saveRange);
+  editor.addEventListener('mouseup', saveRange);
+  editor.addEventListener('input', saveRange);
+  editor.addEventListener('blur', saveRange);
+
+  // ===== 执行命令 =====
+  function exec(cmd, val) {
+    editor.focus();
+    restoreRange();
+    document.execCommand('styleWithCSS', false, true);
+    document.execCommand(cmd, false, val || null);
+    saveRange();
+  }
+
+  // ===== 加粗 / 斜体 / 下划线 =====
+  document.querySelectorAll('.toolbar button[data-cmd]').forEach(btn => {
+    btn.addEventListener('mousedown', e => {
+      e.preventDefault();
+      exec(btn.dataset.cmd);
+    });
+  });
+
+  // ===== 字体 =====
+  fontFamilySel.addEventListener('mousedown', e => e.stopPropagation());
+  fontFamilySel.addEventListener('change', () => {
+    if (!fontFamilySel.value) return;
+    exec('fontName', fontFamilySel.value);
+  });
+
+  // ===== 字号（自定义包裹，用 span style） =====
+  function applyFontSize(px) {
+    editor.focus();
+    if (!restoreRange()) return;
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) return;
+
+    const span = document.createElement('span');
+    span.style.fontSize = px + 'px';
+
+    try {
+      range.surroundContents(span);
+    } catch (e) {
+      const frag = range.extractContents();
+      span.appendChild(frag);
+      range.insertNode(span);
+    }
+
+    sel.removeAllRanges();
+    const newRange = document.createRange();
+    newRange.selectNodeContents(span);
+    sel.addRange(newRange);
+    saveRange();
+  }
+  fontSizeSel.addEventListener('mousedown', e => e.stopPropagation());
+  fontSizeSel.addEventListener('change', () => {
+    if (!fontSizeSel.value) return;
+    applyFontSize(fontSizeSel.value);
+  });
+
+  // ===== 文字颜色（用 input 事件，颜色变更时立刻应用） =====
+  foreColorInput.addEventListener('input', () => {
+    editor.focus();
+    restoreRange();
+    document.execCommand('styleWithCSS', false, true);
+    document.execCommand('foreColor', false, foreColorInput.value);
+    saveRange();
+  });
+  foreColorInput.addEventListener('change', () => {
+    editor.focus();
+    restoreRange();
+    document.execCommand('styleWithCSS', false, true);
+    document.execCommand('foreColor', false, foreColorInput.value);
+    saveRange();
+  });
+
+  // ===== 背景色 =====
+  backColorInput.addEventListener('input', () => {
+    editor.focus();
+    restoreRange();
+    document.execCommand('styleWithCSS', false, true);
+    document.execCommand('hiliteColor', false, backColorInput.value);
+    saveRange();
+  });
+  backColorInput.addEventListener('change', () => {
+    editor.focus();
+    restoreRange();
+    document.execCommand('styleWithCSS', false, true);
+    document.execCommand('hiliteColor', false, backColorInput.value);
+    saveRange();
+  });
+
+  // ===== 清除背景色 =====
+  document.getElementById('clearBg').addEventListener('mousedown', e => {
+    e.preventDefault();
+    exec('hiliteColor', 'transparent');
+  });
+
+  // ===== 清除所有格式 =====
+  document.getElementById('clearFormat').addEventListener('mousedown', e => {
+    e.preventDefault();
+    exec('removeFormat');
+  });
+
+  // ===== 发布 =====
+  document.getElementById('btn').addEventListener('click', async () => {
+    const password = document.getElementById('pwd').value;
+    const content = editor.innerHTML.trim();
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('btn');
+
+    // 内容为空判断（去掉标签后是否还有文字）
+    const plain = editor.innerText.trim();
+    if (!password || !plain) {
+      msg.className = 'msg err';
+      msg.textContent = '请填写密码和内容';
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = '发布中...';
+    msg.textContent = '';
+    try {
+      const res = await fetch('/api/notification/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, content })
+      });
+      const data = await res.json();
+      if (data.success) {
+        msg.className = 'msg ok';
+        msg.textContent = '✅ 发布成功！';
+        editor.innerHTML = '';
+      } else {
+        msg.className = 'msg err';
+        msg.textContent = data.error || '发布失败';
+      }
+    } catch (e) {
+      msg.className = 'msg err';
+      msg.textContent = '网络错误';
+    } finally {
+      btn.disabled = false; btn.textContent = '发布通知';
+    }
+  });
+})();
 </script>
 </body>
 </html>
