@@ -12,7 +12,7 @@
          min-height: 100vh; display: flex; align-items: center; justify-content: center;
          padding: 24px; margin: 0; color: #172033; }
   .box { background: #fff; border-radius: 22px; padding: 30px 28px;
-         width: min(640px,100%); box-shadow: 0 24px 60px rgba(55,65,110,.14); }
+         width: min(660px,100%); box-shadow: 0 24px 60px rgba(55,65,110,.14); }
   h1 { font-size: 20px; margin: 0 0 6px; }
   p.sub { color: #6f7890; font-size: 13px; margin: 0 0 22px; }
   label { display: block; font-size: 13px; font-weight: 600; color: #6f7890; margin-bottom: 6px; }
@@ -22,7 +22,7 @@
   input[type="password"]:focus { border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79,124,255,.12); }
   .row { margin-bottom: 16px; }
 
-  /* ===== 工具栏 ===== */
+  /* 工具栏 */
   .toolbar {
     display: flex; flex-wrap: wrap; gap: 6px;
     padding: 8px 10px;
@@ -33,16 +33,17 @@
     align-items: center;
   }
   .toolbar button {
-    width: 32px; height: 32px;
+    width: 34px; height: 34px;
     border: 1px solid #e8ebf5; background: #fff;
     border-radius: 8px; cursor: pointer;
     font-size: 14px; display: flex; align-items: center; justify-content: center;
     color: #172033; transition: all .15s;
+    user-select: none;
   }
   .toolbar button:hover { background: #f0f3ff; border-color: #4f7cff; }
-  .toolbar button.active { background: #4f7cff; color: #fff; border-color: #4f7cff; }
+  .toolbar button:active { background: #4f7cff; color: #fff; border-color: #4f7cff; }
   .toolbar select {
-    height: 32px; padding: 0 8px; border: 1px solid #e8ebf5;
+    height: 34px; padding: 0 8px; border: 1px solid #e8ebf5;
     border-radius: 8px; background: #fff; font-size: 13px;
     cursor: pointer; outline: none; color: #172033;
     font-family: inherit;
@@ -50,9 +51,10 @@
   .toolbar select:hover { border-color: #4f7cff; }
   .toolbar .color-wrap {
     display: flex; align-items: center; gap: 5px;
-    height: 32px; padding: 0 8px;
+    height: 34px; padding: 0 10px;
     border: 1px solid #e8ebf5; border-radius: 8px; background: #fff;
     font-size: 12px; color: #6f7890; cursor: pointer;
+    user-select: none;
   }
   .toolbar .color-wrap:hover { border-color: #4f7cff; }
   .toolbar .color-wrap input[type="color"] {
@@ -61,9 +63,9 @@
   }
   .toolbar .divider { width: 1px; height: 20px; background: #e8ebf5; margin: 0 2px; }
 
-  /* ===== 编辑区 ===== */
+  /* 编辑区 */
   #editor {
-    min-height: 160px;
+    min-height: 180px;
     padding: 14px 16px;
     border: 1px solid #e8ebf5;
     border-radius: 0 0 12px 12px;
@@ -73,7 +75,7 @@
     background: #fff;
     color: #172033;
     overflow-y: auto;
-    max-height: 400px;
+    max-height: 420px;
   }
   #editor:focus { border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79,124,255,.12); }
   #editor:empty::before {
@@ -82,7 +84,6 @@
     pointer-events: none;
   }
 
-  /* ===== 发布按钮 ===== */
   button.publish {
     width: 100%; padding: 13px; border: none; border-radius: 13px;
     background: linear-gradient(110deg,#4f7cff,#8a5cf6); color: #fff;
@@ -107,30 +108,31 @@
     </div>
 
     <div class="row">
-      <label>通知内容（可选中文字后调整样式）</label>
+      <label>通知内容（先选中文字，再点样式）</label>
       <div class="toolbar" id="toolbar">
         <button type="button" data-cmd="bold" title="加粗"><b>B</b></button>
         <button type="button" data-cmd="italic" title="斜体"><i>I</i></button>
         <button type="button" data-cmd="underline" title="下划线"><u>U</u></button>
+        <button type="button" data-cmd="strikeThrough" title="删除线"><s>S</s></button>
 
         <span class="divider"></span>
 
         <select id="fontFamily" title="字体">
           <option value="">默认字体</option>
-          <option value="'Microsoft YaHei','微软雅黑',sans-serif">微软雅黑</option>
-          <option value="'SimHei','黑体',sans-serif">黑体</option>
-          <option value="'KaiTi','楷体',serif">楷体</option>
-          <option value="'SimSun','宋体',serif">宋体</option>
+          <option value="Microsoft YaHei">微软雅黑</option>
+          <option value="SimHei">黑体</option>
+          <option value="KaiTi">楷体</option>
+          <option value="SimSun">宋体</option>
         </select>
 
         <select id="fontSize" title="字号">
           <option value="">默认字号</option>
-          <option value="12">12px 小</option>
-          <option value="14">14px 正常</option>
-          <option value="16">16px 中</option>
-          <option value="18">18px 大</option>
-          <option value="22">22px 特大</option>
-          <option value="28">28px 超大</option>
+          <option value="12px">12px 小</option>
+          <option value="14px">14px 正常</option>
+          <option value="16px">16px 中</option>
+          <option value="18px">18px 大</option>
+          <option value="22px">22px 特大</option>
+          <option value="28px">28px 超大</option>
         </select>
 
         <label class="color-wrap" title="文字颜色">
@@ -160,10 +162,7 @@
   const fontFamilySel = document.getElementById('fontFamily');
   const fontSizeSel = document.getElementById('fontSize');
 
-  // ===== 让编辑区始终保持 focus =====
-  editor.focus();
-
-  // ===== 保存/恢复选区（点颜色选择器后会丢焦点） =====
+  // ===== 持续保存选区（关键：每次选区变化都保存） =====
   let savedRange = null;
   function saveRange() {
     const sel = window.getSelection();
@@ -171,6 +170,12 @@
       savedRange = sel.getRangeAt(0).cloneRange();
     }
   }
+  document.addEventListener('selectionchange', saveRange);
+  editor.addEventListener('keyup', saveRange);
+  editor.addEventListener('mouseup', saveRange);
+  editor.addEventListener('input', saveRange);
+
+  // ===== 恢复选区 =====
   function restoreRange() {
     if (!savedRange) return false;
     const sel = window.getSelection();
@@ -178,12 +183,8 @@
     sel.addRange(savedRange);
     return true;
   }
-  editor.addEventListener('keyup', saveRange);
-  editor.addEventListener('mouseup', saveRange);
-  editor.addEventListener('input', saveRange);
-  editor.addEventListener('blur', saveRange);
 
-  // ===== 执行命令 =====
+  // ===== 执行 execCommand =====
   function exec(cmd, val) {
     editor.focus();
     restoreRange();
@@ -192,7 +193,7 @@
     saveRange();
   }
 
-  // ===== 加粗 / 斜体 / 下划线 =====
+  // ===== 所有工具栏按钮：mousedown 阻止默认行为，避免选区丢失 =====
   document.querySelectorAll('.toolbar button[data-cmd]').forEach(btn => {
     btn.addEventListener('mousedown', e => {
       e.preventDefault();
@@ -200,14 +201,24 @@
     });
   });
 
+  document.getElementById('clearBg').addEventListener('mousedown', e => {
+    e.preventDefault();
+    exec('hiliteColor', 'transparent');
+  });
+
+  document.getElementById('clearFormat').addEventListener('mousedown', e => {
+    e.preventDefault();
+    exec('removeFormat');
+  });
+
   // ===== 字体 =====
-  fontFamilySel.addEventListener('mousedown', e => e.stopPropagation());
   fontFamilySel.addEventListener('change', () => {
     if (!fontFamilySel.value) return;
     exec('fontName', fontFamilySel.value);
+    fontFamilySel.value = '';
   });
 
-  // ===== 字号（自定义包裹，用 span style） =====
+  // ===== 字号（自定义包裹 span） =====
   function applyFontSize(px) {
     editor.focus();
     if (!restoreRange()) return;
@@ -216,72 +227,57 @@
     const range = sel.getRangeAt(0);
     if (range.collapsed) return;
 
+    // 先清除选区内已有的 font-size，避免嵌套
     const span = document.createElement('span');
-    span.style.fontSize = px + 'px';
+    span.style.fontSize = px;
 
     try {
       range.surroundContents(span);
     } catch (e) {
       const frag = range.extractContents();
+      // 清掉内部可能存在的 font-size 嵌套
+      frag.querySelectorAll && frag.querySelectorAll('span').forEach(s => {
+        if (s.style && s.style.fontSize) s.style.fontSize = '';
+      });
       span.appendChild(frag);
       range.insertNode(span);
     }
 
+    // 重新选中新内容
     sel.removeAllRanges();
     const newRange = document.createRange();
     newRange.selectNodeContents(span);
     sel.addRange(newRange);
     saveRange();
   }
-  fontSizeSel.addEventListener('mousedown', e => e.stopPropagation());
+
   fontSizeSel.addEventListener('change', () => {
     if (!fontSizeSel.value) return;
     applyFontSize(fontSizeSel.value);
+    fontSizeSel.value = '';
   });
 
-  // ===== 文字颜色（用 input 事件，颜色变更时立刻应用） =====
-  foreColorInput.addEventListener('input', () => {
+  // ===== 文字颜色 =====
+  function applyForeColor(color) {
     editor.focus();
     restoreRange();
     document.execCommand('styleWithCSS', false, true);
-    document.execCommand('foreColor', false, foreColorInput.value);
+    document.execCommand('foreColor', false, color);
     saveRange();
-  });
-  foreColorInput.addEventListener('change', () => {
-    editor.focus();
-    restoreRange();
-    document.execCommand('styleWithCSS', false, true);
-    document.execCommand('foreColor', false, foreColorInput.value);
-    saveRange();
-  });
+  }
+  foreColorInput.addEventListener('change', () => applyForeColor(foreColorInput.value));
+  foreColorInput.addEventListener('input', () => applyForeColor(foreColorInput.value));
 
   // ===== 背景色 =====
-  backColorInput.addEventListener('input', () => {
+  function applyBackColor(color) {
     editor.focus();
     restoreRange();
     document.execCommand('styleWithCSS', false, true);
-    document.execCommand('hiliteColor', false, backColorInput.value);
+    document.execCommand('hiliteColor', false, color);
     saveRange();
-  });
-  backColorInput.addEventListener('change', () => {
-    editor.focus();
-    restoreRange();
-    document.execCommand('styleWithCSS', false, true);
-    document.execCommand('hiliteColor', false, backColorInput.value);
-    saveRange();
-  });
-
-  // ===== 清除背景色 =====
-  document.getElementById('clearBg').addEventListener('mousedown', e => {
-    e.preventDefault();
-    exec('hiliteColor', 'transparent');
-  });
-
-  // ===== 清除所有格式 =====
-  document.getElementById('clearFormat').addEventListener('mousedown', e => {
-    e.preventDefault();
-    exec('removeFormat');
-  });
+  }
+  backColorInput.addEventListener('change', () => applyBackColor(backColorInput.value));
+  backColorInput.addEventListener('input', () => applyBackColor(backColorInput.value));
 
   // ===== 发布 =====
   document.getElementById('btn').addEventListener('click', async () => {
@@ -290,7 +286,6 @@
     const msg = document.getElementById('msg');
     const btn = document.getElementById('btn');
 
-    // 内容为空判断（去掉标签后是否还有文字）
     const plain = editor.innerText.trim();
     if (!password || !plain) {
       msg.className = 'msg err';
@@ -309,8 +304,9 @@
       const data = await res.json();
       if (data.success) {
         msg.className = 'msg ok';
-        msg.textContent = '✅ 发布成功！';
+        msg.textContent = '✅ 发布成功！用户下次打开页面就会看到。';
         editor.innerHTML = '';
+        savedRange = null;
       } else {
         msg.className = 'msg err';
         msg.textContent = data.error || '发布失败';
