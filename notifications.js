@@ -3,7 +3,7 @@
 
   const READ_KEY = 'zrzbc_notification_read_id';
 
-  // ===== 简单的 HTML 白名单清理（防止管理员密码泄露后被注入脚本） =====
+  // ===== 简单的 HTML 白名单清理 =====
   function sanitizeHTML(html) {
     const ALLOWED_TAGS = ['B','I','U','S','SPAN','FONT','BR','DIV','P','STRONG','EM','A'];
     const ALLOWED_ATTRS = ['style','face','color','size'];
@@ -15,12 +15,10 @@
         if (child.nodeType === 1) {
           const tag = child.tagName;
           if (!ALLOWED_TAGS.includes(tag)) {
-            // 不允许的标签，保留文字
             const text = document.createTextNode(child.textContent);
             child.replaceWith(text);
             continue;
           }
-          // 去掉所有危险属性
           [...child.attributes].forEach(attr => {
             const name = attr.name.toLowerCase();
             const isAllowed = ALLOWED_ATTRS.includes(name);
@@ -28,7 +26,6 @@
               child.removeAttribute(attr.name);
             }
           });
-          // style 里去掉危险的
           if (child.getAttribute('style')) {
             const safe = child.getAttribute('style')
               .replace(/expression\s*\(/gi, '')
@@ -52,6 +49,10 @@
       const noti = data.notification;
       const readId = localStorage.getItem(READ_KEY);
       if (readId && String(readId) === String(noti.id)) return;
+
+      // ★ 关键：弹窗出现前，先写入"已读"，防止刷新/跳转后重复弹
+      try { localStorage.setItem(READ_KEY, String(noti.id)); } catch (e) {}
+
       showNotification(noti);
     })
     .catch(() => {});
@@ -69,7 +70,7 @@
     `;
     document.body.appendChild(overlay);
 
-    // ★ 富文本用 innerHTML 渲染（先清理）
+    // 富文本渲染（先清理）
     const contentEl = overlay.querySelector('.zrzbc-noti-content');
     contentEl.innerHTML = sanitizeHTML(noti.content);
     contentEl.style.whiteSpace = 'pre-wrap';
@@ -144,17 +145,17 @@
       document.head.appendChild(style);
     }
 
+    // ===== 关闭逻辑（只在点"×"或"我知道了"时触发）=====
     function close() {
-      try { localStorage.setItem(READ_KEY, String(noti.id)); } catch (e) {}
+      // 已读标记已在弹窗出现时写好，这里不用再写
       overlay.style.animation = 'zrzbcNotiFadeIn .18s ease reverse';
       setTimeout(() => overlay.remove(), 160);
     }
 
     overlay.querySelector('.zrzbc-noti-close').addEventListener('click', close);
     overlay.querySelector('.zrzbc-noti-ok').addEventListener('click', close);
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
-    document.addEventListener('keydown', function esc(e) {
-      if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
-    });
+
+    // ★ 已删除：点击遮罩关闭
+    // ★ 已删除：ESC 键关闭
   }
 })();
