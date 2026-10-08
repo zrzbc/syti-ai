@@ -3,7 +3,7 @@
 
   const READ_KEY = 'zrzbc_notification_read_id';
 
-  // ===== 简单的 HTML 白名单清理 =====
+  // ===== HTML 白名单清理 =====
   function sanitizeHTML(html) {
     const ALLOWED_TAGS = ['B','I','U','S','SPAN','FONT','BR','DIV','P','STRONG','EM','A'];
     const ALLOWED_ATTRS = ['style','face','color','size'];
@@ -50,7 +50,7 @@
       const readId = localStorage.getItem(READ_KEY);
       if (readId && String(readId) === String(noti.id)) return;
 
-      // ★ 关键：弹窗出现前，先写入"已读"，防止刷新/跳转后重复弹
+      // 弹窗出现前先写入已读，防止刷新重复弹
       try { localStorage.setItem(READ_KEY, String(noti.id)); } catch (e) {}
 
       showNotification(noti);
@@ -58,6 +58,9 @@
     .catch(() => {});
 
   function showNotification(noti) {
+    // ★★★ 关键：加一把锁，只有点 × 或"我知道了"才能解锁关闭 ★★★
+    let allowClose = false;
+
     const overlay = document.createElement('div');
     overlay.id = 'zrzbcNotificationOverlay';
     overlay.innerHTML = `
@@ -70,7 +73,6 @@
     `;
     document.body.appendChild(overlay);
 
-    // 富文本渲染（先清理）
     const contentEl = overlay.querySelector('.zrzbc-noti-content');
     contentEl.innerHTML = sanitizeHTML(noti.content);
     contentEl.style.whiteSpace = 'pre-wrap';
@@ -117,6 +119,7 @@
           font-size: 20px; line-height: 1; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           transition: background .15s, color .15s, transform .15s;
+          z-index: 2;
         }
         .zrzbc-noti-close:hover { background: #e6e9f5; color: #172033; transform: scale(1.06); }
         .zrzbc-noti-title {
@@ -145,17 +148,44 @@
       document.head.appendChild(style);
     }
 
-    // ===== 关闭逻辑（只在点"×"或"我知道了"时触发）=====
+    // ===== 关闭函数：没解锁就拒绝执行 =====
     function close() {
-      // 已读标记已在弹窗出现时写好，这里不用再写
+      if (!allowClose) return;   // ★ 关键防护
       overlay.style.animation = 'zrzbcNotiFadeIn .18s ease reverse';
       setTimeout(() => overlay.remove(), 160);
     }
 
-    overlay.querySelector('.zrzbc-noti-close').addEventListener('click', close);
-    overlay.querySelector('.zrzbc-noti-ok').addEventListener('click', close);
+    // ===== 只有这两个入口可以解锁并关闭 =====
+    overlay.querySelector('.zrzbc-noti-close').addEventListener('click', (e) => {
+      e.stopPropagation();
+      allowClose = true;
+      close();
+    });
+    overlay.querySelector('.zrzbc-noti-ok').addEventListener('click', (e) => {
+      e.stopPropagation();
+      allowClose = true;
+      close();
+    });
 
-    // ★ 已删除：点击遮罩关闭
-    // ★ 已删除：ESC 键关闭
+    // ===== 阻止 overlay 上的所有点击冒泡到 document =====
+    overlay.addEventListener('click', (e) => {
+      e.stopPropagation();     // ★ 点击遮罩层什么都不做
+    });
+
+    // ===== 阻止 overlay 上的 pointer 事件传给下层元素 =====
+    overlay.addEventListener('pointerdown', (e) => e.stopPropagation());
+    overlay.addEventListener('mousedown', (e) => e.stopPropagation());
+    overlay.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+
+    // ===== 阻止 ESC 关闭 =====
+    document.addEventListener('keydown', function blockEsc(e) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      if (!document.body.contains(overlay)) {
+        document.removeEventListener('keydown', blockEsc);
+      }
+    }, true);
   }
 })();
