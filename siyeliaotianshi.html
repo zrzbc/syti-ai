@@ -1185,7 +1185,7 @@ async function handleSend(text){
       reply=await callAIWithDeadline(aiText,currentTopicHistory(true),attachments.length?15000:8000);
       if(!reply) throw new Error('AI 返回为空');
     }catch(aiErr){
-      reply='唔……这次我真的没能顺利回复出来，抱歉啦。';
+      reply='请先回到主页登录，并待网页加载完毕~';
     }
     const rawAssistantReply=String(reply||'');
     const shouldBlock=/\[BLOCK_USER\]/i.test(rawAssistantReply);
