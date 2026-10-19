@@ -227,7 +227,6 @@ body[data-theme='dark'] .settings-title,body[data-theme='dark'] .settings-modal 
   <button class="settings-btn" id="settingsBtn" aria-label="设置">⚙</button>
   </div>
 
-  <div id="chatQuotaDisplay" style="text-align:center;font-size:11px;color:#879487;padding:4px 0;background:var(--bg-paper);border-bottom:1px solid #eef3ea;flex-shrink:0;">今日剩余 50/50 条消息</div>
   <div class="chat-body" id="chatBody"></div>
 
   <div class="plus-panel" id="plusPanel">
@@ -267,7 +266,7 @@ body[data-theme='dark'] .settings-title,body[data-theme='dark'] .settings-modal 
       <button class="settings-subtab" data-subpanel="aiTutorialSubPanel">代理教程</button>
     </div>
     <div class="ai-subpanel active" id="aiSettingsSubPanel">
-    <div class="settings-sub">本聊天室已内置默认 API，可直接开始聊天。如果你填写自己的 API Key，会优先使用你自己的配置。<br>API key 保存在本机浏览器的本地存储中，请不要在不可信的设备上使用。<br>聊天产生的费用由用户自行承担。</div>
+    <div class="settings-sub">本聊天室已内置默认API，可直接开始聊天，但每日优额度限制。<br>用户也可以在下方部署自己的API。<br>API key 会保存在本机浏览器的本地存储中，请避免在不可信设备上使用。<br>如使用自定义API，聊天产生的费用由用户自行承担。</div>
     <div class="field"><label>API 类型</label><select id="apiType">
 <option value="deepseek">DeepSeek</option><option value="qwen">通义千问 / 阿里云百炼</option><option value="glm">智谱 GLM</option><option value="kimi">Kimi</option><option value="minimax">MiniMax</option><option value="siliconflow">硅基流动</option><option value="doubao">豆包 / 火山方舟</option><option value="baichuan">百川智能</option><option value="openrouter">OpenRouter</option><option value="openai">OpenAI</option><option value="anthropic">Anthropic Messages</option><option value="gemini">Google Gemini</option><option value="custom">自定义 OpenAI 兼容接口</option>
 </select></div>
@@ -294,6 +293,12 @@ body[data-theme='dark'] .settings-title,body[data-theme='dark'] .settings-modal 
       <div id="walletBalance" class="wallet-hero-balance">0.00</div>
       <div class="wallet-hero-unit">四叶草</div>
     </div>
+    
+    <!-- ★ 新增的汇率提示框 -->
+    <div style="background:#fff7ed; border:1px solid #ffedd5; color:#ea580c; padding:12px 16px; border-radius:12px; font-size:13px; text-align:center; font-weight:500; margin-top:16px;">
+      今日汇率：&nbsp&nbsp&nbsp1&nbsp经验&nbsp&nbsp&nbsp=&nbsp&nbsp&nbsp1&nbsp四叶草
+    </div>
+    
   </div>
 </div>
 
