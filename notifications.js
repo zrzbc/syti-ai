@@ -6,7 +6,7 @@
   // ===== HTML 白名单清理 =====
   function sanitizeHTML(html) {
     const ALLOWED_TAGS = ['B','I','U','S','SPAN','FONT','BR','DIV','P','STRONG','EM','A'];
-    const ALLOWED_ATTRS = ['style','face','color','size'];
+const ALLOWED_ATTRS = ['style','face','color','size','href','target','rel'];
     const doc = new DOMParser().parseFromString(html, 'text/html');
 
     function walk(node) {
@@ -19,20 +19,49 @@
             child.replaceWith(text);
             continue;
           }
-          [...child.attributes].forEach(attr => {
-            const name = attr.name.toLowerCase();
-            const isAllowed = ALLOWED_ATTRS.includes(name);
-            if (!isAllowed || name.startsWith('on') || name.startsWith('javascript')) {
-              child.removeAttribute(attr.name);
-            }
-          });
-          if (child.getAttribute('style')) {
-            const safe = child.getAttribute('style')
-              .replace(/expression\s*\(/gi, '')
-              .replace(/javascript:/gi, '')
-              .replace(/url\s*\(/gi, '');
-            child.setAttribute('style', safe);
-          }
+[...child.attributes].forEach(attr => {
+  const name = attr.name.toLowerCase();
+  const isAllowed = ALLOWED_ATTRS.includes(name);
+
+  // 危险属性一律删除
+  if (!isAllowed || name.startsWith('on')) {
+    child.removeAttribute(attr.name);
+    return;
+  }
+
+  // href 只允许 http/https/mailto
+  if (name === 'href') {
+    const val = (attr.value || '').trim();
+    if (!/^(https?:\/\/|mailto:)/i.test(val)) {
+      child.removeAttribute(attr.name);
+    }
+    return;
+  }
+
+  // target 只允许 _blank
+  if (name === 'target' && attr.value !== '_blank') {
+    child.removeAttribute(attr.name);
+    return;
+  }
+
+  // rel 只允许 noopener noreferrer 组合
+  if (name === 'rel') {
+    const val = (attr.value || '').toLowerCase();
+    if (!/noopener/.test(val) && !/noreferrer/.test(val)) {
+      child.removeAttribute(attr.name);
+    }
+    return;
+  }
+});
+
+// style 安全清理（保持原有逻辑）
+if (child.getAttribute('style')) {
+  const safe = child.getAttribute('style')
+    .replace(/expression\s*\(/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/url\s*\(/gi, '');
+  child.setAttribute('style', safe);
+}
           walk(child);
         }
       }
@@ -75,6 +104,14 @@
 
     const contentEl = overlay.querySelector('.zrzbc-noti-content');
     contentEl.innerHTML = sanitizeHTML(noti.content);
+contentEl.querySelectorAll('a').forEach(a => {
+  a.setAttribute('target', '_blank');
+  a.setAttribute('rel', 'noopener noreferrer');
+  a.style.color = '#4f7cff';
+  a.style.textDecoration = 'underline';
+  // 点击链接不要触发遮罩层的事件
+  a.addEventListener('click', (e) => e.stopPropagation());
+});
     contentEl.style.whiteSpace = 'pre-wrap';
     contentEl.style.wordBreak = 'break-word';
 
