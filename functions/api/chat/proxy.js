@@ -49,6 +49,7 @@ export async function onRequestPost(context) {
     return Response.json({ error: 'AI 请求失败：' + (e.message || '未知错误') }, { status: 504 });
   }
 
+  // ================= 红包处理与风控审核 =================
   let redPacketCreated = null;
   const sendMatch = String(reply || '').match(/\[SEND_RED_PACKET\s*:\s*([0-9]+(?:\.[0-9]+)?)\s*:\s*([^\]]{1,30})\]/i);
   if (sendMatch) {
@@ -65,71 +66,68 @@ export async function onRequestPost(context) {
         'SELECT COUNT(*) as count FROM her_redpacket_logs WHERE user_email = ? AND created_at > ?'
       ).bind(email, past5h).first();
       sentCount = countRow?.count || 0;
-    } catch(e) {}
+    } catch (e) {}
 
     // 2. 判定风控
     let isRisk = false;
-    if (rpAmount > 30) isRisk = true;        // 单次金额大于 30 触发风控。。
+    if (rpAmount > 30) isRisk = true;        // 单次金额大于 30 触发风控
     if (sentCount >= 2) isRisk = true;       // 5小时内第3次发送触发风控
 
     // 3. 如果触发风控，大概率取消（90% 概率拦截）
     if (isRisk && Math.random() < 0.9) {
       reply += '\n\n*（四叶看了看余额，又看了看你，觉得数目太大了，默默地收回了红包）*';
-      redPacketCreated = null; 
     } else {
       // 没拦截成功（或正常小额），记录本次发送流水
       try {
         await env.DB.prepare(
           'INSERT INTO her_redpacket_logs (id, user_email, amount, created_at) VALUES (?, ?, ?, ?)'
         ).bind('rplog_' + Date.now(), email, rpAmount, Date.now()).run();
-      } catch(e) {}
-      
-      // ===== 下面紧接着原本的创建红包逻辑 =====
+      } catch (e) {}
+
       const wantsReturn = /返还|退回|还给我|还回来|退给我|还我|退我/.test(String(userText || ''));
 
-    const wantsReturn = /返还|退回|还给我|还回来|退给我|还我|退我/.test(String(userText || ''));
+      await env.DB.prepare(
+        `CREATE TABLE IF NOT EXISTS red_packets (
+          id TEXT PRIMARY KEY, user_email TEXT NOT NULL, direction TEXT NOT NULL,
+          amount INTEGER NOT NULL, title TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'pending',
+          created_at INTEGER NOT NULL, expire_at INTEGER NOT NULL
+        )`
+      ).run();
+      await env.DB.prepare(
+        `CREATE TABLE IF NOT EXISTS her_wallet (user_email TEXT PRIMARY KEY, balance INTEGER DEFAULT 10000)`
+      ).run();
+      await env.DB.prepare(
+        `INSERT OR IGNORE INTO her_wallet (user_email, balance) VALUES (?, 10000)`
+      ).bind(email).run();
 
-    await env.DB.prepare(
-      `CREATE TABLE IF NOT EXISTS red_packets (
-        id TEXT PRIMARY KEY, user_email TEXT NOT NULL, direction TEXT NOT NULL,
-        amount INTEGER NOT NULL, title TEXT NOT NULL,
-        status TEXT NOT NULL DEFAULT 'pending',
-        created_at INTEGER NOT NULL, expire_at INTEGER NOT NULL
-      )`
-    ).run();
-    await env.DB.prepare(
-      `CREATE TABLE IF NOT EXISTS her_wallet (user_email TEXT PRIMARY KEY, balance INTEGER DEFAULT 10000)`
-    ).run();
-    await env.DB.prepare(
-      `INSERT OR IGNORE INTO her_wallet (user_email, balance) VALUES (?, 10000)`
-    ).bind(email).run();
+      let returnedFromPacketId = null;
+      if (wantsReturn) {
+        const pendingP = await env.DB.prepare(
+          `SELECT id FROM red_packets WHERE user_email = ? AND direction = 'user_to_her' AND status = 'pending' ORDER BY created_at DESC LIMIT 1`
+        ).bind(email).first();
+        if (pendingP) returnedFromPacketId = pendingP.id;
+      }
 
-    let returnedFromPacketId = null;
-    if (wantsReturn) {
-      const pendingP = await env.DB.prepare(
-        `SELECT id FROM red_packets WHERE user_email = ? AND direction = 'user_to_her' AND status = 'pending' ORDER BY created_at DESC LIMIT 1`
-      ).bind(email).first();
-      if (pendingP) returnedFromPacketId = pendingP.id;
-    }
-
-    if (rpAmount > 0) {
-      if (returnedFromPacketId) {
-        await env.DB.prepare("UPDATE red_packets SET status = 'refunded' WHERE id = ?").bind(returnedFromPacketId).run();
-        const u = await env.DB.prepare('SELECT exp FROM users WHERE email = ?').bind(email).first();
-        const newExp = (u?.exp || 0) + rpAmount;
-        await env.DB.prepare('UPDATE users SET exp = ? WHERE email = ?').bind(newExp, email).run();
-        redPacketCreated = { returnedFromPacketId, amount: rpAmount, isReturned: true, exp: newExp };
-      } else {
-        const w = await env.DB.prepare('SELECT balance FROM her_wallet WHERE user_email = ?').bind(email).first();
-        if (w && (w.balance || 0) >= rpAmount) {
-          await env.DB.prepare('UPDATE her_wallet SET balance = balance - ? WHERE user_email = ?').bind(rpAmount, email).run();
-          const id = 'rp_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
-          const now = Date.now();
-          const expireAt = now + 5 * 60 * 1000;
-          await env.DB.prepare(
-            'INSERT INTO red_packets (id, user_email, direction, amount, title, status, created_at, expire_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-          ).bind(id, email, 'her_to_user', rpAmount, rpTitle, 'pending', now, expireAt).run();
-          redPacketCreated = { id, amount: rpAmount, title: rpTitle, expireAt };
+      if (rpAmount > 0) {
+        if (returnedFromPacketId) {
+          await env.DB.prepare("UPDATE red_packets SET status = 'refunded' WHERE id = ?").bind(returnedFromPacketId).run();
+          const u = await env.DB.prepare('SELECT exp FROM users WHERE email = ?').bind(email).first();
+          const newExp = (u?.exp || 0) + rpAmount;
+          await env.DB.prepare('UPDATE users SET exp = ? WHERE email = ?').bind(newExp, email).run();
+          redPacketCreated = { returnedFromPacketId, amount: rpAmount, isReturned: true, exp: newExp };
+        } else {
+          const w = await env.DB.prepare('SELECT balance FROM her_wallet WHERE user_email = ?').bind(email).first();
+          if (w && (w.balance || 0) >= rpAmount) {
+            await env.DB.prepare('UPDATE her_wallet SET balance = balance - ? WHERE user_email = ?').bind(rpAmount, email).run();
+            const id = 'rp_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+            const now = Date.now();
+            const expireAt = now + 5 * 60 * 1000;
+            await env.DB.prepare(
+              'INSERT INTO red_packets (id, user_email, direction, amount, title, status, created_at, expire_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+            ).bind(id, email, 'her_to_user', rpAmount, rpTitle, 'pending', now, expireAt).run();
+            redPacketCreated = { id, amount: rpAmount, title: rpTitle, expireAt };
+          }
         }
       }
     }
