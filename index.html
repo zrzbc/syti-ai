@@ -347,11 +347,10 @@ body.page-leaving { opacity: 0; }
   margin-bottom: 6px; background: #fff; font-size: 13px; gap: 10px;
   border: 2px solid #000;
 }
-/* 前三名：各自代表色边框 + 右侧代表色斜向渐变 */
-.leaderboard-row.rank-1 { border: 2px solid #ffb800; }
-.leaderboard-row.rank-2 { border: 2px solid #6b9bff; }
-.leaderboard-row.rank-3 { border: 2px solid #b8864a; }
-
+/* 前三名：黑框 + 右侧代表色斜向渐变 */
+.leaderboard-row.rank-1,
+.leaderboard-row.rank-2,
+.leaderboard-row.rank-3 { border: 2px solid #000; }
 .leaderboard-row.rank-1 {
   background: linear-gradient(110deg, #fff 0%, #fff 75%, #ffd700 86%, #ffb800 94%, #ffb800 100%);
 }
