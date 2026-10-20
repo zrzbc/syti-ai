@@ -42,7 +42,9 @@ export async function onRequestPost(context) {
 
   let reply;
   try {
-    reply = await callAI(apiConfig, systemPrompt, userText, history, attachments);
+    const nickname = String(user.nickname || user.name || user.username || user.display_name || '').trim();
+    const userHint = nickname ? `\n\n【当前用户】昵称：${nickname}。可以在合适的场合自然称呼用户，比如打招呼、表达关心、想叫住对方时，但不要每句都叫，也不要生硬地重复。` : '';
+    reply = await callAI(apiConfig, systemPrompt + userHint, userText, history, attachments);
   } catch (e) {
     return Response.json({ error: 'AI 请求失败：' + (e.message || '未知错误') }, { status: 504 });
   }
