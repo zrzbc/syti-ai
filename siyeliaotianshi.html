@@ -1416,8 +1416,27 @@ function closeCamera(){const mask=document.getElementById('cameraMask'),video=do
 document.getElementById('plusCamera').addEventListener('click',()=>{plusPanel.classList.remove('show');openCamera();});document.getElementById('cameraCancel').addEventListener('click',closeCamera);document.getElementById('cameraShot').addEventListener('click',()=>{const video=document.getElementById('cameraVideo');if(!video.videoWidth){document.getElementById('cameraStatus').textContent='摄像头还没准备好，请稍等一下。';return;}const canvas=document.createElement('canvas');canvas.width=video.videoWidth;canvas.height=video.videoHeight;canvas.getContext('2d').drawImage(video,0,0);canvas.toBlob(blob=>{if(!blob)return;closeCamera();chooseAttachments([new File([blob],'拍摄照片.jpg',{type:'image/jpeg',lastModified:Date.now()})]);},'image/jpeg',.92);});
 attachmentInput.addEventListener('change',()=>{chooseAttachments(attachmentInput.files);attachmentInput.value='';});document.getElementById('cameraInput').addEventListener('change',()=>{const f=document.getElementById('cameraInput').files?.[0];if(f)chooseAttachments([f]);document.getElementById('cameraInput').value='';});
 
-const redPacketMask=document.getElementById('redPacketMask'),rpAmount=document.getElementById('rpAmount'),rpTitle=document.getElementById('rpTitle'),rpBill=document.getElementById('rpBill'),rpPay=document.getElementById('rpPay');
-document.getElementById('plusRedPacket').addEventListener('click',()=>{plusPanel.classList.remove('show');rpAmount.value='';rpTitle.value='恭喜发财，大吉大利';rpBill.style.display='none';rpPay.textContent='塞钱进红包';redPacketMask.classList.add('show');rpAmount.focus();});document.getElementById('rpCancel').addEventListener('click',()=>redPacketMask.classList.remove('show'));
+const redPacketMask=document.getElementById('redPacketMask'),rpAmount=document.getElementById('rpAmount'),rpTitle=document.getElementById('rpTitle'),rpBill=document.getElementById('rpBill'),rpPay=document.getElementById('rpPay'),rpCancelBtn=document.getElementById('rpCancel');
+function resetRedPacketPayLock(){
+  rpPay.disabled=false;
+  rpCancelBtn.disabled=false;
+  rpPay.dataset.locked='0';
+  rpPay.textContent='塞钱进红包';
+}
+document.getElementById('plusRedPacket').addEventListener('click',()=>{
+  plusPanel.classList.remove('show');
+  rpAmount.value='';
+  rpTitle.value='恭喜发财，大吉大利';
+  rpBill.style.display='none';
+  resetRedPacketPayLock();
+  redPacketMask.classList.add('show');
+  rpAmount.focus();
+});
+rpCancelBtn.addEventListener('click',()=>{
+  if(rpPay.dataset.locked==='1')return;
+  redPacketMask.classList.remove('show');
+});
+
 function createRedPacketId(){return 'rp_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);}
 function saveMessageObject(m){const idx=CHAT_STATE.messages.findIndex(x=>x.id===m.id);if(idx>=0)CHAT_STATE.messages[idx]=Object.assign({},CHAT_STATE.messages[idx],m);else CHAT_STATE.messages.push(Object.assign({},m,{topicId:CHAT_STATE.topicId}));saveChatState();}
 function showRedPacketNotice(text,messageId){const d=document.createElement('div');d.className='rp-notice';d.innerHTML=escapeHtml(text).replace(/红包/g,'<span class="rp-jump-link">红包</span>');const a=d.querySelector('.rp-jump-link');if(a)a.addEventListener('click',()=>{const row=document.querySelector('[data-message-id="'+messageId+'"]');if(row)row.scrollIntoView({behavior:'smooth',block:'center'});});chatBody.appendChild(d);chatBody.scrollTop=chatBody.scrollHeight;}
@@ -1555,6 +1574,7 @@ function parseAssistantSendRedPacketAction(text,userText){
 }
 
 rpPay.addEventListener('click',async()=>{
+  if(rpPay.dataset.locked==='1')return;
   const amount=Math.round((Number(rpAmount.value)||0)*100)/100;
   const title=String(rpTitle.value||'').trim()||'恭喜发财，大吉大利';
   if(!Number.isFinite(amount)||amount<=0){alert('请输入大于0的红包金额。');return;}
@@ -1565,9 +1585,15 @@ rpPay.addEventListener('click',async()=>{
     rpBill.style.display='block';rpPay.textContent='支付';return;
   }
   if(amount>WALLET.balance){alert('余额发生变化，当前余额不足。');return;}
+  rpPay.dataset.locked='1';
+  rpPay.disabled=true;
+  rpCancelBtn.disabled=true;
   try{
     await walletAdd(-amount,'发送红包《'+title+'》');
   }catch(e){
+    rpPay.dataset.locked='0';
+    rpPay.disabled=false;
+    rpCancelBtn.disabled=false;
     alert('支付失败：'+e.message);
     return;
   }
