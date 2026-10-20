@@ -648,13 +648,9 @@ function updateQuotaDisplay(){
   else{el.style.color='#879487';}
 }
 
-async function callAI(userText,history=[]){
+async function callAI(userText,history=[],attachments=[]){
   const u=getCurrentUser();
   if(!u.email) throw new Error('401');
-  
-  if(PENDING_ATTACHMENTS.length){
-    throw new Error('附件功能暂不支持，请移除附件后再发送');
-  }
   
   const nowHint=`\n\n【当前时间】${getBeijingNowText()}。如用户询问现在的时间、日期或星期，请以此为准。`;
   
@@ -674,6 +670,7 @@ async function callAI(userText,history=[]){
       systemPrompt:CHARACTER_PROMPT+nowHint,
       userText:userText,
       history:history.slice(-20),
+      attachments:(attachments||[]).map(a=>({name:a.name,type:a.type,dataUrl:a.dataUrl})),
       customApiConfig:customConfig
     })
   });
@@ -1008,20 +1005,50 @@ function appendAIGuide(){
   saveChatState();chatBody.scrollTop=chatBody.scrollHeight;
 }
 
+function appendSystemNoticeLinkText(container, text){
+  const str=String(text||'');
+  const keyword='返回主页';
+  const idx=str.indexOf(keyword);
+  if(idx===-1){ container.textContent=str; return; }
+  if(idx>0) container.appendChild(document.createTextNode(str.slice(0,idx)));
+  const a=document.createElement('a');
+  a.href='https://zrzbc.com';
+  a.target='_blank';
+  a.rel='noopener noreferrer';
+  a.textContent=keyword;
+  a.className='chat-link';
+  container.appendChild(a);
+  const rest=str.slice(idx+keyword.length);
+  if(rest) container.appendChild(document.createTextNode(rest));
+}
 function appendSystemNotice(text){
   const message=String(text||'系统请求失败');
   const d=document.createElement('div');d.className='topic-divider system-notice-row';
   const match=message.match(/^(401|429|504|500)(：.*)$/s);
-  if(match){const code=document.createElement('strong');code.textContent=match[1];const detail=document.createElement('span');detail.textContent=match[2];d.append(code,detail);}
-  else d.textContent=message;
+  if(match){
+    const code=document.createElement('strong');code.textContent=match[1];
+    const detail=document.createElement('span');
+    appendSystemNoticeLinkText(detail, match[2]);
+    d.append(code,detail);
+  }else{
+    appendSystemNoticeLinkText(d, message);
+  }
   chatBody.appendChild(d);
   CHAT_STATE.messages.push({id:'m'+Date.now()+Math.random().toString(36).slice(2,7),topicId:CHAT_STATE.topicId,role:'system',text:message,ts:Date.now(),systemType:'system_notice'});
   saveChatState();chatBody.scrollTop=chatBody.scrollHeight;
 }
+
 function renderSystemNotice(text){
   const d=document.createElement('div');d.className='topic-divider system-notice-row';
   const message=String(text||'系统请求失败');const match=message.match(/^(401|429|504|500)(：.*)$/s);
-  if(match){const code=document.createElement('strong');code.textContent=match[1];const detail=document.createElement('span');detail.textContent=match[2];d.append(code,detail);}else d.textContent=message;
+  if(match){
+    const code=document.createElement('strong');code.textContent=match[1];
+    const detail=document.createElement('span');
+    appendSystemNoticeLinkText(detail, match[2]);
+    d.append(code,detail);
+  }else{
+    appendSystemNoticeLinkText(d, message);
+  }
   chatBody.appendChild(d);
 }
 
@@ -1217,13 +1244,14 @@ async function handleSend(text){
   try{
     let reply=null;
     try{
-      const aiText=activeQuote?'【引用 '+(activeQuote.role==='assistant'?'冰凛四叶':'你')+'：'+activeQuote.text+'】\n'+clean:clean;
-      reply=await callAIWithDeadline(aiText,currentTopicHistory(true),attachments.length?15000:8000);
+      const baseText=clean||(attachments.length?'请看看这张图片。':'');
+      const aiText=activeQuote?'【引用 '+(activeQuote.role==='assistant'?'冰凛四叶':'你')+'：'+activeQuote.text+'】\n'+baseText:baseText;
+      reply=await callAIWithDeadline(aiText,currentTopicHistory(true),attachments.length?15000:8000,attachments);
       if(!reply) throw new Error('AI 返回为空');
     }catch(aiErr){
       const code=String(aiErr&&aiErr.message||'');
       if(['401','429','504','500'].includes(code)||/超时/.test(code)) throw aiErr;
-      reply='请先回到主页登录，并待网页加载完毕~';
+      throw new Error('504');
     }
     const rawAssistantReply=String(reply||'');
     const shouldBlock=/\[BLOCK_USER\]/i.test(rawAssistantReply);
@@ -1270,10 +1298,10 @@ async function handleSend(text){
   }catch(e){
     removeTyping();
     const code=String(e&&e.message||'');
-    if(code==='401') appendSystemNotice('401：欸？当前登录状态好像失效了，检查一下登录状态再试试吧～');
-    else if(code==='429') appendSystemNotice('429：请求次数有点多，等额度恢复后再来聊天吧～');
-    else if(code==='504'||/超时/.test(code)) appendSystemNotice('504：唔……请求好像超时了，网络或服务暂时没响应，稍后再试试吧～');
-    else if(code==='500') appendSystemNotice('500：啊……服务端好像出了点小差错，过一会儿再试试吧～');
+    if(code==='401') appendSystemNotice('401：欸？你好像还没有登录噢，返回主页登陆一下吧～ 这样才能和四叶正常聊天呀。');
+    else if(code==='429') appendSystemNotice('429：今天已经聊了好多好多啦……四叶的脑袋要冒烟了，次日0点之后再接着聊吧～');
+    else if(code==='504'||/超时/.test(code)) appendSystemNotice('504：唔……网络好像卡住了，消息没有发出去，稍后再试试吧～');
+    else if(code==='500') appendSystemNotice('500：啊……四叶好像出了点小差错，暂时没办法回复你了，迟一点再来找她吧～');
     else appendBubble('唔……这次我真的没能顺利回复出来，抱歉啦。','her');
   }finally{
     PENDING_ATTACHMENTS=[];
@@ -1283,12 +1311,11 @@ async function handleSend(text){
   }
 }
 
-async function callAIWithDeadline(userText,history=[],ms=8000){
+async function callAIWithDeadline(userText,history=[],ms=8000,attachments=[]){
   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),ms);const originalFetch=window.fetch;
   window.fetch=(...args)=>{const options=args[1]||{};args[1]=Object.assign({},options,{signal:controller.signal});return originalFetch(...args);};
-  try{return await callAI(userText,history);}catch(e){if(e?.name==='AbortError')throw new Error('504');throw e;}finally{clearTimeout(timer);window.fetch=originalFetch;}
+  try{return await callAI(userText,history,attachments);}catch(e){if(e?.name==='AbortError')throw new Error('504');throw e;}finally{clearTimeout(timer);window.fetch=originalFetch;}
 }
-
 
 /* ================= 四叶草虚拟钱包（服务端同步） ================= */
 let WALLET={balance:0,history:[]};
