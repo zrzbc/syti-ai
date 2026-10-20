@@ -69,7 +69,7 @@ export async function onRequestPost(context) {
 
     // 2. 判定风控
     let isRisk = false;
-    if (rpAmount > 30) isRisk = true;        // 单次金额大于 30 触发风控。
+    if (rpAmount > 30) isRisk = true;        // 单次金额大于 30 触发风控。。
     if (sentCount >= 2) isRisk = true;       // 5小时内第3次发送触发风控
 
     // 3. 如果触发风控，大概率取消（90% 概率拦截）
