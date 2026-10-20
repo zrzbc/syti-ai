@@ -208,8 +208,10 @@ body.page-leaving{opacity:0}
 <nav class="nav">
   <div style="display:flex;align-items:center;">
     <a class="logo" href="index.html">&nbsp;&nbsp;这人<span>针不错</span></a>
-<span class="nav-exp-badge" id="navExpBadge">经验：--</span>
-<span id="addExpBtn" style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.5); color: #fff; border-radius: 50%; font-size: 16px; line-height: 1; cursor: pointer; transition: 0.2s; margin-left: 6px;" onmouseover="this.style.background='rgba(255,255,255,0.6)'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1)'">+</span>
+<span class="nav-exp-badge" style="display: inline-flex; align-items: center; padding: 4px 6px 4px 12px; margin-left: 10px; gap: 8px;">
+  <span id="navExpBadge">经验：--</span>
+  <span id="addExpBtn" style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: #5b21b6; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; color: #fff; font-size: 18px; font-weight: bold; line-height: 1; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#7c3aed'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='#5b21b6'; this.style.transform='scale(1)'">+</span>
+</span>
 
   </div>
   <div class="nav-right">
@@ -1143,7 +1145,11 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.shop-buy-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const u = getLocalUser();
-      if (!u) return alert('请先登录！');
+      if (!u) {
+        addExpModal.classList.remove('show'); // 关掉兑换弹窗
+        openAuthModal(); // 打开登录弹窗
+        return;
+      }
 
       const type = btn.dataset.type;
       const item = btn.dataset.item;
@@ -1277,7 +1283,11 @@ document.addEventListener('DOMContentLoaded', function () {
     badgeNameForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const u = getLocalUser();
-      if (!u) return alert('请先登录');
+      if (!u) {
+        addExpModal.classList.remove('show'); // 关掉兑换弹窗
+        openAuthModal(); // 打开登录弹窗
+        return;
+      }
       const newName = badgeNameInput.value.trim();
       if (!newName) return alert('名称不能为空');
       const btn = document.getElementById('badgeNameSubmitBtn');
@@ -1685,7 +1695,10 @@ document.addEventListener('DOMContentLoaded', function () {
   if (addExpBtn) {
     addExpBtn.addEventListener('click', () => {
       const u = getLocalUser();
-      if (!u) return alert('请先登录再增加经验哦~');
+      if (!u) {
+        openAuthModal(); // 未登录直接弹出登录框
+        return;
+      }
       addExpModal.classList.add('show');
       redeemCodeInput.value = '';
       redeemMsg.textContent = '';
