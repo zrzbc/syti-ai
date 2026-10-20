@@ -201,6 +201,15 @@ body.page-leaving{opacity:0}
 .modal-footer a{font-size:13px;color:#8a5cf6}
 #resetFormContainer h3{color:#172033}
 #backToLoginLink, #forgotPasswordLink{color:#8a5cf6;font-size:13px}
+/* 兑换输入框的提示文字颜色 */
+#redeemCodeInput.error-placeholder::placeholder {
+  color: #ef4444;
+  font-weight: 600;
+}
+#redeemCodeInput.success-placeholder::placeholder {
+  color: #22c55e;
+  font-weight: 600;
+}
 </style>
 </head>
 <body>
@@ -1690,7 +1699,6 @@ document.addEventListener('DOMContentLoaded', function () {
   const closeAddExpModal = document.getElementById('closeAddExpModal');
   const redeemCodeInput = document.getElementById('redeemCodeInput');
   const redeemBtn = document.getElementById('redeemBtn');
-  const redeemMsg = document.getElementById('redeemMsg');
 
   if (addExpBtn) {
     addExpBtn.addEventListener('click', () => {
@@ -1701,7 +1709,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       addExpModal.classList.add('show');
       redeemCodeInput.value = '';
-      redeemMsg.textContent = '';
+      redeemCodeInput.placeholder = '请输入激活码'; // 每次打开重置占位符
+      redeemCodeInput.classList.remove('error-placeholder', 'success-placeholder');
     });
   }
 
@@ -1710,17 +1719,30 @@ document.addEventListener('DOMContentLoaded', function () {
     addExpModal.addEventListener('click', (e) => { if (e.target === addExpModal) addExpModal.classList.remove('show'); });
   }
 
+  // 监听输入框获得焦点（用户点击输入框），自动清除错误/成功提示
+  if (redeemCodeInput) {
+    redeemCodeInput.addEventListener('focus', () => {
+      redeemCodeInput.placeholder = '请输入激活码';
+      redeemCodeInput.classList.remove('error-placeholder', 'success-placeholder');
+    });
+  }
+
   if (redeemBtn) {
     redeemBtn.addEventListener('click', async () => {
       const code = redeemCodeInput.value.trim();
       if (!code) return alert('请输入激活码');
       const u = getLocalUser();
-      if (!u) return alert('请先登录');
+      if (!u) {
+        addExpModal.classList.remove('show'); 
+        openAuthModal(); 
+        return;
+      }
 
       redeemBtn.disabled = true;
       redeemBtn.textContent = '验证中...';
-      redeemMsg.textContent = '';
-      redeemMsg.style.color = '#6f7890';
+      
+      // 清除之前的提示样式
+      redeemCodeInput.classList.remove('error-placeholder', 'success-placeholder');
 
       try {
         const res = await fetch('/api/shop/redeem-exp', {
@@ -1731,9 +1753,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const data = await res.json();
         
         if (data.success) {
-          redeemMsg.textContent = `🎉 兑换成功！获得 ${data.added} 经验`;
-          redeemMsg.style.color = '#22c55e';
-          redeemCodeInput.value = '';
+          // 成功：清空输入框内容，让 placeholder 显示出来
+          redeemCodeInput.value = ''; 
+          redeemCodeInput.placeholder = `兑换成功！获得 ${data.added} 经验`;
+          redeemCodeInput.classList.add('success-placeholder');
           
           // 更新本地用户数据
           u.exp = data.exp;
@@ -1742,17 +1765,19 @@ document.addEventListener('DOMContentLoaded', function () {
           // 更新页面 UI
           updateNavExp(u);
           renderPopover(u);
-          // 如果悬浮窗里有经验条也一并刷新
           if (document.getElementById('popoverExpText')) {
              renderPopover(u);
           }
         } else {
-          redeemMsg.textContent = `❌ ${data.error || '兑换失败'}`;
-          redeemMsg.style.color = '#ef4444';
+          // 失败：清空输入框，在框内显示错误（不带 emoji）
+          redeemCodeInput.value = ''; 
+          redeemCodeInput.placeholder = data.error || '兑换失败';
+          redeemCodeInput.classList.add('error-placeholder');
         }
       } catch (err) {
-        redeemMsg.textContent = '❌ 网络错误，请稍后重试';
-        redeemMsg.style.color = '#ef4444';
+        redeemCodeInput.value = ''; 
+        redeemCodeInput.placeholder = '网络错误，请稍后重试';
+        redeemCodeInput.classList.add('error-placeholder');
       } finally {
         redeemBtn.disabled = false;
         redeemBtn.textContent = '兑换';
@@ -1774,7 +1799,6 @@ document.addEventListener('DOMContentLoaded', function () {
       <input type="text" id="redeemCodeInput" placeholder="请输入激活码" style="flex: 1; padding: 12px 16px; border: 1px solid #e8ebf5; border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s;">
       <button id="redeemBtn" class="submit-btn" style="width: auto; padding: 0 24px; margin-top: 0; font-size: 15px;">兑换</button>
     </div>
-    <div id="redeemMsg" style="text-align: center; font-size: 13px; margin-top: -16px; margin-bottom: 16px; height: 16px;"></div>
 
     <!-- 套餐区 -->
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
