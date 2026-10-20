@@ -49,6 +49,61 @@ export async function onRequestPost(context) {
     return Response.json({ error: 'AI 请求失败：' + (e.message || '未知错误') }, { status: 504 });
   }
 
+  let redPacketCreated = null;
+  const sendMatch = String(reply || '').match(/\[SEND_RED_PACKET\s*:\s*([0-9]+(?:\.[0-9]+)?)\s*:\s*([^\]]{1,30})\]/i);
+  if (sendMatch) {
+    const rpAmount = Math.round(Number(sendMatch[1]));
+    const rpTitle = String(sendMatch[2] || '恭喜发财，大吉大利').trim().slice(0, 15) || '恭喜发财，大吉大利';
+    reply = String(reply).replace(/\[SEND_RED_PACKET\s*:[^\]]+\]/gi, '').trim();
+
+    const wantsReturn = /返还|退回|还给我|还回来|退给我|还我|退我/.test(String(userText || ''));
+
+    await env.DB.prepare(
+      `CREATE TABLE IF NOT EXISTS red_packets (
+        id TEXT PRIMARY KEY, user_email TEXT NOT NULL, direction TEXT NOT NULL,
+        amount INTEGER NOT NULL, title TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at INTEGER NOT NULL, expire_at INTEGER NOT NULL
+      )`
+    ).run();
+    await env.DB.prepare(
+      `CREATE TABLE IF NOT EXISTS her_wallet (user_email TEXT PRIMARY KEY, balance INTEGER DEFAULT 10000)`
+    ).run();
+    await env.DB.prepare(
+      `INSERT OR IGNORE INTO her_wallet (user_email, balance) VALUES (?, 10000)`
+    ).bind(email).run();
+
+    let returnedFromPacketId = null;
+    if (wantsReturn) {
+      const pendingP = await env.DB.prepare(
+        `SELECT id FROM red_packets WHERE user_email = ? AND direction = 'user_to_her' AND status = 'pending' ORDER BY created_at DESC LIMIT 1`
+      ).bind(email).first();
+      if (pendingP) returnedFromPacketId = pendingP.id;
+    }
+
+    if (rpAmount > 0) {
+      if (returnedFromPacketId) {
+        await env.DB.prepare("UPDATE red_packets SET status = 'refunded' WHERE id = ?").bind(returnedFromPacketId).run();
+        const u = await env.DB.prepare('SELECT exp FROM users WHERE email = ?').bind(email).first();
+        const newExp = (u?.exp || 0) + rpAmount;
+        await env.DB.prepare('UPDATE users SET exp = ? WHERE email = ?').bind(newExp, email).run();
+        redPacketCreated = { returnedFromPacketId, amount: rpAmount, isReturned: true, exp: newExp };
+      } else {
+        const w = await env.DB.prepare('SELECT balance FROM her_wallet WHERE user_email = ?').bind(email).first();
+        if (w && (w.balance || 0) >= rpAmount) {
+          await env.DB.prepare('UPDATE her_wallet SET balance = balance - ? WHERE user_email = ?').bind(rpAmount, email).run();
+          const id = 'rp_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+          const now = Date.now();
+          const expireAt = now + 5 * 60 * 1000;
+          await env.DB.prepare(
+            'INSERT INTO red_packets (id, user_email, direction, amount, title, status, created_at, expire_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+          ).bind(id, email, 'her_to_user', rpAmount, rpTitle, 'pending', now, expireAt).run();
+          redPacketCreated = { id, amount: rpAmount, title: rpTitle, expireAt };
+        }
+      }
+    }
+  }
+
   await env.DB.prepare(
     `INSERT INTO chat_daily_count (email, date, count) VALUES (?, ?, 1)
      ON CONFLICT(email, date) DO UPDATE SET count = count + 1`
@@ -57,6 +112,7 @@ export async function onRequestPost(context) {
   return Response.json({
     success: true,
     reply,
+    redPacketCreated,
     remaining: DAILY_MESSAGE_LIMIT - usedCount - 1
   });
 }
