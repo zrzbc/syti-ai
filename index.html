@@ -347,14 +347,22 @@ body.page-leaving { opacity: 0; }
   margin-bottom: 6px; background: #fff; font-size: 13px; gap: 10px;
   border: 2px solid #000;
 }
-.leaderboard-row.rank-1 { background: linear-gradient(135deg, #ffd700, #ffb800); }
-.leaderboard-row.rank-2 { background: linear-gradient(135deg, #a0c4ff, #6b9bff); }
-.leaderboard-row.rank-3 { background: linear-gradient(135deg, #d2a679, #b8864a); }
+/* 前三名：白底 */
 .leaderboard-row.rank-1,
 .leaderboard-row.rank-2,
-.leaderboard-row.rank-3 { border: none; }
-.leaderboard-row.rank-2, .leaderboard-row.rank-3 { color: #fff; }
-.leaderboard-row.rank-1 { color: #000; }
+.leaderboard-row.rank-3 { background: #fff; border: none; }
+
+/* 前三名序号圆圈：金 / 银 / 铜 */
+.leaderboard-rank {
+  width: 20px; height: 20px; min-width: 20px;
+  border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  box-sizing: border-box; flex-shrink: 0;
+}
+.leaderboard-rank.rank-1 { background: linear-gradient(135deg, #ffd700, #ffb800); color: #000; }
+.leaderboard-rank.rank-2 { background: linear-gradient(135deg, #c0c0c0, #a8a8a8); color: #fff; }
+.leaderboard-rank.rank-3 { background: linear-gradient(135deg, #cd7f32, #b8864a); color: #fff; }
 .leaderboard-row.current-user { margin-top: 16px; border-top: 1px dashed #d9dce5; padding-top: 12px; }
 .leaderboard-avatar {
   width: 28px; height: 28px; border-radius: 50%;
@@ -1358,12 +1366,16 @@ if (u.badge_name && count >= maxTimes) return alert(`本月修改次数已用完
   const signinStatus = document.getElementById('signinStatus');
   const leaderboardList = document.getElementById('leaderboardList');
 
-  function buildNicknameHTML(u, rank) {
-    const nickname = u.nickname || '用户';
-    // 第 2、3 名白字（蓝底/铜底），其余名次黑字（金底/白底）
-    const color = (rank === 2 || rank === 3) ? '#fff' : '#000';
-    return `<span style="color:${color};">${nickname}</span>`;
+function buildNicknameHTML(u, rank) {
+  const nickname = u.nickname || '用户';
+  const hasNickColor = u.nickname_color && u.nickname_color_expire_at &&
+                       u.nickname_color_expire_at > Date.now() &&
+                       u.nickname_color_equipped !== 0;
+  if (hasNickColor) {
+    return `<span class="nick-colored nick-${u.nickname_color}">${nickname}</span>`;
   }
+  return nickname;
+}
 
   async function loadLeaderboard() {
     if (!leaderboardList) return;
@@ -1378,21 +1390,26 @@ if (u.badge_name && count >= maxTimes) return alert(`本月修改次数已用完
       if (!data.success) return;
 
       let html = '';
-      data.top10.forEach((u, i) => {
-        const rank = i + 1;
-        const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
-        const avatarStyle = u.avatar ? `background-image: url(${u.avatar});` : '';
-        const letter = (u.nickname || 'U').charAt(0).toUpperCase();
-        const badgeHtml = (u.badge_type && u.badge_name && u.badge_expire_at && u.badge_expire_at > Date.now())
-          ? `<span class="user-badge ${u.badge_type}">${u.badge_name}</span>` : '';
-        const nicknameHtml = buildNicknameHTML(u, rank);
-        html += `<div class="leaderboard-row ${rankClass}">
-          <span style="width:20px;">${rank}</span>
-          <div class="leaderboard-avatar" style="${avatarStyle}">${u.avatar ? '' : letter}</div>
-          <span class="leaderboard-name">${nicknameHtml}${badgeHtml}</span>
-          <span class="leaderboard-days">${u.continuous_days || 0} 天</span>
-        </div>`;
-      });
+data.top10.forEach((u, i) => {
+  const rank = i + 1;
+  const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+  const avatarStyle = u.avatar ? `background-image: url(${u.avatar});` : '';
+  const letter = (u.nickname || 'U').charAt(0).toUpperCase();
+  const badgeHtml = (u.badge_type && u.badge_name && u.badge_expire_at && u.badge_expire_at > Date.now())
+    ? `<span class="user-badge ${u.badge_type}">${u.badge_name}</span>` : '';
+  const nicknameHtml = buildNicknameHTML(u, rank);
+
+  const rankBadge = rank <= 3
+    ? `<span class="leaderboard-rank rank-${rank}">${rank}</span>`
+    : `<span style="width:20px;">${rank}</span>`;
+
+  html += `<div class="leaderboard-row ${rankClass}">
+    ${rankBadge}
+    <div class="leaderboard-avatar" style="${avatarStyle}">${u.avatar ? '' : letter}</div>
+    <span class="leaderboard-name">${nicknameHtml}${badgeHtml}</span>
+    <span class="leaderboard-days">${u.continuous_days || 0} 天</span>
+  </div>`;
+});
 
       const inTop10 = data.currentUser && data.top10.some(u => u.email === data.currentUser.email);
       if (!inTop10 && data.currentUser) {
@@ -1401,10 +1418,11 @@ if (u.badge_name && count >= maxTimes) return alert(`本月修改次数已用完
         const letter = (u.nickname || 'U').charAt(0).toUpperCase();
         const myBadgeHtml = (u.badge_type && u.badge_name && u.badge_expire_at && u.badge_expire_at > Date.now())
           ? `<span class="user-badge ${u.badge_type}">${u.badge_name}</span>` : '';
+        const myNickHtml = buildNicknameHTML(u, -1);
         html += `<div class="leaderboard-row current-user">
           <span style="width:20px;">未上榜</span>
           <div class="leaderboard-avatar" style="${avatarStyle}">${u.avatar ? '' : letter}</div>
-          <span class="leaderboard-name">${u.nickname || '用户'}${myBadgeHtml}</span>
+          <span class="leaderboard-name">${myNickHtml}${myBadgeHtml}</span>
           <span class="leaderboard-days">${u.continuous_days || 0} 天</span>
         </div>`;
       }
