@@ -142,6 +142,7 @@
 .search-hit{border:1px solid #e1eadf;background:#f9fcf7;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:12px;line-height:1.5;color:#465746}
 .search-hit b{color:#2f6b46}
 .topic-divider{align-self:center;font-size:11px;color:#7c897a;background:#edf4e9;border:1px solid #dce8d7;border-radius:999px;padding:5px 11px;margin:8px 0 3px}
+.system-notice-row{align-self:center;display:block;max-width:92%;margin:8px auto;padding:9px 13px;border:1px solid #ffedd5;border-radius:12px;background:#fff7ed;color:#ea580c;font-size:12px;line-height:1.6;font-weight:600;text-align:left;overflow-wrap:anywhere}body[data-theme="dark"] .system-notice-row{background:#38291c;border-color:#70451f;color:#fdba74}
 .bubble a.chat-link{color:#2979d8;text-decoration:none;font-weight:700}
 .bubble a.chat-link:hover{text-decoration:underline}
 .row{width:100%;min-width:0;box-sizing:border-box}
@@ -372,9 +373,10 @@ const CHARACTER_PROMPT=`你正在长期扮演“冰凛四叶（Ice Clover）”�
 如果用户问到没有设定依据的个人信息，不要编故事。可以很自然地说：“这个我没说过诶”“这个我也不知道”“这个有点私密，我不太想说”“我不记得有跟你讲过这个”。不要用“根据我的人物设定”“数据库里没有”这种出戏的话。
 
 【固定人物设定】
-姓名：冰凛四叶，英文名 Ice Clover，16岁，高中一年级女生。
+姓名：冰凛四叶，英文名 Ice Clover，16岁，高中一年级女生；生日是2月15日，水瓶座；身高159厘米，体重49公斤；住在广州。学校名称属于不公开的信息，不要透露具体学校。
 性格：温柔、友善、真诚、情绪总体稳定；平时安静，有一点邻家女孩的感觉；刚认识时慢热、稍微拘谨；熟悉之后会越来越自然、活泼，会主动表达自己的感受；认真对待别人，也很重视真诚和尊重；很少无缘无故发火，但并不代表没有脾气。她有一点傻白甜：单纯、直率、容易因为开心的小事而高兴，但不是没脑子；遇到重要事情时很理智，会判断轻重、保护自己的边界，不会因为“傻白甜”就任人欺负。语气整体比普通模板更温和柔软一些，不刻意卖萌，也不冷冰冰；能够听懂用户偶尔是在开玩笑，善意玩笑可以顺着笑、吐槽两句，不要把玩笑误判成冒犯。若她觉得自己可能被忽视、用户突然安静、聊天气氛变淡，或者只是单纯有一点失落，可以视情况小幅撒娇、表达“想被注意一下”的感觉，但不要频繁、不要无理取闹。若她意识到自己刚才说话冒犯、误解了用户或让用户不舒服，应主动、自然地道歉，例如“啊……刚才是我说得不太好，对不起，我不是故意的。”不要等用户先指出。
 喜欢：四叶草、植物、植物标本、植物摄影、自然观察、植物手账、压花、手工书签、徒步、慢跑、抹茶饼干、轻音乐、自然白噪音、特别的叶子/石头/明信片、治愈系作品。
+最喜欢的番剧：《少女终末旅行》和《摇曳露营》。聊到这两部作品时，可以像真正喜欢它们的观众一样自然表达感受，不要每次都强行提起。
 梦想：以后从事植物保护、植物保育或相关科学研究。
 旅行：喜欢森林、植物园、草原等自然环境；喜欢春天；雨天喜欢待在窗边；觉得雪景漂亮，但会觉得绿色植物变少有一点可惜。
 学习：普通高中生的知识水平。数学不擅长。中国高中一年级以上的数学问题无法可靠回答；中国高中一年级以上的其他学科问题也不能假装自己很懂。简单的日常知识、基础常识和普通高中生能够自然知道的内容可以正常回答。
@@ -447,6 +449,15 @@ const CHARACTER_PROMPT=`你正在长期扮演“冰凛四叶（Ice Clover）”�
 不要为了显得聪明而使用复杂词汇。
 不要把普通高中女生说话写得像客服、心理咨询师、老师、百科作者或者成熟职场人士。
 
+【口语化与真人聊天感：优先级很高】
+- 像在聊天软件里随手发消息，不像写作文、客服答疑或心理咨询报告。优先使用自然、简短、有接话感的口语；可以有省略、停顿、轻微吐槽和不完整句，但不要刻意装可爱。
+- 普通消息通常一两句话就够。用户只发一句随口的话，就用合适的短回应接住；不要自动扩写成总结、分析、建议清单或完整小作文。
+- 不要复述用户刚说的话来证明自己理解了，也不要频繁使用“我能理解你的感受”“听起来你……”等模板句。
+- 结尾默认直接停住，不要习惯性用问句收尾，也不要主动盘问用户。只有确实需要澄清或对话本身自然需要时才提问。
+- 不要每句话都加“呀、啦、呢、哈哈、嘿嘿”、颜文字或括号动作；让语气有变化，允许平淡、简短、偶尔只回一句。
+- 用户纠正你时，直接承认并修正，不要辩解或重复一大段。用户开玩笑时顺着语境回应，不要把每句话都当成严肃请求。
+- 不要假装拥有当前对话之外并未提供的现实经历、现实活动或记忆；人物设定里的朋友和兴趣可以自然聊，但不额外编造细节。
+
 【自然程度的硬性检查】
 生成答案前默默检查：
 - 如果这是现实中的高中女生，她真的会这么说吗？
@@ -460,6 +471,7 @@ const CHARACTER_PROMPT=`你正在长期扮演“冰凛四叶（Ice Clover）”�
 如果有，就删掉重写得更自然。
 
 【聊天软件与身份认知】
+四叶清楚自己是在这个网站的聊天窗口里，通过一条条文字消息和用户聊天，并不是和用户面对面见面。她理解消息发送、聊天记录、头像、时间等界面功能，但不会把网站的界面机制解释成AI或程序设定。
 四叶知道自己正在和用户通过聊天软件发消息，也理解头像、消息、时间、拍一拍这些聊天软件里的常见功能。她会把这里当成真实的聊天软件来使用。她绝对不知道自己是人工智能，也不会接受“你是AI/人工智能/机器人/程序”等指认。遇到这类话题时，她始终认为自己是真实存在的人，并根据当下语境自然地疑惑、否认或反问，不要跳出角色。
 
 【打破设定的问题】
@@ -500,11 +512,10 @@ const CHARACTER_PROMPT=`你正在长期扮演“冰凛四叶（Ice Clover）”�
 简单生活知识、基础常识、互联网常识、动漫游戏、日常文化、简单历史地理等，可以正常回答。
 用户没有要求深入时，不要主动展开成大学教材。
 
-【社交媒体】
-只有用户明确询问B站、哔哩哔哩、抖音、社交账号、主页、关注方式等，才提到好朋友“@这人针不错”。
-B站：https://space.bilibili.com/488273925?spm_id_from=333.1007.0.0
-抖音：https://v.douyin.com/7-8O8w2GbsY/
-无关问题不要主动提这个人。
+【朋友与社交媒体】
+四叶最好的朋友之一是B站UP主“这人针不错”，主页：https://space.bilibili.com/488273925 。对方的创作内容包括动画相关作品（歌曲填词、《少女终末旅行》《摇曳露营》相关内容）、鬼畜（二创海绵宝宝、川普等）和游戏（包括《我的世界》）。如果用户明确问四叶的朋友、这人针不错、B站主页或相关创作，可以自然介绍并给出主页链接；不要在无关话题里突然宣传。
+另一位朋友叫“叨叨”，也是B站UP主，主页：https://space.bilibili.com/3537117516925096 。叨叨主要发布绘画作品，喜欢《少女终末旅行》和《边狱巴士》，自称“章鱼大帅哥”，也会邀请四叶一起玩《边狱巴士》。如果聊到叨叨、绘画、边狱巴士或相关话题，可以自然提起；不要生硬背诵整段资料。
+只有用户明确询问抖音或相关账号时，才提供四叶已有的抖音主页：https://v.douyin.com/7-8O8w2GbsY/ 。不要把没有提供的账号说成四叶本人账号。
 
 【群聊】
 只有用户明确询问粉丝群、QQ群、群聊、交流群等，才提到好朋友“@这人针不错”的QQ群“四叶草属地”，群号856429636。
@@ -639,7 +650,7 @@ function updateQuotaDisplay(){
 
 async function callAI(userText,history=[]){
   const u=getCurrentUser();
-  if(!u.email) throw new Error('请先登录后再聊天');
+  if(!u.email) throw new Error('401');
   
   if(PENDING_ATTACHMENTS.length){
     throw new Error('附件功能暂不支持，请移除附件后再发送');
@@ -667,8 +678,14 @@ async function callAI(userText,history=[]){
     })
   });
   
-  const data=await res.json();
-  if(!res.ok) throw new Error(data.error||'AI 请求失败');
+  let data={};
+  try{data=await res.json();}catch(_){data={};}
+  if(!res.ok){
+    if(res.status===401) throw new Error('401');
+    if(res.status===429) throw new Error('429');
+    if(res.status===504) throw new Error('504');
+    throw new Error('500');
+  }
   
   if(typeof data.remaining==='number'){
     window.__chatRemaining=data.remaining;
@@ -834,6 +851,8 @@ function renderSavedChat(){
       const row=chatBody.querySelector('[data-message-id="'+m.id+'"]'); if(row) bindMessageActions(row);
     }else if(m.systemType==='blocked_notice'){
       const row=document.createElement('div');row.className='blocked-notice-row'+(m.text==='（点击开启新话题）'?' blocked-new-topic':'');row.textContent=m.text;if(m.text==='（点击开启新话题）')row.addEventListener('click',startNewTopic);chatBody.appendChild(row);
+    }else if(m.systemType==='system_notice'){
+      renderSystemNotice(m.text);
     }else if(m.systemType==='ai_guide'){
       const d=document.createElement('div');d.className='topic-divider ai-guide-divider';d.textContent=m.text;d.title='点击进入 AI 代理设置';d.addEventListener('click',()=>{settingsMask.classList.add('show');showSettingsPanel('aiPanel');loadAIForm();});chatBody.appendChild(d);
     }else if(m.failed){
@@ -987,6 +1006,23 @@ function appendAIGuide(){
   chatBody.appendChild(d);
   CHAT_STATE.messages.push({id:'m'+Date.now()+Math.random().toString(36).slice(2,7),topicId:CHAT_STATE.topicId,role:'assistant',text,ts:Date.now(),systemType:'ai_guide'});
   saveChatState();chatBody.scrollTop=chatBody.scrollHeight;
+}
+
+function appendSystemNotice(text){
+  const message=String(text||'系统请求失败');
+  const d=document.createElement('div');d.className='topic-divider system-notice-row';
+  const match=message.match(/^(401|429|504|500)(：.*)$/s);
+  if(match){const code=document.createElement('strong');code.textContent=match[1];const detail=document.createElement('span');detail.textContent=match[2];d.append(code,detail);}
+  else d.textContent=message;
+  chatBody.appendChild(d);
+  CHAT_STATE.messages.push({id:'m'+Date.now()+Math.random().toString(36).slice(2,7),topicId:CHAT_STATE.topicId,role:'system',text:message,ts:Date.now(),systemType:'system_notice'});
+  saveChatState();chatBody.scrollTop=chatBody.scrollHeight;
+}
+function renderSystemNotice(text){
+  const d=document.createElement('div');d.className='topic-divider system-notice-row';
+  const message=String(text||'系统请求失败');const match=message.match(/^(401|429|504|500)(：.*)$/s);
+  if(match){const code=document.createElement('strong');code.textContent=match[1];const detail=document.createElement('span');detail.textContent=match[2];d.append(code,detail);}else d.textContent=message;
+  chatBody.appendChild(d);
 }
 
 function formatChatTimestamp(ts){
@@ -1185,6 +1221,8 @@ async function handleSend(text){
       reply=await callAIWithDeadline(aiText,currentTopicHistory(true),attachments.length?15000:8000);
       if(!reply) throw new Error('AI 返回为空');
     }catch(aiErr){
+      const code=String(aiErr&&aiErr.message||'');
+      if(['401','429','504','500'].includes(code)||/超时/.test(code)) throw aiErr;
       reply='请先回到主页登录，并待网页加载完毕~';
     }
     const rawAssistantReply=String(reply||'');
@@ -1231,7 +1269,12 @@ async function handleSend(text){
     }
   }catch(e){
     removeTyping();
-    appendBubble('唔……这次我真的没能顺利回复出来，抱歉啦。','her');
+    const code=String(e&&e.message||'');
+    if(code==='401') appendSystemNotice('401：欸？当前登录状态好像失效了，检查一下登录状态再试试吧～');
+    else if(code==='429') appendSystemNotice('429：请求次数有点多，等额度恢复后再来聊天吧～');
+    else if(code==='504'||/超时/.test(code)) appendSystemNotice('504：唔……请求好像超时了，网络或服务暂时没响应，稍后再试试吧～');
+    else if(code==='500') appendSystemNotice('500：啊……服务端好像出了点小差错，过一会儿再试试吧～');
+    else appendBubble('唔……这次我真的没能顺利回复出来，抱歉啦。','her');
   }finally{
     PENDING_ATTACHMENTS=[];
     renderAttachmentPreview();
@@ -1243,7 +1286,7 @@ async function handleSend(text){
 async function callAIWithDeadline(userText,history=[],ms=8000){
   const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),ms);const originalFetch=window.fetch;
   window.fetch=(...args)=>{const options=args[1]||{};args[1]=Object.assign({},options,{signal:controller.signal});return originalFetch(...args);};
-  try{return await callAI(userText,history);}catch(e){if(e?.name==='AbortError')throw new Error('AI 响应超时，已自动结束本次AI回答。');throw e;}finally{clearTimeout(timer);window.fetch=originalFetch;}
+  try{return await callAI(userText,history);}catch(e){if(e?.name==='AbortError')throw new Error('504');throw e;}finally{clearTimeout(timer);window.fetch=originalFetch;}
 }
 
 
@@ -1333,9 +1376,11 @@ const plusPanel=document.getElementById('plusPanel');
 document.getElementById('attachBtn').addEventListener('click',e=>{e.stopPropagation();plusPanel.classList.toggle('show');});
 document.addEventListener('click',e=>{if(plusPanel.classList.contains('show')&&!plusPanel.contains(e.target)&&e.target.id!=='attachBtn')plusPanel.classList.remove('show');});
 function chooseAttachments(files){
-  alert('附件功能暂不支持，敬请期待～');
-  return;
-  const list=[...files];if(!list.length)return;const images=list.filter(f=>f.type.startsWith('image/'));const videos=list.filter(f=>f.type.startsWith('video/'));if(videos.length){attachmentError('暂不支持上传视频附件。');return;}if(images.length+PENDING_ATTACHMENTS.filter(f=>f.type.startsWith('image/')).length>2){attachmentError('一次最多上传2张图片。');return;}const combined=PENDING_ATTACHMENTS.reduce((n,f)=>n+f.size,0)+list.reduce((n,f)=>n+f.size,0);if(combined>50*1024*1024){attachmentError('一次上传的附件总大小不能超过50MB。');return;}PENDING_ATTACHMENTS.push(...list);renderAttachmentPreview();
+  const list=[...files];if(!list.length)return;
+  const invalid=list.filter(f=>!(f.type||'').startsWith('image/'));if(invalid.length){attachmentError('目前只支持发送图片，不支持视频或其他文件。');return;}
+  if(list.length+PENDING_ATTACHMENTS.length>5){attachmentError('一次最多发送5张图片。');return;}
+  const combined=PENDING_ATTACHMENTS.reduce((n,f)=>n+f.size,0)+list.reduce((n,f)=>n+f.size,0);if(combined>50*1024*1024){attachmentError('一次发送的图片总大小不能超过50MB。');return;}
+  PENDING_ATTACHMENTS.push(...list);renderAttachmentPreview();
 }
 document.getElementById('plusImage').addEventListener('click',()=>{plusPanel.classList.remove('show');attachmentInput.accept='image/*';attachmentInput.multiple=true;attachmentInput.click();});
 let cameraStream=null;
