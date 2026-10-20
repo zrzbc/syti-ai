@@ -56,6 +56,37 @@ export async function onRequestPost(context) {
     const rpTitle = String(sendMatch[2] || '恭喜发财，大吉大利').trim().slice(0, 15) || '恭喜发财，大吉大利';
     reply = String(reply).replace(/\[SEND_RED_PACKET\s*:[^\]]+\]/gi, '').trim();
 
+    // ===== 风控审核 =====
+    // 1. 查询 5 小时内发给该用户的红包数量
+    const past5h = Date.now() - 5 * 60 * 60 * 1000;
+    let sentCount = 0;
+    try {
+      const countRow = await env.DB.prepare(
+        'SELECT COUNT(*) as count FROM her_redpacket_logs WHERE user_email = ? AND created_at > ?'
+      ).bind(email, past5h).first();
+      sentCount = countRow?.count || 0;
+    } catch(e) {}
+
+    // 2. 判定风控
+    let isRisk = false;
+    if (rpAmount > 30) isRisk = true;        // 单次金额大于 30 触发风控
+    if (sentCount >= 2) isRisk = true;       // 5小时内第3次发送触发风控
+
+    // 3. 如果触发风控，大概率取消（90% 概率拦截）
+    if (isRisk && Math.random() < 0.9) {
+      reply += '\n\n*（四叶看了看余额，又看了看你，觉得数目太大了，默默地收回了红包）*';
+      redPacketCreated = null; 
+    } else {
+      // 没拦截成功（或正常小额），记录本次发送流水
+      try {
+        await env.DB.prepare(
+          'INSERT INTO her_redpacket_logs (id, user_email, amount, created_at) VALUES (?, ?, ?, ?)'
+        ).bind('rplog_' + Date.now(), email, rpAmount, Date.now()).run();
+      } catch(e) {}
+      
+      // ===== 下面紧接着原本的创建红包逻辑 =====
+      const wantsReturn = /返还|退回|还给我|还回来|退给我|还我|退我/.test(String(userText || ''));
+
     const wantsReturn = /返还|退回|还给我|还回来|退给我|还我|退我/.test(String(userText || ''));
 
     await env.DB.prepare(
