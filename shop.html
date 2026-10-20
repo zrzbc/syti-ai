@@ -208,7 +208,9 @@ body.page-leaving{opacity:0}
 <nav class="nav">
   <div style="display:flex;align-items:center;">
     <a class="logo" href="index.html">&nbsp;&nbsp;这人<span>针不错</span></a>
-    <span class="nav-exp-badge" id="navExpBadge">经验：--</span>
+<span class="nav-exp-badge" id="navExpBadge">经验：--</span>
+<span id="addExpBtn" style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.5); color: #fff; border-radius: 50%; font-size: 16px; line-height: 1; cursor: pointer; transition: 0.2s; margin-left: 6px;" onmouseover="this.style.background='rgba(255,255,255,0.6)'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='scale(1)'">+</span>
+
   </div>
   <div class="nav-right">
     <div class="navlinks">
@@ -413,8 +415,8 @@ body.page-leaving{opacity:0}
         <div class="code-card-body">
           <div class="code-card-info">
             <div class="badge-preview" style="background:#e0e7ff;color:#3730a3;">激活码</div>
-            <h3>抽号器</h3>
-            <p>激活码可以用于激活抽号器工具，永久有效。<br>请勿将激活码分享给其他用户！</p>
+            <h3>抽号器附加功能</h3>
+            <p>激活码可以用于激活抽号器工具的附加功能，永久有效。<br>请勿将激活码分享给其他用户！</p>
             <div class="shop-price">售价：<span>100</span> 经验</div>
           </div>
           <div class="code-card-actions">
@@ -1670,7 +1672,128 @@ document.addEventListener('DOMContentLoaded', function () {
     if (u) updateBuyButtons(u);
   }, 60 * 1000);
 
+  /* ============================================================
+     增加经验弹窗与兑换逻辑
+     ============================================================ */
+  const addExpModal = document.getElementById('addExpModal');
+  const addExpBtn = document.getElementById('addExpBtn');
+  const closeAddExpModal = document.getElementById('closeAddExpModal');
+  const redeemCodeInput = document.getElementById('redeemCodeInput');
+  const redeemBtn = document.getElementById('redeemBtn');
+  const redeemMsg = document.getElementById('redeemMsg');
+
+  if (addExpBtn) {
+    addExpBtn.addEventListener('click', () => {
+      const u = getLocalUser();
+      if (!u) return alert('请先登录再增加经验哦~');
+      addExpModal.classList.add('show');
+      redeemCodeInput.value = '';
+      redeemMsg.textContent = '';
+    });
+  }
+
+  if (closeAddExpModal) {
+    closeAddExpModal.addEventListener('click', () => addExpModal.classList.remove('show'));
+    addExpModal.addEventListener('click', (e) => { if (e.target === addExpModal) addExpModal.classList.remove('show'); });
+  }
+
+  if (redeemBtn) {
+    redeemBtn.addEventListener('click', async () => {
+      const code = redeemCodeInput.value.trim();
+      if (!code) return alert('请输入激活码');
+      const u = getLocalUser();
+      if (!u) return alert('请先登录');
+
+      redeemBtn.disabled = true;
+      redeemBtn.textContent = '验证中...';
+      redeemMsg.textContent = '';
+      redeemMsg.style.color = '#6f7890';
+
+      try {
+        const res = await fetch('/api/shop/redeem-exp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: u.email, code })
+        });
+        const data = await res.json();
+        
+        if (data.success) {
+          redeemMsg.textContent = `🎉 兑换成功！获得 ${data.added} 经验`;
+          redeemMsg.style.color = '#22c55e';
+          redeemCodeInput.value = '';
+          
+          // 更新本地用户数据
+          u.exp = data.exp;
+          localStorage.setItem('user', JSON.stringify(u));
+          
+          // 更新页面 UI
+          updateNavExp(u);
+          renderPopover(u);
+          // 如果悬浮窗里有经验条也一并刷新
+          if (document.getElementById('popoverExpText')) {
+             renderPopover(u);
+          }
+        } else {
+          redeemMsg.textContent = `❌ ${data.error || '兑换失败'}`;
+          redeemMsg.style.color = '#ef4444';
+        }
+      } catch (err) {
+        redeemMsg.textContent = '❌ 网络错误，请稍后重试';
+        redeemMsg.style.color = '#ef4444';
+      } finally {
+        redeemBtn.disabled = false;
+        redeemBtn.textContent = '兑换';
+      }
+    });
+  }
+
 });
 </script>
+
+<!-- 增加经验弹窗 -->
+<div class="modal-overlay" id="addExpModal">
+  <div class="modal-content" style="width: min(720px, 95vw); padding: 28px 24px;">
+    <button class="modal-close" id="closeAddExpModal">&times;</button>
+    <h3 style="text-align: center; margin-bottom: 20px; color: #172033;">增加经验</h3>
+    
+    <!-- 兑换码输入区 -->
+    <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+      <input type="text" id="redeemCodeInput" placeholder="请输入激活码" style="flex: 1; padding: 12px 16px; border: 1px solid #e8ebf5; border-radius: 12px; font-size: 15px; outline: none; transition: 0.2s;">
+      <button id="redeemBtn" class="submit-btn" style="width: auto; padding: 0 24px; margin-top: 0; font-size: 15px;">兑换</button>
+    </div>
+    <div id="redeemMsg" style="text-align: center; font-size: 13px; margin-top: -16px; margin-bottom: 16px; height: 16px;"></div>
+
+    <!-- 套餐区 -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+      
+      <!-- 800档 -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; text-align: center; display: flex; flex-direction: column;">
+        <img src="https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/800xp.png" style="width: 100%; border-radius: 10px; margin-bottom: 12px; object-fit: cover; aspect-ratio: 1;" alt="800经验">
+        <h4 style="font-size: 15px; color: #1e293b; margin-bottom: 4px;">5元 / 800经验</h4>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 12px; flex: 1;">适合轻度体验</p>
+        <a href="https://afdian.com/item/dc2208e2cc8d11f1bff05254001e7c00?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener" style="display: block; background: linear-gradient(110deg, #4f7cff, #8a5cf6); color: #fff; padding: 10px; border-radius: 10px; font-size: 14px; font-weight: bold; text-decoration: none;">购买</a>
+      </div>
+
+      <!-- 3100档 -->
+      <div style="background: #fffbeb; border: 1px solid #fcd34d; border-radius: 16px; padding: 16px; text-align: center; position: relative; display: flex; flex-direction: column;">
+        <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #ef4444; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 10px; white-space: nowrap;">最热卖 🔥</div>
+        <img src="https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/3100xp.png" style="width: 100%; border-radius: 10px; margin-bottom: 12px; object-fit: cover; aspect-ratio: 1;" alt="3100经验">
+        <h4 style="font-size: 15px; color: #1e293b; margin-bottom: 4px;">18元 / 3100经验</h4>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 12px; flex: 1;">超高性价比</p>
+        <a href="https://afdian.com/item/5ac50e4acc9011f1bfd252540025c377?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener" style="display: block; background: linear-gradient(110deg, #f59e0b, #ef4444); color: #fff; padding: 10px; border-radius: 10px; font-size: 14px; font-weight: bold; text-decoration: none;">购买</a>
+      </div>
+
+      <!-- 5500档 -->
+      <div style="background: #fdf4ff; border: 1px solid #d8b4fe; border-radius: 16px; padding: 16px; text-align: center; display: flex; flex-direction: column;">
+        <img src="https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/5500xp.png" style="width: 100%; border-radius: 10px; margin-bottom: 12px; object-fit: cover; aspect-ratio: 1;" alt="5500经验">
+        <h4 style="font-size: 15px; color: #1e293b; margin-bottom: 4px;">30元 / 5500经验</h4>
+        <p style="font-size: 12px; color: #64748b; margin-bottom: 12px; flex: 1;">一步到位买永久</p>
+        <a href="https://afdian.com/item/ef8a6e6ccc9011f18c5152540025c377?utm_source=copylink&utm_medium=link" target="_blank" rel="noopener" style="display: block; background: linear-gradient(110deg, #8b5cf6, #d946ef); color: #fff; padding: 10px; border-radius: 10px; font-size: 14px; font-weight: bold; text-decoration: none;">购买</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
