@@ -347,10 +347,20 @@ body.page-leaving { opacity: 0; }
   margin-bottom: 6px; background: #fff; font-size: 13px; gap: 10px;
   border: 2px solid #000;
 }
-/* 前三名：白底 */
+/* 前三名：黑框 + 右侧代表色斜向渐变 */
 .leaderboard-row.rank-1,
 .leaderboard-row.rank-2,
-.leaderboard-row.rank-3 { background: #fff; border: none; }
+.leaderboard-row.rank-3 { border: 2px solid #000; }
+
+.leaderboard-row.rank-1 {
+  background: linear-gradient(110deg, #fff 0%, #fff 62%, #ffd700 78%, #ffb800 88%, #ffb800 100%);
+}
+.leaderboard-row.rank-2 {
+  background: linear-gradient(110deg, #fff 0%, #fff 62%, #a0c4ff 78%, #6b9bff 88%, #6b9bff 100%);
+}
+.leaderboard-row.rank-3 {
+  background: linear-gradient(110deg, #fff 0%, #fff 62%, #d2a679 78%, #b8864a 88%, #b8864a 100%);
+}
 
 /* 前三名序号圆圈：金 / 银 / 铜 */
 .leaderboard-rank {
@@ -404,7 +414,8 @@ body.page-leaving { opacity: 0; }
 .popover-level-wrap:hover .level-tooltip { opacity: 1; transform: translateY(-50%) translateX(12px); }
 
 /* 昵称颜色 */
-.nick-colored{-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;display:inline-block}
+.nick-colored{-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;display:inline-block;font-weight:700}
+
 .nick-colored.nick-yellow{background-image:linear-gradient(90deg,#ff6a00 0%,#ffb800 100%)}
 .nick-colored.nick-blue{background-image:linear-gradient(90deg,#0044cc 0%,#00b4ff 100%)}
 .nick-colored.nick-pink{background-image:linear-gradient(90deg,#d91e63 0%,#ff8fab 100%)}
