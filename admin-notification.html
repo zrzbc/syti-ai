@@ -144,6 +144,9 @@
 
         <span class="divider"></span>
 
+<button type="button" id="insertLink" title="插入超链接（先选中文字）" style="font-size:12px;width:auto;padding:0 8px;">链接</button>
+<span class="divider"></span>
+
         <button type="button" id="clearBg" title="清除背景色" style="font-size:12px;">清底</button>
         <button type="button" id="clearFormat" title="清除所有格式" style="font-size:12px;">清格式</button>
       </div>
@@ -278,6 +281,71 @@
   }
   backColorInput.addEventListener('change', () => applyBackColor(backColorInput.value));
   backColorInput.addEventListener('input', () => applyBackColor(backColorInput.value));
+
+// ===== 超链接：先选中文字，再输入网址 =====
+document.getElementById('insertLink').addEventListener('mousedown', (e) => {
+  e.preventDefault();
+  insertLink();
+});
+
+function insertLink() {
+  editor.focus();
+  if (!restoreRange()) {
+    alert('请先在编辑区选中要加链接的文字');
+    return;
+  }
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  if (range.collapsed) {
+    alert('请先选中要加链接的文字');
+    return;
+  }
+
+  // 如果选中的文字已经是一个链接，就取出现有地址，方便修改
+  const anchorNode = range.startContainer;
+  const el = anchorNode.nodeType === 1 ? anchorNode : anchorNode.parentElement;
+  const closestA = el ? el.closest('a') : null;
+  const currentHref = (closestA && editor.contains(closestA)) ? (closestA.getAttribute('href') || '') : '';
+
+  const url = prompt('请输入链接地址（选中的文字将变成超链接）：', currentHref || 'https://');
+  if (url === null) return;
+  const trimmed = url.trim();
+  if (!trimmed) return;
+
+  // 自动补全协议
+  let finalUrl = trimmed;
+  if (!/^(https?:\/\/|mailto:)/i.test(finalUrl)) {
+    finalUrl = 'https://' + finalUrl;
+  }
+
+  document.execCommand('styleWithCSS', false, true);
+
+  if (closestA && editor.contains(closestA)) {
+    // 已有链接：改地址
+    closestA.setAttribute('href', finalUrl);
+    closestA.setAttribute('target', '_blank');
+    closestA.setAttribute('rel', 'noopener noreferrer');
+    closestA.style.color = '#4f7cff';
+    closestA.style.textDecoration = 'underline';
+  } else {
+    // 新建链接
+    document.execCommand('createLink', false, finalUrl);
+    // 找到刚创建的 a 标签，补 target / rel / 样式
+    editor.querySelectorAll('a').forEach(a => {
+      if (a.getAttribute('href') === finalUrl && !a.dataset.linkFixed) {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+        a.style.color = '#4f7cff';
+        a.style.textDecoration = 'underline';
+        a.dataset.linkFixed = '1';
+      }
+    });
+  }
+
+  saveRange();
+  editor.focus();
+}
 
   // ===== 发布 =====
   document.getElementById('btn').addEventListener('click', async () => {
