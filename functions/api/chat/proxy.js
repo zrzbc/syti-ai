@@ -3,10 +3,10 @@ const DAILY_MESSAGE_LIMIT = 50;
 export async function onRequestPost(context) {
   const { request, env } = context;
   const body = await request.json();
-  const { email, systemPrompt, userText, history = [], customApiConfig } = body;
+  const { email, systemPrompt, userText, history = [], customApiConfig, attachments = [] } = body;
 
   if (!email) return Response.json({ error: '请先登录' }, { status: 400 });
-  if (!userText || !systemPrompt) return Response.json({ error: '参数不完整' }, { status: 400 });
+  if ((!userText && (!attachments || attachments.length === 0)) || !systemPrompt) return Response.json({ error: '参数不完整' }, { status: 400 });
 
   const user = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(email).first();
   if (!user) return Response.json({ error: '用户不存在' }, { status: 400 });
@@ -42,9 +42,9 @@ export async function onRequestPost(context) {
 
   let reply;
   try {
-    reply = await callAI(apiConfig, systemPrompt, userText, history);
+    reply = await callAI(apiConfig, systemPrompt, userText, history, attachments);
   } catch (e) {
-    return Response.json({ error: 'AI 请求失败：' + (e.message || '未知错误') }, { status: 500 });
+    return Response.json({ error: 'AI 请求失败：' + (e.message || '未知错误') }, { status: 504 });
   }
 
   await env.DB.prepare(
@@ -107,10 +107,19 @@ async function readApiResponse(res) {
   return j;
 }
 
-async function callAI(config, systemPrompt, userText, history) {
+async function callAI(config, systemPrompt, userText, history, attachments = []) {
   const model = await resolveModel(config);
+  const imageAttachments = (attachments || []).filter(a => a && a.dataUrl && /^image\//.test(a.type || ''));
+  const defaultText = userText || (imageAttachments.length ? '请看看这张图片。' : '');
 
   if (config.apiType === 'anthropic') {
+    const content = [];
+    if (defaultText) content.push({ type: 'text', text: defaultText });
+    for (const a of imageAttachments) {
+      const base64 = String(a.dataUrl).split(',')[1] || '';
+      content.push({ type: 'image', source: { type: 'base64', media_type: a.type, data: base64 } });
+    }
+    if (!content.length) content.push({ type: 'text', text: '请看看这张图片。' });
     const r = await fetch(chatEndpoint(config), {
       method: 'POST',
       headers: {
@@ -122,7 +131,7 @@ async function callAI(config, systemPrompt, userText, history) {
         model,
         max_tokens: 700,
         system: systemPrompt,
-        messages: [...history, { role: 'user', content: userText }]
+        messages: [...history, { role: 'user', content }]
       })
     });
     const j = await readApiResponse(r);
@@ -131,12 +140,19 @@ async function callAI(config, systemPrompt, userText, history) {
 
   if (config.apiType === 'gemini') {
     const url = chatEndpoint(config) + '?key=' + encodeURIComponent(config.apiKey);
+    const parts = [];
+    if (defaultText) parts.push({ text: defaultText });
+    for (const a of imageAttachments) {
+      const base64 = String(a.dataUrl).split(',')[1] || '';
+      parts.push({ inlineData: { mimeType: a.type, data: base64 } });
+    }
+    if (!parts.length) parts.push({ text: '请看看这张图片。' });
     const contents = [
       ...history.map(m => ({
         role: m.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: m.content }]
       })),
-      { role: 'user', parts: [{ text: userText }] }
+      { role: 'user', parts }
     ];
     const r = await fetch(url, {
       method: 'POST',
@@ -151,6 +167,13 @@ async function callAI(config, systemPrompt, userText, history) {
     return j.candidates?.[0]?.content?.parts?.map(x => x.text || '').join('') || '';
   }
 
+  let userContent = defaultText;
+  if (imageAttachments.length) {
+    userContent = [
+      { type: 'text', text: defaultText || '请看看这张图片。' },
+      ...imageAttachments.map(a => ({ type: 'image_url', image_url: { url: a.dataUrl } }))
+    ];
+  }
   const r = await fetch(chatEndpoint(config), {
     method: 'POST',
     headers: {
@@ -162,7 +185,7 @@ async function callAI(config, systemPrompt, userText, history) {
       messages: [
         { role: 'system', content: systemPrompt },
         ...history,
-        { role: 'user', content: userText }
+        { role: 'user', content: userContent }
       ],
       temperature: 0.75,
       max_tokens: 700,
