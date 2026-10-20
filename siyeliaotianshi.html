@@ -694,6 +694,7 @@ async function callAI(userText,history=[],attachments=[]){
     window.__chatRemaining=data.remaining;
     updateQuotaDisplay();
   }
+  window.__lastRedPacketCreated = data.redPacketCreated || null;
   
   return data.reply||'';
 }
@@ -1259,11 +1260,9 @@ async function handleSend(text){
       if(['401','429','504','500'].includes(code)||/超时/.test(code)) throw aiErr;
       throw new Error('504');
     }
+
     const rawAssistantReply=String(reply||'');
     const shouldBlock=/\[BLOCK_USER\]/i.test(rawAssistantReply);
-    const sendAction=parseAssistantSendRedPacketAction(rawAssistantReply,clean);
-    let sendRpMatch=sendAction?[null,String(sendAction.amount),String(sendAction.title)]:null;
-    let returnPacketSource=sendAction?.returnPacketSource||null;
     reply=stripRedPacketControlMarkers(rawAssistantReply).replace(/\[BLOCK_USER\]/gi,'').trim();
     removeTyping();
     if(shouldBlock){ blockCurrentTopic(); }
@@ -1272,19 +1271,23 @@ async function handleSend(text){
       appendBubble(chunks[i],'her');
       if(i<chunks.length-1) await wait(800);
     }
-    if(sendRpMatch){
+    if(window.__lastRedPacketCreated){
       await wait(180);
-      const sent=sendHerRedPacket(Number(sendRpMatch[1]),String(sendRpMatch[2]).trim());
-      if(sent&&returnPacketSource&&returnPacketSource.redPacketStatus==='pending'){
-        returnPacketSource.redPacketStatus='claimed';
-        returnPacketSource.redPacketClaimed=true;
-        returnPacketSource.redPacketClaimedAt=Date.now();
-        saveMessageObject(returnPacketSource);
-        const originalRow=document.querySelector('[data-message-id="'+returnPacketSource.id+'"]');
-        setRedPacketVisual(originalRow,'claimed');
-        showRedPacketNotice('冰凛四叶 领取了 你的红包',returnPacketSource.id);
+      const rp=window.__lastRedPacketCreated;
+      window.__lastRedPacketCreated=null;
+      if(rp.isReturned){
+        const origRow=document.querySelector('[data-message-id="'+rp.returnedFromPacketId+'"]');
+        if(origRow) setRedPacketVisual(origRow,'refunded');
+        const orig=getMessageById(rp.returnedFromPacketId);
+        if(orig){ orig.redPacketStatus='refunded'; orig.redPacketRefunded=true; saveMessageObject(orig); }
+        showRedPacketNotice('红包已退还给你',rp.returnedFromPacketId);
+        if(typeof rp.exp==='number'){ WALLET.balance=rp.exp; updateWalletUI(); }
+      }else{
+        const m={id:rp.id,topicId:CHAT_STATE.topicId,role:'assistant',text:'[红包]',ts:Date.now(),redPacket:true,redPacketAmount:rp.amount,redPacketTitle:rp.title,redPacketFrom:'冰凛四叶',redPacketClaimed:false,redPacketRefunded:false,redPacketStatus:'pending',redPacketCreatedAt:Date.now(),redPacketExpireAt:rp.expireAt};
+        appendRedPacketMessage('her',m,{save:true});
       }
     }
+
     maybePokeAfterReply(clean,reply);
     LAST_USER_ACTIVITY_TS=Date.now();
     scheduleIdleCheck();
@@ -1473,10 +1476,22 @@ function appendRedPacketMessage(who,m,opts={}){const row=document.createElement(
 async function claimHerRedPacket(m,row,button){
   if(m.redPacketClaimed||m.redPacketRefunded||m.redPacketStatus==='expired')return;
   if(Date.now()>Number(m.redPacketExpireAt||0)){expireRedPacket(m,row);return;}
+  const u=getCurrentUser();
+  if(!u.email) return alert('请先登录');
   try{
-    await walletAdd(Number(m.redPacketAmount)||0,'领取冰凛四叶的红包《'+(m.redPacketTitle||'红包')+'》');
+    const res=await fetch('/api/chat/redpacket-claim-her',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:u.email,packetId:m.id})
+    });
+    const data=await res.json();
+    if(!data.success){
+      alert('领取失败：'+(data.error||'未知错误'));
+      if(/过期/.test(data.error||'')) expireRedPacket(m,row);
+      return;
+    }
+    WALLET.balance=data.exp; updateWalletUI();
   }catch(e){
-    alert('领取失败：'+e.message);
+    alert('领取失败：网络错误');
     return;
   }
   m.redPacketClaimed=true;
@@ -1494,14 +1509,25 @@ async function expireRedPacket(m,row){
   m.redPacketExpiredAt=Date.now();
   if(m.role==='user'){
     m.redPacketRefunded=true;
-    try{
-      await walletAdd(Number(m.redPacketAmount)||0,'红包过期原路返回《'+(m.redPacketTitle||'红包')+'》');
-    }catch(e){}
+    const u=getCurrentUser();
+    if(u.email){
+      try{
+        const res=await fetch('/api/chat/redpacket-expire-user',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({email:u.email,packetId:m.id})
+        });
+        const data=await res.json();
+        if(data.success&&typeof data.exp==='number'){
+          WALLET.balance=data.exp; updateWalletUI();
+        }
+      }catch(e){}
+    }
   }
   saveMessageObject(m);
   setRedPacketVisual(row,'expired');
   showRedPacketNotice(m.role==='user'?'红包已过期，四叶草将原路返回':'你有红包5分钟内未接收，已过期',m.id);
 }
+
 function scanRedPacketExpiry(){document.querySelectorAll('.red-packet-row').forEach(row=>{if(row.dataset.rpStatus!=='pending')return;const exp=Number(row.dataset.rpExpireAt||0);if(exp&&Date.now()>=exp){const m=getMessageById(row.dataset.messageId);if(m)expireRedPacket(m,row);}});}setInterval(scanRedPacketExpiry,1000);
 
 /* ================= 红包语义 -> 真实动作：统一判定层 ================= */
@@ -1594,8 +1620,17 @@ rpPay.addEventListener('click',async()=>{
   rpPay.dataset.locked='1';
   rpPay.disabled=true;
   rpCancelBtn.disabled=true;
+  let sentPacketInfo=null;
   try{
-    await walletAdd(-amount,'发送红包《'+title+'》');
+    const u=getCurrentUser();
+    const res=await fetch('/api/chat/redpacket-send-user',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:u.email,amount,title})
+    });
+    const data=await res.json();
+    if(!data.success) throw new Error(data.error||'支付失败');
+    WALLET.balance=data.exp; updateWalletUI();
+    sentPacketInfo=data;
   }catch(e){
     rpPay.dataset.locked='0';
     rpPay.disabled=false;
@@ -1604,8 +1639,9 @@ rpPay.addEventListener('click',async()=>{
     return;
   }
   redPacketMask.classList.remove('show');
-  const sentRedPacket={id:createRedPacketId(),topicId:CHAT_STATE.topicId,role:'user',text:'[红包]',ts:Date.now(),redPacket:true,redPacketAmount:amount,redPacketTitle:title,redPacketFrom:'你',redPacketClaimed:false,redPacketRefunded:false,redPacketStatus:'pending',redPacketCreatedAt:Date.now(),redPacketExpireAt:Date.now()+60000};
+  const sentRedPacket={id:sentPacketInfo.id,topicId:CHAT_STATE.topicId,role:'user',text:'[红包]',ts:Date.now(),redPacket:true,redPacketAmount:amount,redPacketTitle:title,redPacketFrom:'你',redPacketClaimed:false,redPacketRefunded:false,redPacketStatus:'pending',redPacketCreatedAt:Date.now(),redPacketExpireAt:sentPacketInfo.expireAt};
   appendRedPacketMessage('me',sentRedPacket,{save:true});
+
   const rpPrompt=`用户刚刚给你发送了一个红包。金额：${amount.toFixed(2)}四叶草；标题：${title}。请结合当前聊天背景自然回应。你必须明确二选一，而且口头回复必须与动作一致：如果收下，可见回复必须明确说出“我收下了/那我收下啦”等收下含义，并在末尾加入 [ACCEPT_RED_PACKET]；如果不收，可见回复必须明确说出“不收/不能收/退给你”等拒收含义，并在末尾加入 [REFUND_RED_PACKET]。绝对禁止可见回复说“不收、没收、不能收、退回”，却让红包变成已领取。金额再大也不能因此突然改变关系或喜欢上用户。`;
   appendTyping();
   (async()=>{
@@ -1623,13 +1659,24 @@ rpPay.addEventListener('click',async()=>{
       }
 
 
+      if(decision==='refund'||decision==='claim'){
+        try{
+          const u=getCurrentUser();
+          const r=await fetch('/api/chat/redpacket-decide',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({email:u.email,packetId:sentRedPacket.id,decision})
+          });
+          const rd=await r.json();
+          if(rd.success&&typeof rd.exp==='number'){ WALLET.balance=rd.exp; updateWalletUI(); }
+        }catch(e){}
+      }
       if(decision==='refund'){
         sentRedPacket.redPacketClaimed=false;
         sentRedPacket.redPacketRefunded=true;
         sentRedPacket.redPacketStatus='refunded';
         sentRedPacket.redPacketClaimedAt=0;
-        try{ await walletAdd(amount,'四叶退还红包《'+title+'》'); }catch(e){}
         saveMessageObject(sentRedPacket);
+
         const row=document.querySelector('[data-message-id="'+sentRedPacket.id+'"]');
         setRedPacketVisual(row,'refunded');
         showRedPacketNotice('红包已退还，四叶没有收下',sentRedPacket.id);
@@ -1654,6 +1701,15 @@ rpPay.addEventListener('click',async()=>{
       removeTyping();
       const fallback='诶……谢谢你的红包！那我收下啦，不过真的不用特意给我很多哦。';
       appendBubble(fallback,'her');
+      try{
+        const u=getCurrentUser();
+        const r=await fetch('/api/chat/redpacket-decide',{
+          method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({email:u.email,packetId:sentRedPacket.id,decision:'claim'})
+        });
+        const rd=await r.json();
+        if(rd.success&&typeof rd.exp==='number'){ WALLET.balance=rd.exp; updateWalletUI(); }
+      }catch(_){}
       sentRedPacket.redPacketClaimed=true;
       sentRedPacket.redPacketRefunded=false;
       sentRedPacket.redPacketStatus='claimed';
