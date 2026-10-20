@@ -210,6 +210,29 @@ body.page-leaving{opacity:0}
   color: #22c55e;
   font-weight: 600;
 }
+/* 等级提示框 */
+.popover-level-wrap { position: relative; display: inline-block; }
+.level-tooltip {
+  position: absolute; left: 100%; top: 50%;
+  transform: translateY(-50%) translateX(6px);
+  background: #fff; color: #172033; font-size: 12px; line-height: 1.8;
+  padding: 10px 14px; border-radius: 10px; white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e8ebf5;
+}
+.level-tooltip::before {
+  content: ""; position: absolute; right: 100%; top: 50%;
+  transform: translateY(-50%); border: 6px solid transparent; border-right-color: #fff;
+}
+.level-tooltip .lv-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.level-tooltip .lv-row:last-child { margin-bottom: 0; }
+.level-tooltip .lv-badge {
+  display: inline-block; padding: 1px 8px; border-radius: 6px;
+  font-weight: bold; font-size: 12px; color: #fff; min-width: 36px; text-align: center;
+}
+.level-tooltip .lv-exp { color: #172033; margin-left: auto; text-align: right; }
+.popover-level-wrap:hover .level-tooltip { opacity: 1; transform: translateY(-50%) translateX(12px); }
 </style>
 </head>
 <body>
@@ -257,9 +280,11 @@ body.page-leaving{opacity:0}
         <div id="popoverNotLoggedIn" style="display:none;padding:20px;text-align:center;color:#6f7890;font-size:14px;cursor:pointer;">请先点击头像登录或注册</div>
         <div id="popoverLoggedIn" style="display:none;padding:16px;">
           <div style="text-align:center;margin-bottom:12px;">
-            <div id="popoverAvatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#8a5cf6);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.1);background-size:cover;background-position:center;">
+            <div id="popoverAvatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#8a5cf6);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.1);background-size:cover;background-position:center;position:relative;">
               <span id="popoverAvatarLetter" style="font-size:28px;font-weight:bold;color:#fff;">U</span>
+              <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:#fff;font-size:10px;text-align:center;padding:2px 0;">修改</div>
             </div>
+            <input type="file" id="avatarUploadInput" style="display:none;" accept="image/*">
           </div>
           <div style="text-align:center;font-size:16px;font-weight:bold;color:#172033;margin-bottom:4px;">
             <span id="popoverNickname" style="cursor:pointer;" title="点击修改昵称">用户昵称</span><span id="popoverBadgeWrap"></span>
@@ -268,7 +293,18 @@ body.page-leaving{opacity:0}
           <div style="font-size:12px;color:#6f7890;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
               <span>经验值：<span id="popoverExpText">0/200</span></span>
-              <span id="popoverLevelText" style="font-weight:bold;padding:1px 8px;border-radius:6px;color:#fff;background:#4ade80;">Lv1</span>
+              <div class="popover-level-wrap">
+                <span id="popoverLevelText" style="font-weight:bold;padding:1px 8px;border-radius:6px;color:#fff;background:#4ade80;">Lv1</span>
+                <div class="level-tooltip">
+                  <div class="lv-row"><span class="lv-badge" style="background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;">Lv1</span><span class="lv-exp">0 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background:linear-gradient(135deg,#22c55e,#15803d);color:#fff;">Lv2</span><span class="lv-exp">200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;">Lv3</span><span class="lv-exp">500 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background:linear-gradient(135deg,#facc15,#eab308);color:#1f2937;">Lv4</span><span class="lv-exp">1200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background:linear-gradient(135deg,#f97316,#c2410c);color:#fff;">Lv5</span><span class="lv-exp">2800 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background:linear-gradient(135deg,#ef4444,#b91c1c);color:#fff;">Lv6</span><span class="lv-exp">6200 经验</span></div>
+                  <div class="lv-row"><span class="lv-badge" style="background:linear-gradient(135deg,#a855f7,#7e22ce);color:#fff;">Lv7</span><span class="lv-exp">13200 经验</span></div>
+                </div>
+              </div>
             </div>
             <div style="width:100%;height:8px;background:#fff;border:1px solid #e8ebf5;border-radius:4px;overflow:hidden;">
               <div id="popoverExpBarFill" style="height:100%;width:0%;background:#4ade80;border-radius:4px;"></div>
@@ -1337,6 +1373,40 @@ document.addEventListener('DOMContentLoaded', function () {
     badgeNameInput.value = u.badge_name || '';
     badgeNameModalTitle.textContent = '修改名牌名称';
     badgeNameModal.classList.add('show');
+  }
+
+  /* 上传头像 */
+  const popoverAvatar = document.getElementById('popoverAvatar');
+  const avatarUploadInput = document.getElementById('avatarUploadInput');
+  if (popoverAvatar && avatarUploadInput) {
+    popoverAvatar.addEventListener('click', (e) => { e.stopPropagation(); avatarUploadInput.click(); });
+    avatarUploadInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 500 * 1024) return alert('图片不能超过 500KB，请压缩后再上传');
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = event.target.result;
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        try {
+          const res = await fetch('/api/auth/update-avatar', { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ email: user.email, avatar: base64 }) 
+          });
+          const data = await res.json();
+          if (data.success) {
+            user.avatar = base64; 
+            localStorage.setItem('user', JSON.stringify(user));
+            document.getElementById('popoverAvatar').style.backgroundImage = `url(${base64})`;
+            document.getElementById('popoverAvatarLetter').style.display = 'none';
+            updateAvatarButton(user);
+            alert('头像修改成功！');
+          } else { alert(data.error || '上传失败'); }
+        } catch (err) { alert('网络错误'); }
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   /* 浮窗点击昵称修改 */
