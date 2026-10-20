@@ -696,15 +696,11 @@ document.addEventListener('DOMContentLoaded', function () {
       nickEl.textContent = nickText;
     }
 
-    // 名牌
-    const isEquipped = user.badge_equipped !== 0;
-    const hasActiveBadge = user.badge_type && user.badge_expire_at && user.badge_expire_at > Date.now();
+    // 显示名牌（与主页完全一致）
     const badgeWrap = document.getElementById('popoverBadgeWrap');
     if (badgeWrap) {
-      if (hasActiveBadge) {
-        // 如果名字为空则显示“未命名”，如果被卸下了则半透明显示
-        const bName = user.badge_name || '未命名';
-        badgeWrap.innerHTML = `<span class="user-badge ${user.badge_type} editable-badge" title="点击修改名牌名称" style="${!isEquipped ? 'opacity:0.5;' : ''}">${bName}</span>`;
+      if (user.badge_type && user.badge_name && user.badge_expire_at && user.badge_expire_at > Date.now()) {
+        badgeWrap.innerHTML = `<span class="user-badge ${user.badge_type} editable-badge" title="点击修改名牌名称">${user.badge_name}</span>`;
       } else {
         badgeWrap.innerHTML = '';
       }
