@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SYTI - 四叶草人格测试</title>
+    <style>
+        @font-face {
+            font-family: 'XiaoLangTianQiong';
+            src: url('https://cdn.jsdelivr.net/gh/zrzbc/music/xiaolangtianqiong.ttf') format('truetype');
+            font-display: swap;
+        }
+
+        :root {
+            --primary: #7db87d;
+            --primary-light: #a8d5a8;
+            --primary-lighter: #d4ecd4;
+            --primary-dark: #5a9e5a;
+            --bg: #f7fcf7;
+            --card-bg: #ffffff;
+            --text: #2c3e2c;
+            --text-light: #5a7a5a;
+            --border: #c8e6c8;
+            --shadow: 0 4px 24px rgba(90, 158, 90, 0.12);
+            --radius: 16px;
+            --transition: 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --font-main: 'XiaoLangTianQiong', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            --font-btn: 'SimHei', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            --font-body: 'SimHei', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background-image: radial-gradient(circle, rgba(168, 213, 168, 0.3) 1px, transparent 1px);
+            background-size: 28px 28px;
+            position: relative;
+        }
+
+        body::before,
+        body::after {
+            content: '🍀';
+            position: fixed;
+            font-size: 120px;
+            opacity: 0.08;
+            pointer-events: none;
+            z-index: 0;
+            transform: rotate(15deg);
+        }
+        body::before {
+            top: -30px;
+            left: -30px;
+            transform: rotate(-15deg);
+        }
+        body::after {
+            bottom: -40px;
+            right: -40px;
+            transform: rotate(25deg);
+            font-size: 160px;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 560px;
+            min-height: 100vh;
+            padding: 24px 32px;
+            position: relative;
+            z-index: 1;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            opacity: 0;
+            pointer-events: none;
+            background: transparent;
+        }
+
+        .screen.active {
+            display: flex;
+            opacity: 1;
+            pointer-events: auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .screen.fade-out {
+            opacity: 0;
+            transform: scale(0.96);
+            pointer-events: none;
+        }
+
+        .screen.fade-in {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .screen-inner {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .btn {
+            font-family: var(--font-btn);
+            padding: 14px 36px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            outline: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            background: transparent;
+            color: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(125, 184, 125, 0.35);
+        }
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 6px 24px rgba(90, 158, 90, 0.45);
+            transform: translateY(-2px);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(90, 158, 90, 0.3);
+        }
+        .btn-primary:disabled {
+            background: #c8dcc8;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+            color: #e8f0e8;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-dark);
+            border: 2px solid var(--primary-light);
+        }
+        .btn-outline:hover {
+            background: var(--primary-lighter);
+            border-color: var(--primary);
+        }
+        .btn-outline:disabled {
+            border-color: #d0e0d0;
+            color: #a0b8a0;
+            cursor: not-allowed;
+            background: transparent;
+        }
+
+        .btn-sm {
+            padding: 10px 22px;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+
+        #screen-title {
+            text-align: center;
+            background: transparent;
+        }
+        #screen-title .screen-inner {
+            justify-content: center;
+        }
+        #screen-title .logo {
+            font-family: var(--font-main);
+            font-size: clamp(56px, 15vw, 80px);
+            font-weight: 700;
+            letter-spacing: 6px;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+            line-height: 1.1;
+            text-shadow: 0 2px 12px rgba(125, 184, 125, 0.3);
+        }
+        #screen-title .subtitle {
+            font-family: var(--font-main);
+            font-size: clamp(16px, 4vw, 22px);
+            color: var(--text-light);
+            letter-spacing: 3px;
+            margin-bottom: 48px;
+            font-weight: 400;
+        }
+
+        #screen-disclaimer .screen-inner {
+            justify-content: center;
+        }
+        #screen-disclaimer .disclaimer-box {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px 18px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            width: 100%;
+            overflow: hidden;
+            font-family: var(--font-btn);
+            font-size: clamp(12px, 2.2vw, 15px);
+            line-height: 1.6;
+            color: var(--text);
+            letter-spacing: 0.3px;
+            white-space: pre-line;
+            max-height: none;
+        }
+        #screen-disclaimer .disclaimer-box p {
+            margin-bottom: 8px;
+            font-size: inherit;
+            line-height: inherit;
+            color: inherit;
+        }
+        #screen-disclaimer .disclaimer-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        #screen-test {
+            justify-content: center;
+            padding-top: 24px;
+            padding-bottom: 24px;
+            max-width: 620px;
+            background: transparent;
+        }
+        #screen-test .screen-inner {
+            justify-content: center;
+            gap: 16px;
+            width: 100%;
+        }
+        #screen-test .test-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-shrink: 0;
+        }
+        #screen-test .progress-text {
+            font-family: var(--font-main);
+            font-size: 14px;
+            color: var(--text-light);
+            letter-spacing: 1px;
+        }
+        #screen-test .progress-bar-wrap {
+            width: 100%;
+            height: 4px;
+            background: #e0ece0;
+            border-radius: 4px;
+            margin-bottom: 32px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        #screen-test .progress-bar-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+        }
+        #screen-test .question-container {
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 280px;
+            margin-bottom: 32px;
+        }
+        #screen-test .question-slide {
+            width: 100%;
+            transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.45s ease;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        #screen-test .question-slide.slide-out-left {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+        #screen-test .question-slide.slide-out-right {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        #screen-test .question-slide.slide-in-from-right {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        #screen-test .question-slide.slide-in-from-left {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        #screen-test .question-text {
+            font-family: var(--font-main);
+            font-size: clamp(17px, 4.5vw, 22px);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            color: var(--text);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+        #screen-test .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+        #screen-test .option-btn {
+            display: block;
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--card-bg);
+            font-family: var(--font-btn);
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            letter-spacing: 0.3px;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        #screen-test .option-btn:hover {
+            border-color: var(--primary);
+            background: #f0f8f0;
+        }
+        #screen-test .option-btn.selected {
+            border-color: var(--primary);
+            background: var(--primary-lighter);
+            color: var(--primary-dark);
+            box-shadow: 0 2px 12px rgba(125, 184, 125, 0.25);
+        }
+        #screen-test .test-nav {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-top: 32px;
+            flex-shrink: 0;
+        }
+        #screen-test .test-nav .nav-btns {
+            display: flex;
+            gap: 8px;
+        }
+        #screen-test .btn-submit {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(125, 184, 125, 0.35);
+        }
+        #screen-test .btn-submit:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        #screen-test .btn-submit:disabled {
+            background: #c8dcc8;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+            color: #e8f0e8;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(247, 252, 247, 0.92);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .loading-overlay.active {
+            display: flex;
+        }
+        .loading-overlay .spinner {
+            width: 52px;
+            height: 52px;
+            border: 4px solid var(--primary-lighter);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .loading-overlay .loading-text {
+            font-family: var(--font-btn);
+            font-size: 14px;
+            color: var(--text-light);
+            letter-spacing: 2px;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        #screen-result {
+            justify-content: flex-start;
+            padding-top: 24px;
+            padding-bottom: 24px;
+            max-width: 620px;
+            overflow-y: auto;
+            max-height: 100vh;
+            background: transparent;
+        }
+        #screen-result .screen-inner {
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+        }
+        #screen-result .result-card {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px 22px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+        #screen-result .result-type-name {
+            font-family: var(--font-main);
+            font-size: clamp(28px, 7vw, 36px);
+            font-weight: 700;
+            color: var(--primary-dark);
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+            text-align: center;
+        }
+        #screen-result .result-type-code {
+            font-family: var(--font-main);
+            font-size: 16px;
+            color: var(--text-light);
+            letter-spacing: 4px;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+        #screen-result .result-persona {
+            font-family: var(--font-main);
+            font-size: 15px;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 16px;
+            font-style: italic;
+            letter-spacing: 0.5px;
+            line-height: 1.5;
+        }
+        #screen-result .result-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 14px 0;
+        }
+        #screen-result .result-section {
+            margin-bottom: 12px;
+        }
+        #screen-result .result-section-title {
+            font-family: var(--font-main);
+            font-size: 17px;
+            color: var(--text-light);
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        #screen-result .result-section-content {
+            font-family: var(--font-btn);
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text);
+            letter-spacing: 0.3px;
+        }
+        #screen-result .catchphrase {
+            font-family: var(--font-main);
+            font-size: 15px;
+            color: var(--primary-dark);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+        #screen-result .score-section {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+        #screen-result .score-title {
+            font-family: var(--font-main);
+            font-size: 17px;
+            color: var(--text-light);
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            text-align: center;
+            font-weight: 600;
+        }
+        #screen-result .score-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        #screen-result .score-label {
+            font-family: var(--font-btn);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            width: 55px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        #screen-result .score-bar-bg {
+            flex: 1;
+            height: 10px;
+            background: #e8f0e8;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        #screen-result .score-bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            background: var(--primary);
+            transition: width 0.8s ease;
+        }
+        #screen-result .score-value {
+            font-family: var(--font-btn);
+            font-size: 13px;
+            color: var(--text-light);
+            width: 52px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+        #screen-result .result-image-container {
+            width: 100%;
+            margin: 0 0 16px 0;
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+        }
+        #screen-result .result-image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            min-height: 120px;
+            object-fit: contain;
+            background: #f5f9f2;
+        }
+        #screen-result .author-section {
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+        #screen-result .author-title {
+            font-family: var(--font-main);
+            font-size: 17px;
+            color: var(--text-light);
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+#screen-result .author-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+        #screen-result .author-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 2px solid var(--primary-light);
+            background: var(--card-bg);
+        }
+        #screen-result .author-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 50%;
+        }
+        #screen-result .author-nickname {
+            font-family: var(--font-btn);
+            font-size: 16px;
+            color: var(--text);
+            letter-spacing: 0.5px;
+        }
+        #screen-result .result-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        #screen-result .btn-restart,
+        #screen-result .btn-share {
+            font-family: var(--font-btn);
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(125, 184, 125, 0.35);
+            padding: 14px 32px;
+        }
+        #screen-result .btn-share {
+            background: transparent;
+            color: var(--primary-dark);
+            border: 2px solid var(--primary-light);
+            box-shadow: none;
+        }
+        #screen-result .btn-share:hover {
+            background: var(--primary-lighter);
+            border-color: var(--primary);
+        }
+
+        @media (max-width: 480px) {
+            .screen {
+                padding: 12px 14px;
+                max-width: 100%;
+            }
+            #screen-title .logo {
+                font-size: 48px;
+                letter-spacing: 4px;
+            }
+            #screen-title .subtitle {
+                font-size: 15px;
+                letter-spacing: 2px;
+                margin-bottom: 32px;
+            }
+            #screen-test .question-text {
+                font-size: 16px;
+            }
+            #screen-test .option-btn {
+                padding: 12px 14px;
+                font-size: 13px;
+            }
+            #screen-test .test-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            #screen-result .result-type-name {
+                font-size: 24px;
+            }
+            .btn {
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+            .btn-sm {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            #screen-result .result-card {
+                padding: 18px 14px;
+            }
+            #screen-disclaimer .disclaimer-box {
+                padding: 14px 12px;
+                font-size: 11px;
+                line-height: 1.5;
+            }
+            #screen-test .screen-inner {
+                gap: 12px;
+            }
+            #screen-test .test-header,
+            #screen-test .progress-bar-wrap,
+            #screen-test .question-container,
+            #screen-test .test-nav {
+                margin-bottom: 16px;
+            }
+            #screen-result .result-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            #screen-result .author-avatar {
+                width: 40px;
+                height: 40px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .screen {
+                padding: 32px 40px;
+            }
+            #screen-disclaimer .disclaimer-box {
+                padding: 28px 30px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Title Screen -->
+    <div id="screen-title" class="screen active">
+        <div class="screen-inner">
+            <div class="logo">SYTI</div>
+            <div class="subtitle">四叶草人格测试</div>
+            <button class="btn btn-primary" id="btn-start">开始测试</button>
+        </div>
+    </div>
+
+    <!-- Disclaimer Screen -->
+    <div id="screen-disclaimer" class="screen">
+        <div class="screen-inner">
+            <div class="disclaimer-box" id="disclaimer-box">
+                <p>欢迎参加SYTI四叶草人格测试！
+                    在开始答题前，请务必花费2分钟阅读以下内容：
+
+                    1. 本测试仅供娱乐，非心理医学诊断，不能作为心理健康评估、职业聘用或临床决策的依据，如有心理困扰请寻求专业帮助。
+                    2. 请凭你的直觉作答，不要过度思考，答案无对错之分，选择最接近你此刻状态的选项即可。
+                    3. 建议在安静且不被打扰的环境中完成，避开极度疲惫、愤怒或亢奋的情绪峰值期。
+                    4. 测试结果反映的是你「此时此刻、当前社会角色下」的倾向，人格具有可塑性，重测结果不同属正常现象。
+                    5. 建议16周岁及以上人士作答，近期经历重大变故者结果可能偏消极，建议暂缓或仅作情绪记录。
+                    6. 你的作答数据不会被用于统计、出售、共享，我们承诺绝不会透露你的隐私信息。
+                    7. 本测试的制作灵感来源于MBTI测试及 @Q肉儿串儿 制作的SBTI测试，部分内容使用AI辅助生成。
+
+                    点击「我已知晓」即代表你已理解并接受本申明的全部条款。</p>
+                </div>
+                <button class="btn btn-primary" id="btn-disclaimer" disabled>我已知晓（3s）</button>
+            </div>
+        </div>
+
+        <!-- Test Screen -->
+        <div id="screen-test" class="screen">
+            <div class="screen-inner">
+                <div class="test-header">
+                    <span class="progress-text" id="progress-text">1 / 20</span>
+                    <span class="progress-text" id="answered-count">已答 0 / 20</span>
+                </div>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%;"></div>
+                </div>
+                <div class="question-container" id="question-container">
+                    <div class="question-slide" id="question-slide">
+                        <div class="question-text" id="question-text"></div>
+                        <div class="options-list" id="options-list"></div>
+                    </div>
+                </div>
+                <div class="test-nav">
+                    <div class="nav-btns">
+                        <button class="btn btn-outline btn-sm" id="btn-prev">上一题</button>
+                        <button class="btn btn-outline btn-sm" id="btn-next">下一题</button>
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="btn-submit" disabled>提交</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+<div id="screen-result" class="screen">
+    <div class="screen-inner">
+        <div id="warning-box" style="display: none; background: #fff3cd; border: 2px solid #ffc107; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; width: 100%; text-align: center; font-family: var(--font-btn); font-size: 14px; color: #856404;">
+            你好像没有在认真答题欸...
+        </div>
+        <div class="result-card" id="result-card">
+            <div class="result-type-name" id="result-type-name"></div>
+            <div class="result-type-code" id="result-type-code"></div>
+            <div class="result-persona" id="result-persona"></div>
+            <div class="result-divider"></div>
+            <div class="result-section">
+                <div class="result-section-title">优势</div>
+                <div class="result-section-content" id="result-strengths"></div>
+            </div>
+            <div class="result-section">
+                <div class="result-section-title">盲区</div>
+                <div class="result-section-content" id="result-blindspots"></div>
+            </div>
+            <div class="result-divider"></div>
+            <div class="catchphrase" id="result-catchphrase"></div>
+        </div>
+        <div class="score-section" id="score-section">
+            <div class="score-title">四维得分</div>
+            <div id="score-bars"></div>
+        </div>
+        <div class="result-image-container" id="result-image-container">
+            <img id="result-image" src="" alt="人格图片" referrerpolicy="no-referrer" loading="lazy" decoding="async" fetchpriority="low" />
+        </div>
+        <div class="author-section">
+            <div class="author-title">制作者</div>
+            <div class="author-info" id="author-info">
+                <div class="author-avatar">
+                    <img src="https://i.ibb.co/fdkTHqMg/f3c18ecf9d1d7816812572661cb46cae.jpg" alt="制作者头像" />
+                </div>
+                <span class="author-nickname">这人针不错</span>
+            </div>
+        </div>
+        <div class="result-actions">
+            <button class="btn btn-primary btn-restart" id="btn-restart">重新测试</button>
+            <button class="btn btn-outline btn-share" id="btn-share" type="button">查看大图</button>
+        </div>
+    </div>
+</div>
+
+        <!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+    <div class="spinner"></div>
+    <div class="loading-text">结果生成中</div>
+    <div class="loading-countdown" id="loading-countdown" style="font-family: var(--font-btn); font-size: 12px; color: var(--text-light); letter-spacing: 1px;">预计还需 10 秒</div>
+</div>
+
+        <script>
+            (function() {
+                // ============ 题库数据 ============
+                const questionBank = [
+                    // 维度一：冲突与压力（10题）
+                    { id: 1, dimension: 1, question: '你在排队时，如果有人强行插队到你前面，你会？', options: { A: '直接拍对方肩膀，冷静且坚定地指出：「请去后面排队。」',
+                            B: '心里愤怒，但表面上翻个白眼，大声说给周围人听：「现在的人真没素质。」', C: '觉得多一事不如少一事，往后退半步，避免肢体接触。',
+                            D: '观察对方是否真的有急事，如果是老人或抱着孩子的人，会选择沉默。' } },
+                    { id: 2, dimension: 1, question: '同事在会议上公开曲解了你的工作成果，你会？', options: { A: '当场打断，用数据和事实逐条反驳，毫不退让。',
+                            B: '会后私下找到对方，阴阳怪气：「您今天的记忆力不太好啊。」', C: '闷闷不乐，回去自己重做一份，不再提起这件事。',
+                            D: '先认可对方的部分观点，再委婉补充：「可能我表达有误，我的本意是……」' } },
+                    { id: 3, dimension: 1, question: '遇到路怒症司机对你狂按喇叭，你的第一反应是？', options: { A: '摇下车窗与其对视，并做手势来示意其冷静。',
+                            B: '按回去，或骂一句脏话泄愤。', C: '心跳加速，紧张得手足无措，尽快开走远离。', D: '告诉自己「他可能赶时间」，然后正常行驶。' } },
+                    { id: 4, dimension: 1, question: '好朋友忘记了你们的重要约定，让你白等了半小时，你会？', options: { A: '直接表达不满：「这件事让我觉得不被尊重！」',
+                            B: '接下来的聊天里都会阴阳怪气地提及此事。', C: '笑着说没事，但内心却默默降低对这段关系的期待值。', D: '先问对方是否遇到了什么突发状况，再表达自己的失落。' } },
+                    { id: 5, dimension: 1, question: '面对网络上的极端对立言论，你会？', options: { A: '逻辑清晰地列出一二三四点去理论，试图说服对方。',
+                            B: '截图嘲讽，发给朋友当抽象笑料。', C: '迅速划过，不想让负面情绪影响自己。', D: '认为双方都有合理性，尝试在评论区写一段中立的话。' } },
+                    { id: 6, dimension: 1, question: '你的提案被上级无理由否决，你会？', options: { A: '要求上级给出具体的否决理由和修改方向。',
+                            B: '觉得上级不识货，开始消极怠工以示抗议。', C: '默默接受，告诉自己上级总是对的。', D: '换个时间，换种包装方式重新上交一次。' } },
+                    { id: 7, dimension: 1, question: '邻居深夜装修噪音极大，你会？', options: { A: '直接去邻居家门口，敲门交涉。', B: '打物业电话或报警投诉。',
+                            C: '戴上降噪耳机，强迫自己适应。', D: '写一张委婉的纸条贴在电梯里，提醒注意作息时间。' } },
+                    { id: 8, dimension: 1, question: '你开车被追尾，无人受伤，但对方态度恶劣，你会？', options: { A: '冷静拍照，报警，走保险流程，不与对方过多言语纠缠。',
+                            B: '和对方大吵一架，指责对方的驾驶技术有问题。', C: '懵在原地，不知道该怎么处理，只能等家人来帮忙。', D: '先确认对方是否受伤，再谈责任划分。' } },
+                    { id: 9, dimension: 1, question: '聚餐时，有人讲了一个冒犯你的地域笑话，你会？', options: { A: '直视对方眼睛：「这个笑话我不觉得好笑，请停止。」',
+                            B: '笑着回怼一个关于对方职业的玩笑，以牙还牙。', C: '尴尬地低头喝水，假装没听见。', D: '等散场后，私下告诉对方这让自己不太舒服。' } },
+                    { id: 10, dimension: 1, question: '遇到突发地震，你的本能是？', options: { A: '快速评估环境，寻找承重墙角落，指挥身边人避险。',
+                            B: '大声尖叫，惊慌失措地乱跑。', C: '大脑空白，别人怎么做我就怎么做。', D: '边撤离边安抚身边害怕的人。' } },
+                    // 维度二：决策与执行（10题）
+                    { id: 11, dimension: 2, question: '你要买一台价格较高的手机时，你会？', options: { A: '花几天时间研究所有参数、评测视频，对比性价比。',
+                            B: '看颜值和眼缘，只要喜欢，贵点也能接受。', C: '一直纠结，反复加入购物车又删除，直到旧手机彻底坏掉才买。', D: '咨询身边懂行的朋友，完全听从朋友的推荐直接买。' } },
+                    { id: 12, dimension: 2, question: '接到一个时间紧、任务重的新项目，你的第一步是？', options: { A: '立即拆解任务，倒推时间节点，列出优先级清单。',
+                            B: '先召集团队成员开会，集思广益，激发灵感。', C: '焦虑地先做点杂事，拖延半小时再开始。', D: '询问团队里谁最擅长做哪部分，进行任务协调。' } },
+                    { id: 13, dimension: 2, question: '收拾房间时，发现很多不会再穿的衣服，你会？', options: { A: '严格按「一年内未穿」的标准，把筛选后的全部衣服打包处理掉。',
+                            B: '试穿一遍，回忆起很多往事，最后只扔了其中几件破的。', C: '觉得扔了可惜，放着占地方，最后又把柜门关上不管了。', D: '送人，或废物利用，改造成抹布。' } },
+                    { id: 14, dimension: 2, question: '你偏好于如何完成今天的任务？', options: { A: '按照优先级列清单，配合番茄钟，完成一项打勾一项。',
+                            B: '随心情，想做什么就做什么，只要今天做完就行。', C: '只列清单，但很少能全部完成，总有拖到明天的。', D: '不太会列清单，被提醒或快截止了才会去做。' } },
+                    { id: 15, dimension: 2, question: '来到一个陌生餐厅，面对丰富多样的菜品，你会？', options: { A: '看大家反馈的推荐菜，再问服务员招牌是什么，理性分析后点菜。',
+                            B: '点名字最奇怪，或图片最好看的那一道。', C: '让朋友点，他吃什么我就吃什么。', D: '看食材搭配是否健康均衡，再决定。' } },
+                    { id: 16, dimension: 2, question: '周末早上醒来，计划去健身房，但外面突然下起大雨，你会？', options: { A: '继续执行计划，就算下雨也要去。',
+                            B: '立刻改变计划，觉得在家睡觉会更好。', C: '一直纠结到中午，纠结到放晴，结果哪里都没去。', D: '换一种运动方式，比如在家跳操或爬楼梯。' } },
+                    { id: 17, dimension: 2, question: '工作中遇到一个棘手的技术难题，你会？', options: { A: '自己查阅资料，独立解决。',
+                            B: '到处问同事，看有没有捷径或现成的工程。', C: '先放一放，说不定睡一觉或看会儿手机就有灵感了。', D: '把它拆解成几个小问题，逐个请教专业人士。' } },
+                    { id: 18, dimension: 2, question: '对于「年度计划」，你的态度是？', options: { A: '会制定详细的计划，并且每月都会复盘。',
+                            B: '年年都写，但每次都没办法坚持到底。', C: '从不制定，觉得计划赶不上变化。', D: '定一个大方向，比如今年要赚很多钱，但不细化。' } },
+                    { id: 19, dimension: 2, question: '去超市购物时，你会？', options: { A: '拿着清单，直奔目标区域，买完就走。',
+                            B: '到处逛，看到促销或新奇的商品就放进购物车。', C: '在货架前反复比较，生产日期、克重都要看一遍。', D: '随缘，手比脑快，看到什么需要就拿什么。' } },
+                    { id: 20, dimension: 2, question: '如果有100万的闲置资金，你会？', options: { A: '选择分散投资，比如50万定存，30万基金，20万股票。',
+                            B: '拿出一部分去旅游或消费，剩下的存起来。', C: '全部存定期，不敢冒任何风险。', D: '请教专业的理财顾问，结合自身情况配置。' } },
+                    // 维度三：社交与人际（10题）
+                    { id: 21, dimension: 3, question: '朋友邀请你参加一个全是陌生人的派对，你会？', options: { A: '主动走向那个看起来落单的人，开启话题。',
+                            B: '讲段子活跃气氛，成为全场焦点。', C: '紧紧跟随自己唯一认识的朋友，寸步不离。', D: '观察每个人的表情和互动关系，寻找志同道合的人再靠近。' } },
+                    { id: 22, dimension: 3, question: '朋友向你倾诉其失恋的痛苦，你会？', options: { A: '帮他分析这段感情失败的原因，告诉他下次如何避免。',
+                            B: '拍桌子骂对方前任，陪朋友一起喝酒发泄。', C: '不知如何安慰，只能尴尬地拍拍肩膀说「都会过去的」。', D: '耐心倾听，递纸巾，时刻询问「你现在感觉怎么样？」' } },
+                    { id: 23, dimension: 3, question: '你在团队合作中最讨厌遇到哪种人？', options: { A: '做事马虎、不负责任、拖后腿的人。',
+                            B: '抢功劳、爱表现、虚伪的人。', C: '脾气暴躁、反复施压、催进度的人。', D: '没有主见、随波逐流的人。' } },
+                    { id: 24, dimension: 3, question: '对于「人情往来」，你的态度是？', options: { A: '认为这是必要的社交投资，会按「市场价」随礼。',
+                            B: '觉得特别烦，但为了面子不得不做。', C: '能躲就躲，认为这些形式很虚伪。', D: '只给关系极好的朋友送用心的礼物，泛泛之交不想参与。' } },
+                    { id: 25, dimension: 3, question: '你在一个团队中通常扮演什么角色？', options: { A: '领导者，把控方向，分配任务。',
+                            B: '气氛组，缓和矛盾，制造欢乐。', C: '执行者，给什么任务就做什么任务，踏实。', D: '和事佬，在大家意见有分歧时提出折中方案。' } },
+                    { id: 26, dimension: 3, question: '看到街头艺人表演，你会？', options: { A: '理性判断其水平如何，如果确实好，会打赏支持。',
+                            B: '跟着节奏一起嗨，甚至上去互动共舞。', C: '远远看两眼，不好意思走近，怕被要求打赏。', D: '观察周围观众的反应，如果大家都给钱，自己再给。' } },
+                    { id: 27, dimension: 3, question: '发了一条朋友圈，半小时都没什么人点赞，你的态度是？', options: { A: '无所谓，本身就是为了记录生活，就当是给自己看的。',
+                            B: '有点失落，会反复刷新，甚至考虑删掉。', C: '觉得是内容不够吸睛，会重新编辑再发一次。', D: '不会发朋友圈，觉得完全没必要。' } },
+                    { id: 28, dimension: 3, question: '面对下属或晚辈犯低级错误，你会？', options: { A: '严肃批评，重申规则和后果，要求重做。',
+                            B: '开句玩笑来缓解尴尬，并耐心指出问题。', C: '默默帮他改掉，不告诉他，怕伤他自尊。', D: '询问他是否遇到什么困难，一起复盘错误原因。' } },
+                    { id: 29, dimension: 3, question: '你对于「谣言」或「八卦」的参与度如何？', options: { A: '只相信证据，听到谣言会主动辟谣或追问来源。',
+                            B: '特别喜欢听，并且会管不住嘴，传给别人。', C: '听到后会默默记在心里，但不发表任何意见。', D: '听到后会劝导传播者：「未经证实的事别乱说。」' } },
+                    { id: 30, dimension: 3, question: '当你在公共场合被人注视或评价时，你的感受是？', options: { A: '不在意，他们谈论什么与我无关。',
+                            B: '享受被注视的感觉，甚至希望成为焦点。', C: '浑身不自在，想立刻消失或躲起来。', D: '会先反思一下自己今天哪里不对劲，为什么这么多人看我。' } },
+                    // 维度四：自我与秩序（10题）
+                    { id: 31, dimension: 4, question: '晚上睡觉前，你的大脑通常在想什么？', options: { A: '复盘今天的工作，计划明天的具体行程。',
+                            B: '播放BGM，或脑补各种精彩小说及电影画面。', C: '反复回放先前说错的话、做错的事，尴尬且懊悔。', D: '回想今天遇到的某件好事，或思考人生的意义。' } },
+                    { id: 32, dimension: 4, question: '收到负面的评价或成绩单时，你的内心独白是？', options: { A: '哪里不行就补哪里，下次我一定改进。',
+                            B: '评得不对，评价的人一点眼光都没有。', C: '我就知道我不行，我果然是个废物。', D: '分数不能定义我，看看哪些反馈是有意义的。' } },
+                    { id: 33, dimension: 4, question: '在独处的时候，你更倾向于？', options: { A: '看书、上网课、打磨专业技能。',
+                            B: '打游戏、看综艺、寻求感官刺激。', C: '躺着发呆、睡觉、放空思想。', D: '冥想、写日记、整理旧照片。' } },
+                    { id: 34, dimension: 4, question: '如果人生可以重来，你会？', options: { A: '不想重来，现在的选择就是最优解，向前看。',
+                            B: '希望重来，但要去尝试更多疯狂的事。', C: '希望重来，并且规避之前作出的所有错误选择。', D: '不想重来，接受所有遗憾，认为不完美才是人生。' } },
+                    { id: 35, dimension: 4, question: '对于「规则」和「权威」，你的内心是？', options: { A: '遵守必要的规则，但只服从有理有据的权威。',
+                            B: '天生的反骨，觉得规则就是用来打破的。', C: '害怕违反规则，害怕被权威责罚。', D: '理解规则背后的用意，但有例外时灵活变通。' } },
+                    { id: 36, dimension: 4, question: '当你获得巨大成功时，你最看重谁的评价？', options: { A: '行业标准或数据的客观认可。',
+                            B: '社交媒体的流量和大众的欢呼。', C: '家人、好友的认可和欣慰。', D: '自己内心的成就感。' } },
+                    { id: 37, dimension: 4, question: '假如面对无法改变的出身或原生家庭问题，你的态度是？', options: { A: '切割负面影响，把精力集中在构建自己的未来。',
+                            B: '抱怨命运不公，偶尔会因此情绪崩溃。', C: '默默承受，觉得这就是命。', D: '尝试理解父母的时代局限，与自己和解。' } },
+                    { id: 38, dimension: 4, question: '如果你只剩三个月生命，你会？', options: { A: '立遗嘱，安排好后事，最大化利用剩余时间。',
+                            B: '什么都不管，环游世界，尽情狂欢。', C: '待在家里，和家人朋友一一告别。', D: '每天做一件让自己开心的小事，平静度过。' } },
+                    { id: 39, dimension: 4, question: '你认为「自我价值」主要来源于？', options: { A: '社会地位、专业能力、财富积累。',
+                            B: '创造力、独特性、与众不同的体验。', C: '被他人需要，及和睦的人际关系。', D: '内心的宁静，及道德的完整。' } },
+                    { id: 40, dimension: 4, question: '当你做完这套测试题时，你的第一反应是？', options: { A: '觉得题目逻辑不错，想看看是不是AI生成的。',
+                            B: '终于做完了，好累，但很好奇结果。', C: '有几个题目让我选得好纠结，有点担心结果不准。', D: '无论结果如何，我都接受这就是我当下的状态。' } }
+                ];
+
+
+const resultTypes = {
+    CPU: {
+        name: '行走的CPU',
+        code: 'CPU',
+        core: 'R（理性）',
+        persona: '满脑子都是逻辑，对浪漫过敏，吵架没输过',
+        strengths: '决策果断、抗压能力强、规则意识明确。',
+        blindSpots: '容易忽略他人情绪，说话太直可能伤人。',
+        catchphrase: '「据我所知……」',
+        imageDisplay: 'https://raw.githubusercontent.com/zrzbc/music/main/cpu.png',
+        imageFull: 'https://cdn.jsdelivr.net/gh/zrzbc/music/cpu.png'
+    },
+    LIGHTER: {
+        name: '打火机',
+        code: 'FIRE',
+        core: 'F（感性）',
+        persona: '气氛组组长，自嗨型选手，社交圈子老大了',
+        strengths: '感染力强、创意丰富、能够活跃团队氛围。',
+        blindSpots: '三分钟热度、可能过于情绪化、不够严谨。',
+        catchphrase: '「我来给大家整个活儿！」',
+        imageDisplay: 'https://raw.githubusercontent.com/zrzbc/music/main/fire.png',
+        imageFull: 'https://cdn.jsdelivr.net/gh/zrzbc/music/fire.png'
+    },
+    SLOTH: {
+        name: '树懒',
+        code: 'SLOW',
+        core: 'P（谨慎）',
+        persona: '能躺着绝不坐着，佛系青年，人形背景板',
+        strengths: '心态放宽、情绪稳定、避免冲突、观察力强。',
+        blindSpots: '缺乏行动力、容易错失良机、可能过于被动。',
+        catchphrase: '「都可以，随便，我无所谓。」',
+        imageDisplay: 'https://raw.githubusercontent.com/zrzbc/music/main/slow.png',
+        imageFull: 'https://cdn.jsdelivr.net/gh/zrzbc/music/slow.png'
+    },
+    SAINT: {
+        name: '圣母玛利亚',
+        code: 'SAT',
+        core: 'E（共情）',
+        persona: '行走的创可贴，知心大姐姐，情绪收集者',
+        strengths: '共情能力趋近满分、让人如沐春风、善于化解尴尬。',
+        blindSpots: '边界感过于模糊、容易被情感或道德绑架、可能过度消耗自己。',
+        catchphrase: '「我懂，你太不容易了。」',
+        imageDisplay: 'https://raw.githubusercontent.com/zrzbc/music/main/sat.png',
+        imageFull: 'https://cdn.jsdelivr.net/gh/zrzbc/music/sat.png'
+    },
+    DIRECTOR: {
+        name: '精分导演',
+        code: 'DIR',
+        core: 'R+F（理性+感性）',
+        persona: '白天霸道总裁，深夜网抑云，左右脑互搏',
+        strengths: '既有谋略又有感染力，天生具备领袖气质，敢于拍板。',
+        blindSpots: '内心戏实在太多，容易陷入自我拉扯，刚愎自用。',
+        catchphrase: '「听我的……算了，还是按你的来吧。」',
+        imageDisplay: 'https://raw.githubusercontent.com/zrzbc/music/main/dir.png',
+        imageFull: 'https://cdn.jsdelivr.net/gh/zrzbc/music/dir.png'
+    },
+    SHADOW: {
+        name: '窥探者',
+        code: 'EYES',
+        core: 'R+P（理性+谨慎）',
+        persona: '团队军师，默默观察着一切',
+        strengths: '深谋远虑、善于制定各种精密计划、做事喜欢一针见血。',
+        blindSpots: '可能过于保守、喜欢隐藏真实想法、极易增加不必要的心理压力。',
+        catchphrase: '「凡人，我早就看穿了一切！（但我不说）」',
+imageDisplay: 'https://raw.githubusercontent.com/zrzbc/music/main/eyes.png',
+imageFull: 'https://cdn.jsdelivr.net/gh/zrzbc/music/eyes.png'
+    },
+    THERMOS: {
+        name: '暖宝宝',
+        code: 'WARM',
+        core: 'R+E（理性+共情）',
+        persona: '外冷内热，暖男暖女，端水艺术家',
+        strengths: '既有原则又有温度，解决问题与安抚情绪两手抓。',
+        blindSpots: '容易因过度理性而显得疏离，优柔寡断。',
+        catchphrase: '「我理解你的感受，但是……」',
+imageDisplay: 'https://raw.githubusercontent.com/zrzbc/music/main/warm.png',
+imageFull: 'https://cdn.jsdelivr.net/gh/zrzbc/music/warm.png'
+    },
+    ARTIST: {
+        name: '网抑云',
+        code: 'QNQ',
+        core: 'F+P（感性+谨慎）',
+        persona: '深夜emo群体，脑补王者',
+        strengths: '想象力极其丰富、属于创作型人格、内心世界十分精彩。',
+        blindSpots: '在冲动与退缩间反复内耗，往往需要外力推动。',
+        catchphrase: '「等下，我马上好了……唉，算了。」',
+imageDisplay: 'https://raw.githubusercontent.com/zrzbc/music/main/qnq.png',
+imageFull: 'https://cdn.jsdelivr.net/gh/zrzbc/music/qnq.png'
+    },
+    BUTTERFLY: {
+        name: '社交王者',
+        code: 'KING',
+        core: 'F+E（感性+共情）',
+        persona: '这就是人脉，从不冷场，四海之内皆兄弟',
+        strengths: '情商极高、人见人爱、有一套专业的话术去结交新朋友。',
+        blindSpots: '缺乏坚定的自我立场、容易被他人带偏、缺乏独处。',
+        catchphrase: '「我刚好有个朋友是做这些的，哪天问问。」',
+imageDisplay: 'https://raw.githubusercontent.com/zrzbc/music/main/king.png',
+imageFull: 'https://cdn.jsdelivr.net/gh/zrzbc/music/king.png'
+    },
+    MULE: {
+        name: '老黄牛',
+        code: 'MULE',
+        core: 'P+E（谨慎+共情）',
+        persona: '感动中国十大人物，默默付出，大冤种(?)',
+        strengths: '属于极度利他主义、让人感到安心、默默承担一切、极易提高在别人心里的好感度。',
+        blindSpots: '常常忽略自我需求、边界感模糊、容易失去自我。',
+        catchphrase: '「没事没事，我来吧。」',
+imageDisplay: 'https://raw.githubusercontent.com/zrzbc/music/main/mule.png',
+imageFull: 'https://cdn.jsdelivr.net/gh/zrzbc/music/mule.png'
+    },
+    NPC: {
+        name: '路人甲',
+        code: 'NPC',
+        core: '均衡',
+        persona: '普通路人，随意调节，万能替补',
+        strengths: '适应能力极强、既可独处也能合群、可塑性很高。',
+        blindSpots: '缺乏鲜明个性、容易在群体中被忽略、目标感相对较弱。',
+        catchphrase: '「嗯，我都行，看你们。」',
+imageDisplay: 'https://raw.githubusercontent.com/zrzbc/music/main/npc.png',
+imageFull: 'https://cdn.jsdelivr.net/gh/zrzbc/music/npc.png'
+    }
+};
+
+                // ============ 常量 ============
+                const TOTAL_QUESTIONS = 20;
+                const QUESTIONS_PER_DIMENSION = 5;
+                const DISCLAIMER_COUNTDOWN = 3;
+
+                // ============ 状态 ============
+                let selectedQuestions = [];
+                let shuffledOptionsMap = {};
+                let userAnswers = {};
+                let currentQuestionIndex = 0;
+                let isTransitioning = false;
+                let disclaimerTimer = null;
+                let disclaimerCountdown = DISCLAIMER_COUNTDOWN;
+                let testResult = null;
+                let hasReachedLast = false;
+let testStartTime = null;
+
+                // ============ DOM元素 ============
+                const screens = {
+                    title: document.getElementById('screen-title'),
+                    disclaimer: document.getElementById('screen-disclaimer'),
+                    test: document.getElementById('screen-test'),
+                    result: document.getElementById('screen-result')
+                };
+                const btnStart = document.getElementById('btn-start');
+                const btnDisclaimer = document.getElementById('btn-disclaimer');
+                const btnPrev = document.getElementById('btn-prev');
+                const btnNext = document.getElementById('btn-next');
+                const btnSubmit = document.getElementById('btn-submit');
+                const btnRestart = document.getElementById('btn-restart');
+                const btnShare = document.getElementById('btn-share');
+                const progressText = document.getElementById('progress-text');
+                const answeredCount = document.getElementById('answered-count');
+                const progressBarFill = document.getElementById('progress-bar-fill');
+                const questionText = document.getElementById('question-text');
+                const optionsList = document.getElementById('options-list');
+                const questionSlide = document.getElementById('question-slide');
+                const loadingOverlay = document.getElementById('loading-overlay');
+                const resultTypeName = document.getElementById('result-type-name');
+                const resultTypeCode = document.getElementById('result-type-code');
+                const resultPersona = document.getElementById('result-persona');
+                const resultStrengths = document.getElementById('result-strengths');
+                const resultBlindSpots = document.getElementById('result-blindspots');
+                const resultCatchphrase = document.getElementById('result-catchphrase');
+                const resultImage = document.getElementById('result-image');
+                const scoreBars = document.getElementById('score-bars');
+                const authorInfo = document.getElementById('author-info');
+
+                // ============ 工具函数 ============
+                function shuffleArray(arr) {
+                    const a = [...arr];
+                    for (let i = a.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [a[i], a[j]] = [a[j], a[i]];
+                    }
+                    return a;
+                }
+
+                // ============ 题库抽取与打乱 ============
+                function generateTestPaper() {
+                    const selected = [];
+                    for (let dim = 1; dim <= 4; dim++) {
+                        const dimQuestions = questionBank.filter(q => q.dimension === dim);
+                        const shuffledDim = shuffleArray(dimQuestions);
+                        const picked = shuffledDim.slice(0, QUESTIONS_PER_DIMENSION);
+                        selected.push(...picked);
+                    }
+                    const shuffledSelected = shuffleArray(selected);
+                    const optsMap = {};
+                    shuffledSelected.forEach(q => {
+                        const letters = ['A', 'B', 'C', 'D'];
+                        optsMap[q.id] = shuffleArray(letters);
+                    });
+                    selectedQuestions = shuffledSelected;
+                    shuffledOptionsMap = optsMap;
+                    userAnswers = {};
+                    currentQuestionIndex = 0;
+                    hasReachedLast = false;
+                }
+
+                // ============ 界面切换 ============
+                function switchScreen(fromId, toId, delay = 500) {
+                    return new Promise((resolve) => {
+                        const fromEl = document.getElementById(fromId);
+                        const toEl = document.getElementById(toId);
+                        fromEl.classList.add('fade-out');
+                        fromEl.classList.remove('active');
+                        setTimeout(() => {
+                            fromEl.style.display = 'none';
+                            fromEl.classList.remove('fade-out');
+                            toEl.style.display = 'flex';
+                            toEl.classList.add('active', 'fade-in');
+                            setTimeout(() => {
+                                toEl.classList.remove('fade-in');
+                                resolve();
+                            }, 50);
+                        }, delay);
+                    });
+                }
+
+                // ============ 题目渲染 ============
+                function renderQuestion(index, direction = 'none') {
+                    if (!selectedQuestions.length || index < 0 || index >= selectedQuestions.length) return;
+                    const q = selectedQuestions[index];
+                    const shuffledLetters = shuffledOptionsMap[q.id];
+                    const selectedLetter = userAnswers[q.id] || null;
+
+                    questionText.textContent = q.question;
+                    optionsList.innerHTML = '';
+
+                    shuffledLetters.forEach(letter => {
+                        const btn = document.createElement('button');
+                        btn.className = 'option-btn';
+                        if (selectedLetter === letter) {
+                            btn.classList.add('selected');
+                        }
+                        btn.textContent = q.options[letter];
+                        btn.dataset.originalLetter = letter;
+                        btn.addEventListener('click', () => {
+                            if (isTransitioning) return;
+                            handleOptionSelect(q.id, letter, index);
+                        });
+                        optionsList.appendChild(btn);
+                    });
+
+                    progressText.textContent = (index + 1) + ' / ' + TOTAL_QUESTIONS;
+                    const answeredTotal = Object.keys(userAnswers).length;
+                    answeredCount.textContent = '已答 ' + answeredTotal + ' / ' + TOTAL_QUESTIONS;
+                    const progressPercent = ((index + 1) / TOTAL_QUESTIONS) * 100;
+                    progressBarFill.style.width = progressPercent + '%';
+
+                    btnPrev.disabled = index === 0;
+                    btnNext.disabled = index === TOTAL_QUESTIONS - 1;
+
+                    if (index === TOTAL_QUESTIONS - 1) {
+                        hasReachedLast = true;
+                    }
+                    updateSubmitButton();
+                }
+
+                function handleOptionSelect(questionId, letter, currentIdx) {
+                    userAnswers[questionId] = letter;
+                    renderQuestion(currentIdx, 'none');
+                    if (currentIdx < TOTAL_QUESTIONS - 1) {
+                        isTransitioning = true;
+                        questionSlide.classList.add('slide-out-left');
+                        setTimeout(() => {
+                            currentQuestionIndex = currentIdx + 1;
+                            questionSlide.classList.remove('slide-out-left');
+                            questionSlide.classList.add('slide-in-from-right');
+                            renderQuestion(currentQuestionIndex, 'next');
+                            requestAnimationFrame(() => {
+                                questionSlide.classList.remove('slide-in-from-right');
+                            });
+                            setTimeout(() => {
+                                isTransitioning = false;
+                            }, 50);
+                        }, 450);
+                    } else {
+                        updateSubmitButton();
+                    }
+                }
+
+                function updateSubmitButton() {
+                    btnSubmit.disabled = !hasReachedLast;
+                }
+
+                function goToNextQuestion() {
+                    if (isTransitioning || currentQuestionIndex >= TOTAL_QUESTIONS - 1) return;
+                    isTransitioning = true;
+                    questionSlide.classList.add('slide-out-left');
+                    setTimeout(() => {
+                        currentQuestionIndex++;
+                        questionSlide.classList.remove('slide-out-left');
+                        questionSlide.classList.add('slide-in-from-right');
+                        renderQuestion(currentQuestionIndex, 'next');
+                        requestAnimationFrame(() => {
+                            questionSlide.classList.remove('slide-in-from-right');
+                        });
+                        setTimeout(() => {
+                            isTransitioning = false;
+                        }, 50);
+                    }, 450);
+                }
+
+                function goToPrevQuestion() {
+                    if (isTransitioning || currentQuestionIndex <= 0) return;
+                    isTransitioning = true;
+                    questionSlide.classList.add('slide-out-right');
+                    setTimeout(() => {
+                        currentQuestionIndex--;
+                        questionSlide.classList.remove('slide-out-right');
+                        questionSlide.classList.add('slide-in-from-left');
+                        renderQuestion(currentQuestionIndex, 'prev');
+                        requestAnimationFrame(() => {
+                            questionSlide.classList.remove('slide-in-from-left');
+                        });
+                        setTimeout(() => {
+                            isTransitioning = false;
+                        }, 50);
+                    }, 450);
+                }
+
+
+
+// ============ 本地语义校正计分（AI失败时兜底） ============
+// 默认选项倾向：A=理性、B=感性、C=谨慎、D=共情；对语义明显不符合默认倾向的题目做单题校正。
+// 每组权重相加为1，因此四维最终仍合计100分。
+const defaultTraitByOption = { A: 'R', B: 'F', C: 'P', D: 'E' };
+const traitWeightOverrides = {
+    6:  { D: { R: 0.6, E: 0.4 } },
+    7:  { B: { R: 1 }, D: { E: 1 } },
+    11: { D: { R: 0.5, E: 0.5 } },
+    14: { D: { P: 1 } },
+    15: { C: { E: 1 }, D: { R: 1 } },
+    16: { B: { P: 1 }, D: { R: 0.6, E: 0.4 } },
+    17: { B: { E: 0.5, F: 0.5 }, D: { R: 0.7, E: 0.3 } },
+    18: { B: { P: 1 }, C: { P: 0.5, F: 0.5 }, D: { R: 0.5, F: 0.5 } },
+    19: { C: { R: 1 }, D: { F: 1 } },
+    20: { D: { R: 0.7, E: 0.3 } },
+    21: { A: { E: 0.7, F: 0.3 }, D: { R: 0.5, P: 0.5 } },
+    22: { B: { F: 0.5, E: 0.5 }, D: { E: 1 } },
+    23: { D: { P: 1 } },
+    24: { B: { P: 1 }, C: { P: 1 } },
+    26: { D: { P: 1 } },
+    27: { A: { R: 0.5, P: 0.5 }, C: { R: 0.5, F: 0.5 }, D: { P: 1 } },
+    28: { B: { F: 0.5, E: 0.5 }, D: { E: 1 } },
+    30: { A: { R: 0.5, P: 0.5 }, D: { R: 0.5, P: 0.5 } },
+    31: { C: { P: 1 }, D: { E: 0.5, P: 0.5 } },
+    32: { D: { R: 0.7, E: 0.3 } },
+    33: { D: { E: 0.5, P: 0.5 } },
+    35: { D: { R: 0.5, E: 0.5 } },
+    36: { C: { E: 1 }, D: { E: 0.5, P: 0.5 } },
+    38: { C: { E: 1 }, D: { P: 0.5, E: 0.5 } },
+    39: { D: { P: 0.5, E: 0.5 } },
+    40: { D: { E: 1 } }
+};
+
+function calculateScores() {
+    const raw = { R: 0, F: 0, P: 0, E: 0 };
+    let total = 0;
+    for (const [questionIdStr, letter] of Object.entries(userAnswers)) {
+        const questionId = Number(questionIdStr);
+        const weights = traitWeightOverrides[questionId]?.[letter]
+            || { [defaultTraitByOption[letter]]: 1 };
+        let weightSum = 0;
+        for (const trait of ['R', 'F', 'P', 'E']) {
+            const w = Number(weights[trait] || 0);
+            raw[trait] += w;
+            weightSum += w;
+        }
+        // 防止未来误改权重导致总分失衡
+        if (weightSum > 0 && Math.abs(weightSum - 1) > 0.001) {
+            for (const trait of ['R', 'F', 'P', 'E']) raw[trait] -= (weights[trait] || 0) * (weightSum - 1) / weightSum;
+        }
+        total++;
+    }
+    const denom = total || TOTAL_QUESTIONS;
+    return {
+        R: raw.R / denom * 100,
+        F: raw.F / denom * 100,
+        P: raw.P / denom * 100,
+        E: raw.E / denom * 100
+    };
+}
+
+// ============ 本地兜底判定（基于校正后的四维分数） ============
+function determineTypeLocally(scores) {
+    const scoreArray = [
+        { trait: 'R', score: scores.R },
+        { trait: 'F', score: scores.F },
+        { trait: 'P', score: scores.P },
+        { trait: 'E', score: scores.E }
+    ].sort((a, b) => b.score - a.score);
+    const [top, second, ...rest] = scoreArray;
+    const min = rest[rest.length - 1].score;
+    const topGap = top.score - second.score;
+    const spread = top.score - min;
+
+    // 只有四维确实接近，才判为均衡型；两个明显突出的维度不再误判为NPC。
+    if (spread <= 7.5 && top.score <= 30) return 'NPC';
+
+    if (topGap >= 15) {
+        const singleMap = { R: 'CPU', F: 'LIGHTER', P: 'SLOTH', E: 'SAINT' };
+        return singleMap[top.trait] || 'NPC';
+    }
+
+    const comboKey = [top.trait, second.trait].sort().join('');
+    const comboMap = {
+        'RF': 'DIRECTOR', 'PR': 'SHADOW', 'ER': 'THERMOS',
+        'FP': 'ARTIST', 'EF': 'BUTTERFLY', 'EP': 'MULE'
+    };
+    if (spread >= 12.5 && comboMap[comboKey]) return comboMap[comboKey];
+
+    // 边界分数下优先保留更突出的单一倾向，避免任意组合放大微小差距。
+    const singleMap = { R: 'CPU', F: 'LIGHTER', P: 'SLOTH', E: 'SAINT' };
+    return singleMap[top.trait] || 'NPC';
+}
+
+// ============ 调用后端接口进行语境化分析 ============
+async function callAIForResult() {
+    const dimensionNames = {
+        1: '冲突与压力', 2: '决策与执行', 3: '社交与人际', 4: '自我与秩序'
+    };
+    const detailedAnswers = selectedQuestions.map((q, index) => {
+        const userLetter = userAnswers[q.id];
+        const selectedText = q.options[userLetter];
+        return `${index + 1}.【${dimensionNames[q.dimension] || '情境题'}】题目：${q.question}\n   用户选择的回答：${selectedText}`;
+    }).join('\n');
+
+    const roughScores = calculateScores();
+    const validTypes = ['CPU', 'LIGHTER', 'SLOTH', 'SAINT', 'DIRECTOR', 'SHADOW', 'THERMOS', 'ARTIST', 'BUTTERFLY', 'MULE', 'NPC'];
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    try {
+        // 请求我们自己的安全后端接口
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const response = await fetch('/api/test/evaluate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: user.email, // ★ 向后端发送邮箱供校验
+                detailedAnswers,
+                roughScores: {
+                    R: roughScores.R.toFixed(1),
+                    F: roughScores.F.toFixed(1),
+                    P: roughScores.P.toFixed(1),
+                    E: roughScores.E.toFixed(1)
+                }
+            }),
+            signal: controller.signal
+        });
+        
+        const data = await response.json();
+        if (data.success && validTypes.includes(data.type)) {
+            return data.type;
+        }
+        throw new Error(data.error || 'AI 接口返回错误');
+    } catch (error) {
+        console.warn('后端 AI 分析失败，使用本地兜底:', error);
+        return null; // 触发前端本地兜底逻辑
+    } finally {
+        clearTimeout(timeoutId);
+    }
+}
+
+                // 结果页优先加载压缩预览；代理地址使用完整编码后的源 URL。
+                // 如果压缩服务不可用，快速回退到 GitHub 原图，避免图片一直隐藏。
+                let resultImageCandidates = [];
+                let resultImageToken = 0;
+                let resultImageTimer = null;
+
+                function getResultImageCandidates(typeData) {
+                    if (!typeData) return [];
+                    const full = typeData.imageFull || '';
+                    const direct = typeData.imageDisplay || full;
+                    if (!direct) return [];
+                    const candidates = [];
+                    // wsrv.nl 要求 url 参数为完整、URL 编码的地址；此前缺少协议头且未编码，导致预览源失效。
+                    const optimizeSource = full || direct;
+                    candidates.push(`https://wsrv.nl/?url=${encodeURIComponent(optimizeSource)}&w=640&q=45&output=webp`);
+                    // 优先回退到原本使用的 jsDelivr CDN；再试 GitHub Raw，兼顾不同网络环境。
+                    if (full && full !== optimizeSource) candidates.push(full);
+                    else if (full) candidates.push(full);
+                    if (direct && direct !== full) candidates.push(direct);
+                    return [...new Set(candidates)];
+                }
+
+                function loadResultImage(typeData) {
+                    if (resultImageTimer) clearTimeout(resultImageTimer);
+                    resultImageToken++;
+                    resultImageCandidates = getResultImageCandidates(typeData);
+                    // 保持图片元素可见，避免因代理迟迟不返回而整块图片消失。
+                    resultImage.style.display = 'block';
+                    resultImage.removeAttribute('src');
+                    tryResultImageSource(0);
+                }
+
+                function tryResultImageSource(index) {
+                    if (resultImageTimer) clearTimeout(resultImageTimer);
+                    const token = ++resultImageToken;
+                    if (index >= resultImageCandidates.length) {
+                        // 不弹提示框；保留容器，避免结果页布局突然跳动。
+                        resultImage.style.display = 'block';
+                        resultImage.removeAttribute('src');
+                        return;
+                    }
+                    resultImage.onload = () => {
+                        if (token !== resultImageToken) return;
+                        if (resultImageTimer) clearTimeout(resultImageTimer);
+                        resultImage.style.display = 'block';
+                    };
+                    resultImage.onerror = () => {
+                        if (token !== resultImageToken) return;
+                        tryResultImageSource(index + 1);
+                    };
+                    resultImage.src = resultImageCandidates[index];
+                    // 压缩代理 1.4 秒无响应即切换原图 CDN；其他源最多等待 3.2 秒。
+                    resultImageTimer = setTimeout(() => {
+                        if (token !== resultImageToken) return;
+                        if (!resultImage.complete || resultImage.naturalWidth === 0) {
+                            tryResultImageSource(index + 1);
+                        }
+                    }, index === 0 ? 1400 : 3200);
+                }
+
+                function renderResult(result) {
+                    const typeData = resultTypes[result.type];
+                    resultTypeName.textContent = typeData.name;
+                    resultTypeCode.textContent = typeData.code;
+                    resultPersona.textContent = typeData.persona;
+                    resultStrengths.textContent = typeData.strengths;
+                    resultBlindSpots.textContent = typeData.blindSpots;
+                    resultCatchphrase.textContent = typeData.catchphrase;
+
+                    loadResultImage(typeData);
+
+                    const labels = ['理性', '感性', '谨慎', '共情'];
+                    const values = [result.TA, result.TB, result.TC, result.TD];
+                    const maxVal = Math.max(...values, 1);
+                    scoreBars.innerHTML = '';
+                    labels.forEach((label, idx) => {
+                        const val = values[idx];
+                        const pct = Math.round((val / maxVal) * 100);
+                        const row = document.createElement('div');
+                        row.className = 'score-row';
+                        row.innerHTML = `
+                            <span class="score-label">${label}</span>
+                            <div class="score-bar-bg">
+                                <div class="score-bar-fill" style="width: ${pct}%;"></div>
+                            </div>
+                            <span class="score-value">${val.toFixed(1)}</span>
+                        `;
+                        scoreBars.appendChild(row);
+                    });
+                }
+
+// ============ 提交处理 ============
+async function handleSubmit() {
+    const unansweredIndex = selectedQuestions.findIndex((q, idx) => !userAnswers[q.id]);
+    if (unansweredIndex !== -1) {
+        currentQuestionIndex = unansweredIndex;
+        renderQuestion(currentQuestionIndex, 'none');
+        questionSlide.classList.remove('slide-out-left', 'slide-out-right', 'slide-in-from-right',
+            'slide-in-from-left');
+        return;
+    }
+
+const elapsedSeconds = (Date.now() - testStartTime) / 1000;
+const warningBox = document.getElementById('warning-box');
+if (elapsedSeconds < 45) {
+    warningBox.style.display = 'block';
+} else {
+    warningBox.style.display = 'none';
+}
+    loadingOverlay.classList.add('active');
+
+// 启动倒计时
+let countdown = 12;
+const countdownEl = document.getElementById('loading-countdown');
+countdownEl.textContent = `预计还需 ${countdown} 秒`;
+const countdownTimer = setInterval(() => {
+    countdown--;
+    if (countdown > 0) {
+        countdownEl.textContent = `预计还需 ${countdown} 秒`;
+    } else {
+        countdownEl.textContent = '即将完成...';
+    }
+}, 1000);
+
+
+    const scores = calculateScores();
+    const TA = scores.R, TB = scores.F, TC = scores.P, TD = scores.E;
+
+    let aiType = await callAIForResult();
+    if (!aiType) {
+        aiType = determineTypeLocally(scores);
+    }
+
+    const finalResult = { type: aiType, TA, TB, TC, TD };
+    testResult = finalResult;
+
+// 清除倒计时
+clearInterval(countdownTimer);
+
+
+    // AI 分析完成后立即显示结果，不再额外延迟
+    loadingOverlay.classList.remove('active');
+    renderResult(finalResult);
+    switchScreen('screen-test', 'screen-result', 500).then(() => {});
+}
+
+                // ============ 声明倒计时 ============
+                function startDisclaimerCountdown() {
+                    disclaimerCountdown = DISCLAIMER_COUNTDOWN;
+                    btnDisclaimer.disabled = true;
+                    btnDisclaimer.textContent = `我已知晓（${disclaimerCountdown}s）`;
+                    if (disclaimerTimer) clearInterval(disclaimerTimer);
+                    disclaimerTimer = setInterval(() => {
+                        disclaimerCountdown--;
+                        if (disclaimerCountdown <= 0) {
+                            clearInterval(disclaimerTimer);
+                            disclaimerTimer = null;
+                            btnDisclaimer.disabled = false;
+                            btnDisclaimer.textContent = '我已知晓';
+                        } else {
+                            btnDisclaimer.textContent = `我已知晓（${disclaimerCountdown}s）`;
+                        }
+                    }, 1000);
+                }
+
+                // ============ 重置测试 ============
+                function resetTest() {
+                    if (disclaimerTimer) {
+                        clearInterval(disclaimerTimer);
+                        disclaimerTimer = null;
+                    }
+                    generateTestPaper();
+                    currentQuestionIndex = 0;
+                    isTransitioning = false;
+                    testResult = null;
+                    hasReachedLast = false;
+                    btnSubmit.disabled = true;
+                    questionSlide.classList.remove('slide-out-left', 'slide-out-right', 'slide-in-from-right',
+                        'slide-in-from-left');
+                }
+
+                // ============ 事件绑定 ============
+                btnStart.addEventListener('click', async () => {
+                    const user = localStorage.getItem('user');
+                    if (!user) {
+                        alert('请先登录后再开始测试哦~');
+                        // 跳转到主页登录，并带上返回地址参数
+                        window.location.href = 'index.html?redirect=syti.html';
+                        return;
+                    }
+                    await switchScreen('screen-title', 'screen-disclaimer', 500);
+                    startDisclaimerCountdown();
+                });
+
+                btnDisclaimer.addEventListener('click', async () => {
+                    if (btnDisclaimer.disabled) return;
+                    if (disclaimerTimer) {
+                        clearInterval(disclaimerTimer);
+                        disclaimerTimer = null;
+                    }
+                    resetTest();
+                    await switchScreen('screen-disclaimer', 'screen-test', 500);
+                    questionSlide.classList.remove('slide-out-left', 'slide-out-right', 'slide-in-from-right',
+                        'slide-in-from-left');
+                    renderQuestion(0, 'none');
+testStartTime = Date.now();
+                });
+
+                btnPrev.addEventListener('click', goToPrevQuestion);
+                btnNext.addEventListener('click', goToNextQuestion);
+                btnSubmit.addEventListener('click', handleSubmit);
+
+                btnRestart.addEventListener('click', async () => {
+                    resetTest();
+                    await switchScreen('screen-result', 'screen-test', 500);
+                    questionSlide.classList.remove('slide-out-left', 'slide-out-right', 'slide-in-from-right',
+                        'slide-in-from-left');
+                    renderQuestion(0, 'none');
+                });
+
+btnShare.addEventListener('click', () => {
+    if (!testResult) return;
+    const typeData = resultTypes[testResult.type];
+    const originalImageUrl = typeData && (typeData.imageFull || typeData.imageDisplay);
+    if (!originalImageUrl) return;
+    // 直接在新标签页显示原图，不下载、不弹提示框、不等待 fetch。
+    const link = document.createElement('a');
+    link.href = originalImageUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+});
+
+                authorInfo.addEventListener('click', () => {
+                    window.open('https://www.zrzbc.com/', '_blank', 'noopener,noreferrer');
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    const activeScreen = document.querySelector('.screen.active');
+                    if (!activeScreen) return;
+                    if (activeScreen.id === 'screen-test') {
+                        if (e.key === 'ArrowLeft') goToPrevQuestion();
+                        if (e.key === 'ArrowRight') goToNextQuestion();
+                    }
+                    if (activeScreen.id === 'screen-title' && e.key === 'Enter') {
+                        btnStart.click();
+                    }
+                });
+
+                // ============ 初始化 ============
+                generateTestPaper();
+                Object.values(screens).forEach(el => {
+                    el.classList.remove('active', 'fade-out', 'fade-in');
+                    el.style.display = 'none';
+                });
+                screens.title.style.display = 'flex';
+                screens.title.classList.add('active');
+                screens.disclaimer.style.display = 'none';
+                screens.test.style.display = 'none';
+                screens.result.style.display = 'none';
+            })();
+        </script>
+    </body>
+    </html>
