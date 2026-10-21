@@ -999,7 +999,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = isRegister ? { email, code, password, nickname } : { email, password };
         const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         const data = await res.json();
-        if (data.success) { alert(isRegister ? '注册成功！' : '登录成功！'); if (data.user) { localStorage.setItem('user', JSON.stringify(data.user)); location.reload(); } }
+        if (data.success) { 
+          alert(isRegister ? '注册成功！' : '登录成功！'); 
+          if (data.user) { 
+            localStorage.setItem('user', JSON.stringify(data.user)); 
+            // ★ 检查 URL 中是否带有 redirect 参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectUrl = urlParams.get('redirect');
+            if (redirectUrl) {
+              window.location.href = redirectUrl; // 跳回四叶草测试页面
+            } else {
+              location.reload(); // 正常留在主页
+            }
+          } 
+        }
+
         else { alert(data.error || '操作失败'); }
       } catch (err) { alert('网络错误'); }
       finally { submitBtn.disabled = false; submitBtn.textContent = '登录 / 注册'; }
