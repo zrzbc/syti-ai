@@ -1395,11 +1395,23 @@ document.addEventListener('DOMContentLoaded', function () {
           const data = await res.json();
           if (data.success) {
             user.avatar = base64; 
+            // 如果后端返回了奖励，更新本地经验
+            if (data.rewardGiven) {
+              user.exp = data.newExp;
+            }
             localStorage.setItem('user', JSON.stringify(user));
+            
             document.getElementById('popoverAvatar').style.backgroundImage = `url(${base64})`;
             document.getElementById('popoverAvatarLetter').style.display = 'none';
             updateAvatarButton(user);
-            alert('头像修改成功！');
+            
+            // 弹出后端返回的提示语（包含是否获得经验）
+            alert(data.message || '头像修改成功！');
+            
+            // 刷新页面上的经验显示（调用各页面已有的更新函数）
+            if (typeof updateNavExp === 'function') updateNavExp(user);
+            if (typeof renderPopover === 'function') renderPopover(user);
+            if (typeof renderExp === 'function') renderExp(user.exp);
           } else { alert(data.error || '上传失败'); }
         } catch (err) { alert('网络错误'); }
       };
