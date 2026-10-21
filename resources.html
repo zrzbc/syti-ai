@@ -939,14 +939,27 @@ if (hasNickColor) {
           const res = await fetch('/api/auth/update-avatar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: user.email, avatar: base64 }) });
           const data = await res.json();
           if (data.success) {
-            user.avatar = base64; localStorage.setItem('user', JSON.stringify(user));
+            user.avatar = base64; 
+            // 如果后端返回了奖励，更新本地经验
+            if (data.rewardGiven) {
+              user.exp = data.newExp;
+            }
+            localStorage.setItem('user', JSON.stringify(user));
+            
             document.getElementById('popoverAvatar').style.backgroundImage = `url(${base64})`;
             document.getElementById('popoverAvatarLetter').style.display = 'none';
             const avatarBtnHTML = document.querySelector('#avatarBtn');
             if (avatarBtnHTML) avatarBtnHTML.innerHTML = `<img src="${base64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
             const userPanelAvatar = document.getElementById('userPanelAvatar');
             if (userPanelAvatar) { userPanelAvatar.style.backgroundImage = `url(${base64})`; userAvatarLetter.style.display = 'none'; }
-            alert('头像修改成功！');
+            
+            // 弹出后端返回的提示语（包含是否获得经验）
+            alert(data.message || '头像修改成功！');
+            
+            // 刷新页面上的经验显示（调用各页面已有的更新函数）
+            if (typeof updateNavExp === 'function') updateNavExp(user);
+            if (typeof renderPopover === 'function') renderPopover(user);
+            if (typeof renderExp === 'function') renderExp(user.exp);
           } else { alert(data.error || '上传失败'); }
         } catch (err) { alert('网络错误'); }
       };
