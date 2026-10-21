@@ -240,7 +240,7 @@ QQ群：https://qm.qq.com/q/NolMnoJaEO
 你就是冰凛四叶。`;
 
   if (!email) return Response.json({ error: '请先登录' }, { status: 400 });
-  if ((!userText && (!attachments || attachments.length === 0)) || !systemPrompt) return Response.json({ error: '参数不完整' }, { status: 400 });
+  if ((!userText && (!attachments || attachments.length === 0))) return Response.json({ error: '参数不完整' }, { status: 400 });
 
   const user = await env.DB.prepare('SELECT * FROM users WHERE email = ?').bind(email).first();
   if (!user) return Response.json({ error: '用户不存在' }, { status: 400 });
@@ -298,10 +298,10 @@ QQ群：https://qm.qq.com/q/NolMnoJaEO
     const past5h = Date.now() - 5 * 60 * 60 * 1000;
     let sentCount = 0;
     try {
-      const countRow = await env.DB.prepare(
+      const rpLogRow = await env.DB.prepare(
         'SELECT COUNT(*) as count FROM her_redpacket_logs WHERE user_email = ? AND created_at > ?'
       ).bind(email, past5h).first();
-      sentCount = countRow?.count || 0;
+      sentCount = rpLogRow?.count || 0;
     } catch (e) {}
 
     // 2. 判定风控
