@@ -237,6 +237,26 @@ body.page-leaving{opacity:0}
 .nick-colored.nick-pink{background-image:linear-gradient(90deg,#d91e63 0%,#ff8fab 100%)}
 .nick-colored.nick-purple{background-image:linear-gradient(90deg,#6a0dad 0%,#c77dff 100%)}
 
+/* 游戏标题标签 */
+.title-tag {
+  display: inline-block;
+  font-size: 16px; /* 字号改大，接近 h3 的 20px */
+  font-weight: bold;
+  padding: 2px 10px; /* 加大左右内边距 */
+  border-radius: 8px; /* 圆角稍微大一点 */
+  margin-left: 10px;
+  vertical-align: middle;
+  line-height: 1.2;
+  font-family: var(--font-main);
+}
+.tag-login {
+  background-color: #ffd700;
+  color: #000;
+}
+.tag-pc {
+  background-color: #b8e9b8;
+  color: #000;
+}
 </style>
 </head>
 <body>
@@ -329,14 +349,25 @@ body.page-leaving{opacity:0}
 
   <div class="game-list" id="gameList">
 
-<a class="game-card game-item" href="siyeliaotianshi.html" target="_blank" rel="noopener" data-title="SPACE TIME" data-desc="聊天 沉浸式 养成 社交模拟" data-tags="聊天 沉浸式 养成 社交模拟">
+<a class="game-card game-item" href="siyeliaotianshi.html" target="_blank" rel="noopener" data-title="四叶聊天室" data-desc="聊天 沉浸式 养成 社交模拟" data-tags="聊天 沉浸式 养成 社交模拟">
 <span class="game-plays" data-game-id="siyeliaotianshi">游玩次数：--</span>
       <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/siyeliaotianshi.png');"></div>
       <div class="game-info">
-<h3>四叶聊天室</h3>
-<p>快来与冰凛四叶尽情畅谈吧~</p>
+<h3>四叶聊天室 <span class="title-tag tag-login">需登录</span></h3>
+<p>四叶很寂寞，四叶需要你的陪伴！</p>
         <div class="game-tags"><span class="tag">聊天</span><span class="tag">沉浸式</span><span class="tag">养成</span><span class="tag">社交模拟</span></div>
-        <div class="game-meta">四叶很寂寞，四叶需要你的陪伴！<br>（请先登录，并待网页加载完毕后再发送信息，否则会发送失败！）</div>
+        <div class="game-meta">嗨！我是冰凛四叶！<br>今天过得怎么样？有什么想跟我分享的吗？</div>
+      </div>
+    </a>
+
+<a class="game-card game-item" href="syti.html" target="_blank" rel="noopener" data-title="SYTI - 四叶草人格测试" data-desc="测评 心理 人格 参考" data-tags="测评 心理 人格 参考">
+<span class="game-plays" data-game-id="siyeliaotianshi">游玩次数：--</span>
+      <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/syti.png');"></div>
+      <div class="game-info">
+<h3>SYTI - 四叶草人格测试 <span class="title-tag tag-login">需登录</span></h3>
+<p>四叶草专属图鉴，寻找属于你的那片叶子。</p>
+        <div class="game-tags"><span class="tag">测评</span><span class="tag">心理</span><span class="tag">人格</span><span class="tag">参考</span></div>
+        <div class="game-meta">20道生活情境题，将悄悄剖析你的理性、感性、谨慎与共情。<br>解码你的四维性格，看看你究竟是被贴上了哪个标签。</div>
       </div>
     </a>
 
@@ -344,9 +375,9 @@ body.page-leaving{opacity:0}
 <span class="game-plays" data-game-id="spacetime">游玩次数：--</span>
       <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/spacetime.png');"></div>
       <div class="game-info">
-<h3>SPACE TIME（限电脑）</h3>
+<h3>SPACE TIME <span class="title-tag tag-pc">限电脑</span></h3>
 <p>空间 & 时间</p>
-        <div class="game-tags"><span class="tag">限电脑游玩</span><span class="tag">视觉盛宴</span><span class="tag">解压</span><span class="tag">美学</span></div>
+        <div class="game-tags"><span class="tag">视觉盛宴</span><span class="tag">科幻</span><span class="tag">解压</span><span class="tag">美学</span></div>
         <div class="game-meta">这是一场空间与时间的交融。<br>（首次打开需等待30秒，让音乐加载完毕！）</div>
       </div>
     </a>
@@ -355,9 +386,9 @@ body.page-leaving{opacity:0}
 <span class="game-plays" data-game-id="laizishenyuan">游玩次数：--</span>
       <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/laizishenyuan.png');"></div>
       <div class="game-info">
-<h3>前方深渊（限电脑）</h3>
+<h3>前方深渊 <span class="title-tag tag-login">需登录</span> <span class="title-tag tag-pc">限电脑</span></h3>
 <p>深入地底，挑战极限！</p>
-        <div class="game-tags"><span class="tag">限电脑游玩</span><span class="tag">冒险</span><span class="tag">动作</span><span class="tag">像素风</span></div>
+        <div class="game-tags"><span class="tag">冒犯</span><span class="tag">动作</span><span class="tag">打怪</span><span class="tag">像素风</span></div>
         <div class="game-meta">化作一名冒险家，深入地底，面对未知的挑战！<br>期间，你可以吃蘑菇回血、捡骨头加子弹、收集水晶驯服宠物，用护盾和连击对抗越来越强的怪物。</div>
       </div>
     </a>
@@ -368,7 +399,7 @@ body.page-leaving{opacity:0}
       <div class="game-info">
 <h3>密码挑战 · 简单版</h3>
 <p>风靡一时的密码挑战复刻版！</p>
-        <div class="game-tags"><span class="tag">免登录</span><span class="tag">推理</span><span class="tag">策略</span><span class="tag">烧脑</span></div>
+        <div class="game-tags"><span class="tag">烧脑</span><span class="tag">推理</span><span class="tag">策略</span><span class="tag">逻辑</span></div>
         <div class="game-meta">根据提示来修改你的密码，直到其同时满足15个条件。</div>
       </div>
     </a>
@@ -379,7 +410,7 @@ body.page-leaving{opacity:0}
       <div class="game-info">
 <h3>密码挑战 · 困难版</h3>
 <p>风靡一时的密码挑战复刻版！</p>
-        <div class="game-tags"><span class="tag">免登录</span><span class="tag">推理</span><span class="tag">策略</span><span class="tag">烧脑</span></div>
+        <div class="game-tags"><span class="tag">烧脑</span><span class="tag">推理</span><span class="tag">策略</span><span class="tag">逻辑</span></div>
         <div class="game-meta">根据提示来修改你的密码，直到其同时满足20个条件。</div>
       </div>
     </a>
@@ -388,9 +419,9 @@ body.page-leaving{opacity:0}
 <span class="game-plays" data-game-id="yizhiqianjin">游玩次数：--</span>
       <div class="game-cover" style="background-image:url('https://cdn.jsdelivr.net/gh/zrzbc/syti-ai/yizhiqianjin.png');"></div>
       <div class="game-info">
-<h3>一掷千金</h3>
+<h3>一掷千金 <span class="title-tag tag-pc">限电脑</span></h3>
 <p>深入地底，挑战极限！</p>
-        <div class="game-tags"><span class="tag">免登录</span><span class="tag">推理</span><span class="tag">博弈</span><span class="tag">心理</span></div>
+        <div class="game-tags"><span class="tag">博弈</span><span class="tag">推理</span><span class="tag">运气</span><span class="tag">心理</span></div>
         <div class="game-meta">从26个宝箱中选择一个作为底牌，逐轮开箱排除金额。<br>一轮结束后商人会报价，可选择成交、拒绝或讲价；如撑到最后，则直接开底牌定输赢。</div>
       </div>
     </a>
@@ -688,7 +719,20 @@ document.addEventListener('DOMContentLoaded', function () {
         const payload = isRegister ? { email, code, password, nickname } : { email, password };
         const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         const data = await res.json();
-        if (data.success) { alert(isRegister ? '注册成功！' : '登录成功！'); if (data.user) { localStorage.setItem('user', JSON.stringify(data.user)); location.reload(); } }
+        if (data.success) { 
+          alert(isRegister ? '注册成功！' : '登录成功！'); 
+          if (data.user) { 
+            localStorage.setItem('user', JSON.stringify(data.user)); 
+            // ★ 检查 URL 中是否带有 redirect 参数
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectUrl = urlParams.get('redirect');
+            if (redirectUrl) {
+              window.location.href = redirectUrl; // 跳回四叶草测试页面
+            } else {
+              location.reload(); // 正常留在主页
+            }
+          } 
+        }
         else { alert(data.error || '操作失败'); }
       } catch (err) { alert('网络错误'); }
       finally { submitBtn.disabled = false; submitBtn.textContent = '登录 / 注册'; }
