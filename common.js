@@ -26,7 +26,7 @@
     .lang-menu button.active{background:#eef2ff;color:#3f63d9;font-weight:600}
 
     /* 头像和悬浮窗 */
-    .user-center{position:relative;display:flex;align-items:center;margin-left:4px;padding-bottom:10px;margin-bottom:-10px;}
+.user-center{position:relative;display:flex;align-items:center;margin-left:4px;padding-bottom:10px;margin-bottom:-10px;}
     .avatar-btn{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#8a5cf6);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;transition:transform .2s,box-shadow .2s;border:2px solid rgba(255,255,255,.8);overflow:hidden}
     .avatar-btn:hover{transform:scale(1.08);box-shadow:0 6px 16px rgba(79,124,255,.35)}
     .user-popover{position:absolute;top:100%;right:0;width:220px;background:#fff;border:1px solid #e8ebf5;border-radius:16px;box-shadow:0 10px 30px rgba(55,65,110,.15);display:none;z-index:50}
@@ -96,12 +96,8 @@
             <button type="button" data-lang="tw">繁體中文（台灣）</button>
           </div>
         </div>
-        <a href="https://zrzbc.com/faq" class="faq-icon-btn" title="常见问题" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid #e8ebf5;background:#fff;color:#59627a;transition:all .2s;margin:0 8px;text-decoration:none;">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
+<a href="https://zrzbc.com/faq" class="faq-icon-btn" title="常见问题" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid #e8ebf5;background:#fff;color:#59627a;transition:all .2s;margin:0 8px;text-decoration:none;font-size:19px;font-weight:bold;font-family:Arial, sans-serif;">
+          ?
         </a>
         <div class="user-center" id="userCenter">
           <div class="avatar-btn" id="avatarBtn" title="个人中心">
@@ -212,6 +208,7 @@
   document.body.insertAdjacentHTML('beforeend', modalHTML);
 
   // ================= 3. 核心逻辑控制 =================
+  // 状态更新函数，挂载到 window 供各页面调用
   window.getLocalUser = function() {
     try {
       const raw = localStorage.getItem('user');
@@ -276,7 +273,7 @@
           }
         }
 
-        // 经验条渲染逻辑
+        // 经验条渲染逻辑 (提取成一个内部函数)
         const expNum = parseInt(user.exp) || 0;
         let level = 1, nextExp = 200, baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
         if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
@@ -305,18 +302,18 @@
   };
 
   // ================= 4. 绑定公共事件 =================
+  // 登录入口
   const authModal = document.getElementById('authModal');
-  // 关键：挂载到全局，让 shop.html 也能调用
-  window.openAuthModal = function() {
+  function openAuthModal() {
     document.getElementById('authFormContainer').style.display = 'block';
     document.getElementById('resetFormContainer').style.display = 'none';
     authModal.classList.add('show');
-  };
+  }
 
   document.getElementById('avatarBtn').addEventListener('click', () => {
-    if (!window.getLocalUser()) window.openAuthModal();
+    if (!window.getLocalUser()) openAuthModal();
   });
-  document.getElementById('popoverNotLoggedIn').addEventListener('click', window.openAuthModal);
+  document.getElementById('popoverNotLoggedIn').addEventListener('click', openAuthModal);
   document.getElementById('closeModal').addEventListener('click', () => authModal.classList.remove('show'));
   authModal.addEventListener('click', (e) => { if (e.target === authModal) authModal.classList.remove('show'); });
 
@@ -505,20 +502,31 @@
     finally { btn.disabled = false; btn.textContent = '确定'; }
   });
 
-  // 签到 / 退出 (绝对安全版)
-  document.getElementById('popoverSigninBtn').addEventListener('click', (e) => { 
-    e.stopPropagation(); 
-    window.location.href = 'index.html#signin'; 
-  });
-  
+  // 签到 / 退出
+  document.getElementById('popoverSigninBtn').addEventListener('click', (e) => { e.stopPropagation(); window.location.href = 'index.html#signin'; });
   document.getElementById('popoverLogoutBtn').addEventListener('click', (e) => {
-    e.stopPropagation(); 
-    localStorage.removeItem('user');
-    alert('已退出登录');
-    window.location.href = 'index.html';
+    e.stopPropagation(); localStorage.removeItem('user'); alert('已退出登录'); window.location.reload();
+  });
+
+  // 初始化渲染
+  window.renderGlobalUI();
+
+  // 每次鼠标移入悬浮窗时，静默同步一次数据
+  document.getElementById('userCenter').addEventListener('mouseenter', async () => {
+    const u = window.getLocalUser(); if (!u) return;
+    try {
+      const res = await fetch('/api/auth/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: u.email }) });
+      const data = await res.json();
+      if (data.success && data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.renderGlobalUI();
+        if (typeof window.onUserUpdate === 'function') window.onUserUpdate(data.user);
+      }
+    } catch(e) {}
   });
 
   // ================= 5. 语言切换和页面跳转过渡 =================
+  // 语言切换...
   var langBtn = document.getElementById('langBtn'), langMenu = document.getElementById('langMenu'), langSwitch = document.querySelector('.lang-switch');
   if (langBtn && langMenu && langSwitch && typeof OpenCC !== 'undefined') {
     var converters = { cn: null, hk: OpenCC.Converter({ from: 'cn', to: 'hk' }), tw: OpenCC.Converter({ from: 'cn', to: 'twp' }) };
