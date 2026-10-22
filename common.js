@@ -96,8 +96,8 @@
             <button type="button" data-lang="tw">繁體中文（台灣）</button>
           </div>
         </div>
-        <a href="faq.html" class="faq-icon-btn" title="常见问题" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid #e8ebf5;background:#fff;color:#59627a;transition:all .2s;margin:0 4px;">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        <a href="https://zrzbc.com/faq" class="faq-icon-btn" title="常见问题" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid #e8ebf5;background:#fff;color:#59627a;transition:all .2s;margin:0 4px;text-decoration:none;font-size:18px;font-weight:700;font-family:inherit;">
+          ?
         </a>
         <div class="user-center" id="userCenter">
           <div class="avatar-btn" id="avatarBtn" title="个人中心">
