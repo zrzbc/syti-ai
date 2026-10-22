@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>猜歌词 - 这人针不错</title>
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
 <style>
   :root{
     --blue:#4f7cff; --purple:#8a5cf6; --ink:#172033; --muted:#6f7890;
@@ -17,7 +18,7 @@
                 radial-gradient(circle at 90% 10%,rgba(138,92,246,.13),transparent 30%),
                 var(--bg);
     line-height:1.7;min-height:100vh;display:flex;align-items:center;justify-content:center;
-    padding:80px 20px 40px;
+    padding:100px 20px 40px;
   }
   .game-container {
     width:min(720px, 100%);
@@ -36,24 +37,31 @@
   /* 歌词面板 */
   .lyrics-box {
     background:#fff; border:1px solid var(--line); border-radius:16px;
-    padding:24px; font-size:18px; line-height:2.2; letter-spacing:1px;
-    min-height:200px; max-height:40vh; overflow-y:auto;
+    padding:24px; font-size:18px; line-height:2.2; 
+    min-height:200px; max-height:45vh; overflow-y:auto;
     user-select:none;
+    word-break: break-word;
   }
   .lyrics-box::-webkit-scrollbar { width:6px; }
   .lyrics-box::-webkit-scrollbar-thumb { background:#d5dbea; border-radius:4px; }
   
   /* 字符块 */
   .char-block {
-    display:inline-block; text-align:center; min-width:1.2em;
-    transition: all 0.3s;
+    display:inline-block; text-align:center;
+    vertical-align: middle;
   }
+  
+  /* 未猜出的黑块 */
   .char-masked {
-    background:#172033; color:transparent;
-    border-radius:4px; margin:0 2px; font-weight:bold;
+    color: #000; 
+    margin: 0 8px; /* 拉开黑块间距 */
+    font-size: 16px; /* 避免emoji过大 */
   }
+  
+  /* 猜出的字 */
   .char-revealed {
     color:var(--blue); font-weight:bold;
+    margin: 0 2px;
     animation: pop 0.3s ease-out;
   }
   @keyframes pop { 0%{transform:scale(.8);opacity:.5} 100%{transform:scale(1);opacity:1} }
@@ -81,19 +89,21 @@
   }
   @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
   
-  .win-msg { display:none; text-align:center; color:#22c55e; font-weight:bold; font-size:18px; margin-top:20px; padding:14px; background:#f0fdf4; border-radius:12px; border:1px solid #bbf7d0; }
+  /* 成功提示 */
+  .win-msg { display:none; text-align:center; font-weight:bold; font-size:18px; margin-top:20px; padding:16px; border-radius:12px; border:1px solid; }
+  .win-msg.success { color:#22c55e; background:#f0fdf4; border-color:#bbf7d0; }
 </style>
 </head>
 <body>
 
 <div class="game-container">
   <div class="header">
-    <div class="title">猜歌词</div>
+    <div class="title">今日猜歌词</div>
   </div>
   
   <div class="lyrics-box" id="lyricsBox">加载中...</div>
   
-  <div class="win-msg" id="winMsg">挑战成功！答案正是《<span id="answerName"></span>》</div>
+  <div class="win-msg" id="winMsg"></div>
 
   <div class="input-area" id="inputArea">
     <div class="input-row">
@@ -104,6 +114,7 @@
   </div>
 </div>
 
+<script src="common.js?v=4"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const lyricsBox = document.getElementById('lyricsBox');
@@ -111,7 +122,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const submitBtn = document.getElementById('submitBtn');
   const errorArea = document.getElementById('errorArea');
   const winMsg = document.getElementById('winMsg');
-  const answerName = document.getElementById('answerName');
 
   let gameData = null;
   let guessedChars = new Set();
@@ -122,7 +132,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const res = await fetch('/api/game/get-lyrics');
     const json = await res.json();
     if (!json.success) {
-      lyricsBox.textContent = '暂时没有题目，等待管理员出题~';
+      lyricsBox.textContent = '今日暂无题目，等待管理员更新~';
+      document.getElementById('inputArea').style.display = 'none';
       return;
     }
     gameData = json.data;
@@ -131,42 +142,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     lyricsBox.textContent = '加载失败，请刷新重试';
   }
 
-  // 2. 渲染带方块的歌词
+  // 2. 渲染逻辑
   function renderLyrics() {
     lyricsBox.innerHTML = '';
     const masked = gameData.masked_lyrics;
     const original = gameData.original_lyrics;
     
-    // 遍历打码后的歌词，把汉字和掩码对应起来
     for (let i = 0; i < masked.length; i++) {
       const mChar = masked[i];
       const oChar = original[i];
       const span = document.createElement('span');
       
-      if (mChar === '■') {
-        span.className = 'char-block char-masked';
-        span.dataset.char = oChar;
-        // 如果已经猜出来了，就直接显示
+      if (mChar === '■') { 
         if (guessedChars.has(oChar)) {
-          revealSpan(span, oChar);
+          // 把黑块替换为猜中的字
+          span.textContent = oChar;
+          span.className = 'char-block char-revealed';
         } else {
-          span.textContent = '■';
+          // 显示黑块 ◼️
+          span.textContent = '◼️';
+          span.className = 'char-block char-masked';
+          span.dataset.char = oChar;
         }
       } else if (mChar === '\n') {
         lyricsBox.appendChild(document.createElement('br'));
         continue;
       } else {
-        // 标点符号、空格
         span.className = 'char-block';
-        span.textContent = mChar === ' ' ? '&nbsp;' : mChar;
+        span.textContent = mChar === ' ' ? '\u00A0' : mChar;
       }
       lyricsBox.appendChild(span);
     }
-  }
-
-  function revealSpan(span, char) {
-    span.textContent = char;
-    span.className = 'char-block char-revealed';
   }
 
   // 3. 提交逻辑
@@ -181,23 +187,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    // 如果不是歌名，判断是否在歌词中
     let hit = false;
     const isSingleChar = val.length === 1;
     
-    // 如果输入了多个字，检查这几个字是否都在歌词里
-    // 为了游戏体验，只要单字命中就算猜中
     if (isSingleChar) {
-      // 把该字加入已知集合
       guessedChars.add(val);
       hit = gameData.original_lyrics.includes(val);
-      
-      if (hit) {
-        // 刷新UI
-        renderLyrics();
-      }
+      if (hit) renderLyrics();
     } else {
-      // 输入了多个字但不等于歌名，就按单字拆开，只要有一个字在就不算错误
       const chars = val.split('');
       let anyHit = false;
       chars.forEach(c => {
@@ -212,7 +209,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     }
 
-    // 如果没命中，加入错误区
     if (!hit) {
       const chip = document.createElement('div');
       chip.className = 'error-chip';
@@ -224,17 +220,45 @@ document.addEventListener('DOMContentLoaded', async () => {
     input.focus();
   }
 
-  function handleWin() {
+  // 4. 挑战成功
+  async function handleWin() {
     isWin = true;
-    answerName.textContent = gameData.song_name;
+    winMsg.className = 'win-msg success';
+    winMsg.textContent = '挑战成功！答案正是《' + gameData.song_name + '》';
     winMsg.style.display = 'block';
     document.getElementById('inputArea').style.display = 'none';
     
     // 全部显示
     const spans = lyricsBox.querySelectorAll('.char-masked');
     spans.forEach(span => {
-      revealSpan(span, span.dataset.char);
+      span.textContent = span.dataset.char;
+      span.className = 'char-block char-revealed';
     });
+
+    // 领取经验奖励
+    const user = window.getLocalUser ? window.getLocalUser() : null;
+    if (user && user.email) {
+      try {
+        const res = await fetch('/api/game/complete-lyrics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (data.rewarded) {
+            winMsg.innerHTML = `挑战成功！《${gameData.song_name}》<br><span style="font-size:15px;color:#ea580c;">经验 +80！</span>`;
+            user.exp = data.exp;
+            localStorage.setItem('user', JSON.stringify(user));
+            if (window.renderGlobalUI) window.renderGlobalUI();
+          } else {
+            winMsg.innerHTML = `挑战成功！《${gameData.song_name}》<br><span style="font-size:14px;color:#6f7890;"></span>`;
+          }
+        }
+      } catch (e) { console.error('发放奖励失败'); }
+    } else {
+      winMsg.innerHTML = `挑战成功！《${gameData.song_name}》<br><span style="font-size:14px;color:#6f7890;"></span>`;
+    }
   }
 
   // 绑定事件
