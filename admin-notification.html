@@ -3,178 +3,274 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>管理员控制台</title>
+<title>猜歌词 - 这人针不错</title>
+<script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
 <style>
-  body { font-family: Inter,"PingFang SC","Microsoft YaHei",sans-serif;
-         background: radial-gradient(circle at 20% 10%,rgba(79,124,255,.14),transparent 30%),
-                     radial-gradient(circle at 80% 90%,rgba(138,92,246,.14),transparent 30%),
-                     #f7f9ff;
-         min-height: 100vh; display: flex; align-items: center; justify-content: center;
-         padding: 24px; margin: 0; color: #172033; }
-  .box { background: #fff; border-radius: 22px; padding: 30px 28px;
-         width: min(660px,100%); box-shadow: 0 24px 60px rgba(55,65,110,.14); }
-  h1 { font-size: 20px; margin: 0 0 6px; }
-  p.sub { color: #6f7890; font-size: 13px; margin: 0 0 22px; }
+  :root{
+    --blue:#4f7cff; --purple:#8a5cf6; --ink:#172033; --muted:#6f7890;
+    --line:#e8ebf5; --bg:#f7f9ff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--ink);
+    background: radial-gradient(circle at 10% 5%,rgba(79,124,255,.14),transparent 28%),
+                radial-gradient(circle at 90% 10%,rgba(138,92,246,.13),transparent 30%),
+                var(--bg);
+    line-height:1.7;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:100px 20px 40px;
+  }
+  .game-container {
+    width:min(720px, 100%);
+    background:rgba(255,255,255,.78);
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.95);
+    box-shadow:0 18px 60px rgba(67,72,120,.10);
+    border-radius:20px;
+    padding:32px;
+  }
   
-  /* Tabs */
-  .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
-  .tab { flex: 1; padding: 10px; text-align: center; background: #f7f9ff; border: 1px solid #e8ebf5; border-radius: 12px; cursor: pointer; font-weight: 600; color: #6f7890; transition: .2s; }
-  .tab.active { background: linear-gradient(110deg,#4f7cff,#8a5cf6); color: #fff; border-color: transparent; }
-  .panel { display: none; }
-  .panel.active { display: block; }
+  /* 顶部状态 */
+  .header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; }
+  .title { font-size:22px; font-weight:800; letter-spacing:-.5px; }
+  
+  /* 歌词面板 */
+  .lyrics-box {
+    background:#fff; border:1px solid var(--line); border-radius:16px;
+    padding:24px; font-size:18px; line-height:2.2; 
+    min-height:200px; max-height:45vh; overflow-y:auto;
+    user-select:none;
+    word-break: break-word;
+  }
+  .lyrics-box::-webkit-scrollbar { width:6px; }
+  .lyrics-box::-webkit-scrollbar-thumb { background:#d5dbea; border-radius:4px; }
+  
+  /* 字符块 */
+  .char-block {
+    display:inline-block; text-align:center;
+    vertical-align: middle;
+  }
+  
+  /* 未猜出的黑块 (黑块之间设置间距) */
+  .char-masked {
+    color: #000; font-weight:bold;
+    margin: 0 8px; /* 间隔 */
+  }
+  
+  /* 猜出的字（由黑块替换而来） */
+  .char-revealed {
+    color:var(--blue); font-weight:bold;
+    margin: 0 2px;
+    animation: pop 0.3s ease-out;
+  }
+  @keyframes pop { 0%{transform:scale(.8);opacity:.5} 100%{transform:scale(1);opacity:1} }
 
-  label { display: block; font-size: 13px; font-weight: 600; color: #6f7890; margin-bottom: 6px; }
-  input[type="password"], input[type="text"], textarea { width: 100%; box-sizing: border-box; padding: 12px 14px;
-         border: 1px solid #e8ebf5; border-radius: 12px;
-         font-size: 14px; outline: none; font-family: inherit; }
-  textarea { resize: vertical; min-height: 120px; line-height: 1.7; }
-  input:focus, textarea:focus { border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79,124,255,.12); }
-  .row { margin-bottom: 16px; }
-
-  /* 编辑区(通知用) */
-  .toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px; background: #f7f9ff; border: 1px solid #e8ebf5; border-radius: 12px 12px 0 0; border-bottom: none; align-items: center; }
-  .toolbar button { width: 34px; height: 34px; border: 1px solid #e8ebf5; background: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; color: #172033; transition: all .15s; }
-  .toolbar button:hover { background: #f0f3ff; border-color: #4f7cff; }
-  .toolbar select { height: 34px; padding: 0 8px; border: 1px solid #e8ebf5; border-radius: 8px; background: #fff; font-size: 13px; outline: none; font-family: inherit; }
-  .toolbar .color-wrap { display: flex; align-items: center; gap: 5px; height: 34px; padding: 0 10px; border: 1px solid #e8ebf5; border-radius: 8px; background: #fff; font-size: 12px; color: #6f7890; cursor: pointer; }
-  .toolbar .color-wrap input[type="color"] { width: 22px; height: 22px; border: none; padding: 0; background: none; cursor: pointer; }
-  #editor { min-height: 180px; padding: 14px 16px; border: 1px solid #e8ebf5; border-radius: 0 0 12px 12px; font-size: 14px; line-height: 1.7; outline: none; background: #fff; color: #172033; max-height: 420px; overflow-y: auto; }
-  #editor:empty::before { content: attr(data-placeholder); color: #b6bcc9; pointer-events: none; }
-
-  button.publish { width: 100%; padding: 13px; border: none; border-radius: 13px; background: linear-gradient(110deg,#4f7cff,#8a5cf6); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 18px; transition: transform .2s, box-shadow .2s; }
-  button.publish:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(91,100,230,.35); }
-  button.publish:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-  .msg { margin-top: 12px; font-size: 13px; text-align: center; }
-  .msg.ok { color: #22c55e; }
-  .msg.err { color: #ef4444; }
+  /* 输入区 */
+  .input-area { margin-top:24px; }
+  .input-row { display:flex; gap:10px; }
+  .input-row input {
+    flex:1; padding:14px 18px; border:2px solid var(--line); border-radius:14px;
+    font-size:16px; outline:none; font-family:inherit; transition:.2s;
+  }
+  .input-row input:focus { border-color:var(--blue); box-shadow:0 0 0 4px rgba(79,124,255,.1); }
+  .input-row button {
+    padding:0 24px; border:none; border-radius:14px; background:linear-gradient(110deg,var(--blue),var(--purple));
+    color:#fff; font-size:16px; font-weight:bold; cursor:pointer; transition:.2s;
+  }
+  .input-row button:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(91,100,230,.3); }
+  
+  /* 错误提示区 */
+  .error-area { margin-top:16px; display:flex; flex-wrap:wrap; gap:8px; min-height:36px; }
+  .error-chip {
+    background:#fff0f3; color:#ef4444; border:1px solid #f0d0d5;
+    padding:4px 12px; border-radius:8px; font-size:14px; font-weight:600;
+    animation: shake 0.4s ease-out;
+  }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+  
+  /* 成功提示 */
+  .win-msg { display:none; text-align:center; font-weight:bold; font-size:18px; margin-top:20px; padding:16px; border-radius:12px; border:1px solid; }
+  .win-msg.success { color:#22c55e; background:#f0fdf4; border-color:#bbf7d0; }
+  .win-msg.error { color:#ef4444; background:#fef2f2; border-color:#fecaca; }
 </style>
 </head>
 <body>
-  <div class="box">
-    <div class="tabs">
-      <div class="tab active" data-target="panel-noti">发布通知</div>
-      <div class="tab" data-target="panel-lyrics">猜歌词出题</div>
-    </div>
 
-    <!-- 面板 1：发布通知 (原有功能) -->
-    <div id="panel-noti" class="panel active">
-      <h1>发布新通知</h1>
-      <p class="sub">用户下次打开网页时会弹窗显示。</p>
-
-      <div class="row">
-        <label>管理员密码</label>
-        <input type="password" id="pwd-noti" placeholder="请输入密码">
-      </div>
-
-      <div class="row">
-        <label>通知内容</label>
-        <div class="toolbar" id="toolbar">
-          <button type="button" data-cmd="bold" title="加粗"><b>B</b></button>
-          <button type="button" data-cmd="italic" title="斜体"><i>I</i></button>
-          <button type="button" data-cmd="underline" title="下划线"><u>U</u></button>
-          <span class="divider" style="width:1px;height:20px;background:#e8ebf5;margin:0 2px;"></span>
-          <label class="color-wrap">字色<input type="color" id="foreColor" value="#172033"></label>
-          <label class="color-wrap">底色<input type="color" id="backColor" value="#ffffff"></label>
-        </div>
-        <div id="editor" contenteditable="true" data-placeholder="支持多行文本..."></div>
-      </div>
-
-      <button class="publish" id="btn-noti">发布通知</button>
-      <div class="msg" id="msg-noti"></div>
-    </div>
-
-    <!-- 面板 2：猜歌词出题 (新增) -->
-    <div id="panel-lyrics" class="panel">
-      <h1>发布猜歌词题目</h1>
-      <p class="sub">输入原歌词与歌名，系统会自动将文字转换为黑块。提交后玩家即可在游戏中挑战。</p>
-
-      <div class="row">
-        <label>管理员密码</label>
-        <input type="password" id="pwd-lyrics" placeholder="请输入密码">
-      </div>
-
-      <div class="row">
-        <label>正确答案（歌名）</label>
-        <input type="text" id="song-name" placeholder="例如：晴天">
-      </div>
-
-      <div class="row">
-        <label>完整歌词（包含标点，系统只把汉字/字母打码）</label>
-        <textarea id="original-lyrics" placeholder="故事的小黄花&#10;从出生那年就飘着&#10;童年的荡秋千&#10;随记忆一直晃到现在"></textarea>
-      </div>
-
-      <button class="publish" id="btn-lyrics">生成并发布题目</button>
-      <div class="msg" id="msg-lyrics"></div>
-    </div>
+<div class="game-container">
+  <div class="header">
+    <div class="title">今日猜歌词</div>
   </div>
+  
+  <div class="lyrics-box" id="lyricsBox">加载中...</div>
+  
+  <div class="win-msg" id="winMsg"></div>
 
+  <div class="input-area" id="inputArea">
+    <div class="input-row">
+      <input type="text" id="guessInput" placeholder="输入歌词关键字或完整歌名..." autocomplete="off" maxlength="20">
+      <button id="submitBtn">确认</button>
+    </div>
+    <div class="error-area" id="errorArea"></div>
+  </div>
+</div>
+
+<script src="common.js?v=4"></script>
 <script>
-// ==== Tab 切换 ====
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById(tab.dataset.target).classList.add('active');
-  });
-});
+document.addEventListener('DOMContentLoaded', async () => {
+  const lyricsBox = document.getElementById('lyricsBox');
+  const input = document.getElementById('guessInput');
+  const submitBtn = document.getElementById('submitBtn');
+  const errorArea = document.getElementById('errorArea');
+  const winMsg = document.getElementById('winMsg');
 
-// ==== 通知功能逻辑 (精简保留) ====
-const editor = document.getElementById('editor');
-document.querySelectorAll('.toolbar button[data-cmd]').forEach(btn => {
-  btn.addEventListener('mousedown', e => { e.preventDefault(); document.execCommand(btn.dataset.cmd); });
-});
-document.getElementById('foreColor').addEventListener('input', e => { document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, e.target.value); });
-document.getElementById('backColor').addEventListener('input', e => { document.execCommand('styleWithCSS', false, true); document.execCommand('hiliteColor', false, e.target.value); });
+  let gameData = null;
+  let guessedChars = new Set();
+  let isWin = false;
 
-document.getElementById('btn-noti').addEventListener('click', async () => {
-  const password = document.getElementById('pwd-noti').value;
-  const content = editor.innerHTML.trim();
-  const msg = document.getElementById('msg-noti');
-  if (!password || !editor.innerText.trim()) return msg.textContent = '请填写密码和内容', msg.className = 'msg err';
-  
-  const btn = document.getElementById('btn-noti');
-  btn.disabled = true; btn.textContent = '发布中...'; msg.textContent = '';
+  // 1. 获取题目
   try {
-    const res = await fetch('/api/notification/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password, content }) });
-    const data = await res.json();
-    if (data.success) { msg.className = 'msg ok'; msg.textContent = '发布成功'; editor.innerHTML = ''; }
-    else { msg.className = 'msg err'; msg.textContent = data.error || '失败'; }
-  } catch (e) { msg.className = 'msg err'; msg.textContent = '网络错误'; }
-  finally { btn.disabled = false; btn.textContent = '发布通知'; }
-});
-
-// ==== 猜歌词出题逻辑 (新增) ====
-document.getElementById('btn-lyrics').addEventListener('click', async () => {
-  const password = document.getElementById('pwd-lyrics').value;
-  const songName = document.getElementById('song-name').value.trim();
-  const original = document.getElementById('original-lyrics').value.trim();
-  const msg = document.getElementById('msg-lyrics');
-  
-  if (!password || !songName || !original) return msg.textContent = '请填写所有字段', msg.className = 'msg err';
-
-  // 核心算法：把汉字/字母/数字替换为 ■，保留标点和换行
-  const masked = original.replace(/[\u4e00-\u9fa5a-zA-Z0-9]/g, '■');
-
-  const btn = document.getElementById('btn-lyrics');
-  btn.disabled = true; btn.textContent = '生成中...'; msg.textContent = '';
-  
-  try {
-    const res = await fetch('/api/game/save-lyrics', { 
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json' }, 
-      body: JSON.stringify({ password, songName, originalLyrics: original, maskedLyrics: masked }) 
-    });
-    const data = await res.json();
-    if (data.success) { 
-      msg.className = 'msg ok'; 
-      msg.textContent = '出题成功！前往 guess-lyrics.html 测试'; 
-    } else { 
-      msg.className = 'msg err'; 
-      msg.textContent = data.error || '失败'; 
+    const res = await fetch('/api/game/get-lyrics');
+    const json = await res.json();
+    if (!json.success) {
+      lyricsBox.textContent = '今日暂无题目，等待管理员更新~';
+      document.getElementById('inputArea').style.display = 'none';
+      return;
     }
-  } catch (e) { msg.className = 'msg err'; msg.textContent = '网络错误'; }
-  finally { btn.disabled = false; btn.textContent = '生成并发布题目'; }
+    gameData = json.data;
+    renderLyrics();
+  } catch (e) {
+    lyricsBox.textContent = '加载失败，请刷新重试';
+  }
+
+  // 2. 核心渲染逻辑：把黑块 ◼️ 替换为猜中的字
+  function renderLyrics() {
+    lyricsBox.innerHTML = '';
+    const masked = gameData.masked_lyrics;
+    const original = gameData.original_lyrics;
+    
+    for (let i = 0; i < masked.length; i++) {
+      const mChar = masked[i];
+      const oChar = original[i];
+      const span = document.createElement('span');
+      
+      if (mChar === '◼️') { // 识别未猜出的方块
+        if (guessedChars.has(oChar)) {
+          // 如果已经猜中，把方块替换为对应的字
+          span.textContent = oChar;
+          span.className = 'char-block char-revealed';
+        } else {
+          // 没猜中，保持黑块
+          span.textContent = '◼️';
+          span.className = 'char-block char-masked';
+          span.dataset.char = oChar; // 记录原本的字，方便全对后一键展示
+        }
+      } else if (mChar === '\n') {
+        lyricsBox.appendChild(document.createElement('br'));
+        continue;
+      } else {
+        // 标点符号和空格
+        span.className = 'char-block';
+        span.textContent = mChar === ' ' ? '\u00A0' : mChar;
+      }
+      lyricsBox.appendChild(span);
+    }
+  }
+
+  // 3. 提交逻辑
+  function submit() {
+    if (isWin || !gameData) return;
+    const val = input.value.trim();
+    if (!val) return;
+    
+    // 判断是否等于歌名 (忽略大小写)
+    if (val.toLowerCase() === gameData.song_name.toLowerCase()) {
+      handleWin();
+      return;
+    }
+
+    let hit = false;
+    const isSingleChar = val.length === 1;
+    
+    // 只要输入的字在歌词里（或包含在歌词里），就将对应字加入已知集合
+    if (isSingleChar) {
+      guessedChars.add(val);
+      hit = gameData.original_lyrics.includes(val);
+      if (hit) renderLyrics();
+    } else {
+      const chars = val.split('');
+      let anyHit = false;
+      chars.forEach(c => {
+        if (gameData.original_lyrics.includes(c)) {
+          guessedChars.add(c);
+          anyHit = true;
+        }
+      });
+      if (anyHit) {
+        hit = true;
+        renderLyrics();
+      }
+    }
+
+    // 没命中，放入红色错误区
+    if (!hit) {
+      const chip = document.createElement('div');
+      chip.className = 'error-chip';
+      chip.textContent = val;
+      errorArea.appendChild(chip);
+    }
+    
+    input.value = '';
+    input.focus();
+  }
+
+  // 4. 挑战成功
+  async function handleWin() {
+    isWin = true;
+    winMsg.className = 'win-msg success';
+    winMsg.textContent = '挑战成功！《' + gameData.song_name + '》';
+    winMsg.style.display = 'block';
+    document.getElementById('inputArea').style.display = 'none';
+    
+    // 全部显示：把剩下的黑块全部替换为原字
+    const spans = lyricsBox.querySelectorAll('.char-masked');
+    spans.forEach(span => {
+      span.textContent = span.dataset.char;
+      span.className = 'char-block char-revealed';
+    });
+
+    // 请求后端发经验
+    const user = window.getLocalUser();
+    if (user && user.email) {
+      try {
+        const res = await fetch('/api/game/complete-lyrics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: user.email })
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (data.rewarded) {
+            winMsg.innerHTML = `挑战成功！《${gameData.song_name}》<br><span style="font-size:15px;color:#ea580c;">经验 +80！</span>`;
+            user.exp = data.exp;
+            localStorage.setItem('user', JSON.stringify(user));
+            if (window.renderGlobalUI) window.renderGlobalUI();
+          } else {
+            winMsg.innerHTML = `挑战成功！答案正是《${gameData.song_name}》<br><span style="font-size:14px;color:#6f7890;">（今日奖励已领过）</span>`;
+          }
+        }
+      } catch (e) { console.error('发放奖励失败'); }
+    } else {
+      winMsg.innerHTML = `挑战成功！答案正是《${gameData.song_name}》<br><span style="font-size:14px;color:#6f7890;">（登录后可获得经验奖励）</span>`;
+    }
+  }
+
+  // 绑定事件
+  submitBtn.addEventListener('click', submit);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.isComposing) {
+      submit();
+    }
+  });
 });
 </script>
 </body>
