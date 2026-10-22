@@ -26,7 +26,7 @@
     .lang-menu button.active{background:#eef2ff;color:#3f63d9;font-weight:600}
 
     /* 头像和悬浮窗 */
-.user-center{position:relative;display:flex;align-items:center;margin-left:4px;padding-bottom:10px;margin-bottom:-10px;}
+    .user-center{position:relative;display:flex;align-items:center;margin-left:4px;padding-bottom:10px;margin-bottom:-10px;}
     .avatar-btn{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#8a5cf6);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;transition:transform .2s,box-shadow .2s;border:2px solid rgba(255,255,255,.8);overflow:hidden}
     .avatar-btn:hover{transform:scale(1.08);box-shadow:0 6px 16px rgba(79,124,255,.35)}
     .user-popover{position:absolute;top:100%;right:0;width:220px;background:#fff;border:1px solid #e8ebf5;border-radius:16px;box-shadow:0 10px 30px rgba(55,65,110,.15);display:none;z-index:50}
@@ -212,7 +212,6 @@
   document.body.insertAdjacentHTML('beforeend', modalHTML);
 
   // ================= 3. 核心逻辑控制 =================
-  // 状态更新函数，挂载到 window 供各页面调用
   window.getLocalUser = function() {
     try {
       const raw = localStorage.getItem('user');
@@ -277,7 +276,7 @@
           }
         }
 
-        // 经验条渲染逻辑 (提取成一个内部函数)
+        // 经验条渲染逻辑
         const expNum = parseInt(user.exp) || 0;
         let level = 1, nextExp = 200, baseColor = '#4ade80', darkColor = '#22c55e', textColor = '#ffffff';
         if (expNum >= 13200) { level = 7; nextExp = Infinity; baseColor = '#a855f7'; darkColor = '#7e22ce'; }
@@ -306,7 +305,6 @@
   };
 
   // ================= 4. 绑定公共事件 =================
-  // 登录入口
   const authModal = document.getElementById('authModal');
   window.openAuthModal = function() {
     document.getElementById('authFormContainer').style.display = 'block';
@@ -506,7 +504,7 @@
     finally { btn.disabled = false; btn.textContent = '确定'; }
   });
 
-  // 签到 / 退出
+  // 签到 / 退出 (绝对安全版)
   document.getElementById('popoverSigninBtn').addEventListener('click', (e) => { 
     e.stopPropagation(); 
     window.location.href = 'index.html#signin'; 
@@ -514,19 +512,12 @@
   
   document.getElementById('popoverLogoutBtn').addEventListener('click', (e) => {
     e.stopPropagation(); 
-    
-    // 最稳妥的退出逻辑：只清理本地缓存，绝不碰 Cookie
     localStorage.removeItem('user');
-    sessionStorage.clear();
-
     alert('已退出登录');
-    
-    // 强制跳转到首页，防止浏览器保留当前页面的登录状态缓存
-    window.location.replace('index.html');
+    window.location.href = 'index.html';
   });
 
   // ================= 5. 语言切换和页面跳转过渡 =================
-  // 语言切换...
   var langBtn = document.getElementById('langBtn'), langMenu = document.getElementById('langMenu'), langSwitch = document.querySelector('.lang-switch');
   if (langBtn && langMenu && langSwitch && typeof OpenCC !== 'undefined') {
     var converters = { cn: null, hk: OpenCC.Converter({ from: 'cn', to: 'hk' }), tw: OpenCC.Converter({ from: 'cn', to: 'twp' }) };
