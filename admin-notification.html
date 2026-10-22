@@ -30,6 +30,7 @@
   input:focus, textarea:focus { border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79,124,255,.12); }
   .row { margin-bottom: 16px; }
 
+  /* 工具栏 */
   .toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px; background: #f7f9ff; border: 1px solid #e8ebf5; border-radius: 12px 12px 0 0; border-bottom: none; align-items: center; }
   .toolbar button { width: 34px; height: 34px; border: 1px solid #e8ebf5; background: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; color: #172033; transition: all .15s; }
   .toolbar button:hover { background: #f0f3ff; border-color: #4f7cff; }
@@ -53,6 +54,7 @@
       <div class="tab" data-target="panel-lyrics">猜歌词出题</div>
     </div>
 
+    <!-- 面板 1：发布通知 -->
     <div id="panel-noti" class="panel active">
       <h1>发布新通知</h1>
       <p class="sub">用户下次打开网页时会弹窗显示。</p>
@@ -79,9 +81,10 @@
       <div class="msg" id="msg-noti"></div>
     </div>
 
+    <!-- 面板 2：猜歌词出题 -->
     <div id="panel-lyrics" class="panel">
       <h1>发布猜歌词题目</h1>
-      <p class="sub">选择日期后，系统会自动拉取该日期的题目（若有）。保存时会直接覆盖旧题。</p>
+      <p class="sub">选择日期后，系统会自动拉取该日期的题目。保存时会直接覆盖旧题。</p>
 
       <div class="row">
         <label>管理员密码</label>
@@ -109,108 +112,134 @@
   </div>
 
 <script>
-// Tab 切换
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById(tab.dataset.target).classList.add('active');
-  });
-});
-
-// 通知编辑器
-const editor = document.getElementById('editor');
-document.querySelectorAll('.toolbar button[data-cmd]').forEach(btn => {
-  btn.addEventListener('mousedown', e => { e.preventDefault(); document.execCommand(btn.dataset.cmd); });
-});
-document.getElementById('foreColor').addEventListener('input', e => { document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, e.target.value); });
-document.getElementById('backColor').addEventListener('input', e => { document.execCommand('styleWithCSS', false, true); document.execCommand('hiliteColor', false, e.target.value); });
-
-document.getElementById('btn-noti').addEventListener('click', async () => {
-  const password = document.getElementById('pwd-noti').value;
-  const content = editor.innerHTML.trim();
-  const msg = document.getElementById('msg-noti');
-  if (!password || !editor.innerText.trim()) return msg.textContent = '请填写密码和内容', msg.className = 'msg err';
-  
-  const btn = document.getElementById('btn-noti');
-  btn.disabled = true; btn.textContent = '发布中...'; msg.textContent = '';
-  try {
-    const res = await fetch('/api/notification/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password, content }) });
-    const data = await res.json();
-    if (data.success) { msg.className = 'msg ok'; msg.textContent = '发布成功'; editor.innerHTML = ''; }
-    else { msg.className = 'msg err'; msg.textContent = data.error || '失败'; }
-  } catch (e) { msg.className = 'msg err'; msg.textContent = '网络错误'; }
-  finally { btn.disabled = false; btn.textContent = '发布通知'; }
-});
-
-// --- 猜歌词部分 ---
-const dateInput = document.getElementById('publish-date');
-const songNameInput = document.getElementById('song-name');
-const originalInput = document.getElementById('original-lyrics');
-const msgLyrics = document.getElementById('msg-lyrics');
-
-// 默认设为今天
-const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' });
-dateInput.value = today;
-
-// 日期改变时，去后端拉取该日期的题目（实现查看和编辑）
-dateInput.addEventListener('change', async () => {
-  const date = dateInput.value;
-  if (!date) return;
-  msgLyrics.textContent = '读取中...';
-  msgLyrics.className = 'msg';
-  
-  try {
-    const res = await fetch(`/api/game/get-lyrics?date=${date}`);
-    const json = await res.json();
-    if (json.success && json.data) {
-      songNameInput.value = json.data.song_name;
-      originalInput.value = json.data.original_lyrics;
-      msgLyrics.textContent = '✅ 已加载该日期的题目，修改后可直接覆盖保存';
-      msgLyrics.className = 'msg ok';
-    } else {
-      songNameInput.value = '';
-      originalInput.value = '';
-      msgLyrics.textContent = '该日期暂无题目，可创作新题';
-      msgLyrics.className = 'msg';
-    }
-  } catch (e) {
-    msgLyrics.textContent = '读取数据失败';
-    msgLyrics.className = 'msg err';
-  }
-});
-
-document.getElementById('btn-lyrics').addEventListener('click', async () => {
-  const password = document.getElementById('pwd-lyrics').value;
-  const publishDate = dateInput.value;
-  const songName = songNameInput.value.trim();
-  const original = originalInput.value.trim();
-  
-  if (!password || !songName || !original || !publishDate) return msgLyrics.textContent = '请填写所有字段（含日期）', msgLyrics.className = 'msg err';
-
-  // 将汉字和字母替换为单字符 '■'
-  const masked = original.replace(/[\u4e00-\u9fa5a-zA-Z0-9]/g, '■');
-
-  const btn = document.getElementById('btn-lyrics');
-  btn.disabled = true; btn.textContent = '保存中...'; msgLyrics.textContent = '';
-  
-  try {
-    const res = await fetch('/api/game/save-lyrics', { 
-      method: 'POST', 
-      headers: { 'Content-Type': 'application/json' }, 
-      body: JSON.stringify({ password, songName, originalLyrics: original, maskedLyrics: masked, publishDate }) 
+document.addEventListener('DOMContentLoaded', () => {
+  // === 1. Tab 切换 ===
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(tab.dataset.target).classList.add('active');
     });
-    const data = await res.json();
-    if (data.success) { 
-      msgLyrics.className = 'msg ok'; 
-      msgLyrics.textContent = `保存成功！题目将在 ${publishDate} 00:00 自动更新生效`; 
-    } else { 
-      msgLyrics.className = 'msg err'; 
-      msgLyrics.textContent = data.error || '失败'; 
+  });
+
+  // === 2. 发布通知逻辑 ===
+  const editor = document.getElementById('editor');
+  document.querySelectorAll('.toolbar button[data-cmd]').forEach(btn => {
+    btn.addEventListener('mousedown', e => { e.preventDefault(); document.execCommand(btn.dataset.cmd); });
+  });
+  document.getElementById('foreColor').addEventListener('input', e => { document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, e.target.value); });
+  document.getElementById('backColor').addEventListener('input', e => { document.execCommand('styleWithCSS', false, true); document.execCommand('hiliteColor', false, e.target.value); });
+
+  document.getElementById('btn-noti').addEventListener('click', async () => {
+    const password = document.getElementById('pwd-noti').value;
+    const content = editor.innerHTML.trim();
+    const msg = document.getElementById('msg-noti');
+    if (!password || !editor.innerText.trim()) {
+      msg.textContent = '请填写密码和内容'; msg.className = 'msg err'; return;
     }
-  } catch (e) { msgLyrics.className = 'msg err'; msgLyrics.textContent = '网络错误'; }
-  finally { btn.disabled = false; btn.textContent = '保存并发布题目'; }
+    
+    const btn = document.getElementById('btn-noti');
+    btn.disabled = true; btn.textContent = '发布中...'; msg.textContent = '';
+    try {
+      const res = await fetch('/api/notification/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password, content }) });
+      const data = await res.json();
+      if (data.success) { msg.className = 'msg ok'; msg.textContent = '发布成功'; editor.innerHTML = ''; }
+      else { msg.className = 'msg err'; msg.textContent = data.error || '失败'; }
+    } catch (e) { 
+      msg.className = 'msg err'; 
+      msg.textContent = '请求失败：' + e.message; 
+      console.error(e);
+    }
+    finally { btn.disabled = false; btn.textContent = '发布通知'; }
+  });
+
+  // === 3. 猜歌词出题逻辑 ===
+  const dateInput = document.getElementById('publish-date');
+  const songNameInput = document.getElementById('song-name');
+  const originalInput = document.getElementById('original-lyrics');
+  const msgLyrics = document.getElementById('msg-lyrics');
+
+  // 默认设为今天
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' });
+  dateInput.value = today;
+
+  // 日期改变时拉取数据
+  dateInput.addEventListener('change', async () => {
+    const date = dateInput.value;
+    if (!date) return;
+    msgLyrics.textContent = '读取中...';
+    msgLyrics.className = 'msg';
+    
+    try {
+      const res = await fetch(`/api/game/get-lyrics?date=${date}`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        songNameInput.value = json.data.song_name;
+        originalInput.value = json.data.original_lyrics;
+        msgLyrics.textContent = '✅ 已加载该日期的题目，修改后可直接覆盖保存';
+        msgLyrics.className = 'msg ok';
+      } else {
+        songNameInput.value = '';
+        originalInput.value = '';
+        msgLyrics.textContent = '该日期暂无题目，可创作新题';
+        msgLyrics.className = 'msg';
+      }
+    } catch (e) {
+      msgLyrics.textContent = '读取失败：' + e.message;
+      msgLyrics.className = 'msg err';
+    }
+  });
+
+  // 保存题目
+  document.getElementById('btn-lyrics').addEventListener('click', async () => {
+    const password = document.getElementById('pwd-lyrics').value;
+    const publishDate = dateInput.value;
+    const songName = songNameInput.value.trim();
+    const original = originalInput.value.trim();
+    
+    if (!password || !songName || !original || !publishDate) {
+      msgLyrics.textContent = '请填写所有字段（含日期）'; msgLyrics.className = 'msg err'; return;
+    }
+
+    const masked = original.replace(/[\u4e00-\u9fa5a-zA-Z0-9]/g, '■');
+
+    const btn = document.getElementById('btn-lyrics');
+    btn.disabled = true; btn.textContent = '保存中...'; msgLyrics.textContent = '';
+    
+    try {
+      const res = await fetch('/api/game/save-lyrics', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ password, songName, originalLyrics: original, maskedLyrics: masked, publishDate }) 
+      });
+      
+      // 防止服务器返回非 JSON 导致解析失败
+      const textData = await res.text();
+      let data;
+      try {
+        data = JSON.parse(textData);
+      } catch (err) {
+        throw new Error('服务器返回了非 JSON 内容，可能是后端报错或路径错误。详情请按 F12 查看');
+      }
+
+      if (data.success) { 
+        msgLyrics.className = 'msg ok'; 
+        msgLyrics.textContent = `保存成功！题目将在 ${publishDate} 00:00 自动更新生效`; 
+      } else { 
+        msgLyrics.className = 'msg err'; 
+        msgLyrics.textContent = data.error || '保存失败'; 
+      }
+    } catch (e) { 
+      msgLyrics.className = 'msg err'; 
+      msgLyrics.textContent = '操作异常：' + e.message; 
+      console.error(e);
+    }
+    finally { 
+      btn.disabled = false; 
+      btn.textContent = '保存并发布题目'; 
+    }
+  });
 });
 </script>
 </body>
