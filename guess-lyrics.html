@@ -11,6 +11,10 @@
     --line:#e8ebf5; --bg:#f7f9ff;
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  
+  /* 强制去除下划线 */
+  a { text-decoration: none !important; color: inherit; }
+  
   body{
     font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;
     color:var(--ink);
@@ -18,7 +22,7 @@
                 radial-gradient(circle at 90% 10%,rgba(138,92,246,.13),transparent 30%),
                 var(--bg);
     line-height:1.7;min-height:100vh;display:flex;align-items:center;justify-content:center;
-    padding:100px 20px 40px;
+    padding:100px 20px 40px; /* 顶部留出导航栏空间 */
   }
   .game-container {
     width:min(720px, 100%);
@@ -30,11 +34,9 @@
     padding:32px;
   }
   
-  /* 顶部状态 */
   .header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; }
   .title { font-size:22px; font-weight:800; letter-spacing:-.5px; }
   
-  /* 歌词面板 */
   .lyrics-box {
     background:#fff; border:1px solid var(--line); border-radius:16px;
     padding:24px; font-size:18px; line-height:2.2; 
@@ -51,11 +53,12 @@
     vertical-align: middle;
   }
   
-  /* 未猜出的黑块 */
+  /* 未猜出的黑块：放大字号 */
   .char-masked {
     color: #000; 
-    margin: 0 8px; /* 拉开黑块间距 */
-    font-size: 16px; /* 避免emoji过大 */
+    font-size: 24px; /* 放大黑块 */
+    margin: 0 10px;  /* 增加左右间距 */
+    vertical-align: middle;
   }
   
   /* 猜出的字 */
@@ -114,6 +117,7 @@
   </div>
 </div>
 
+<!-- 引入公共导航栏，样式和主页完全一致 -->
 <script src="common.js?v=4"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
@@ -155,11 +159,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       if (mChar === '■') { 
         if (guessedChars.has(oChar)) {
-          // 把黑块替换为猜中的字
           span.textContent = oChar;
           span.className = 'char-block char-revealed';
         } else {
-          // 显示黑块 ◼️
           span.textContent = '◼️';
           span.className = 'char-block char-masked';
           span.dataset.char = oChar;
@@ -228,14 +230,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     winMsg.style.display = 'block';
     document.getElementById('inputArea').style.display = 'none';
     
-    // 全部显示
     const spans = lyricsBox.querySelectorAll('.char-masked');
     spans.forEach(span => {
       span.textContent = span.dataset.char;
       span.className = 'char-block char-revealed';
     });
 
-    // 领取经验奖励
     const user = window.getLocalUser ? window.getLocalUser() : null;
     if (user && user.email) {
       try {
@@ -247,21 +247,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         const data = await res.json();
         if (data.success) {
           if (data.rewarded) {
-            winMsg.innerHTML = `挑战成功！《${gameData.song_name}》<br><span style="font-size:15px;color:#ea580c;">经验 +80！</span>`;
+            winMsg.innerHTML = `挑战成功！答案正是《${gameData.song_name}》<br><span style="font-size:15px;color:#ea580c;">经验 +80！</span>`;
             user.exp = data.exp;
             localStorage.setItem('user', JSON.stringify(user));
             if (window.renderGlobalUI) window.renderGlobalUI();
           } else {
-            winMsg.innerHTML = `挑战成功！《${gameData.song_name}》<br><span style="font-size:14px;color:#6f7890;"></span>`;
+            winMsg.innerHTML = `挑战成功！答案正是《${gameData.song_name}》<br><span style="font-size:14px;color:#6f7890;">（今日奖励已领过）</span>`;
           }
         }
       } catch (e) { console.error('发放奖励失败'); }
     } else {
-      winMsg.innerHTML = `挑战成功！《${gameData.song_name}》<br><span style="font-size:14px;color:#6f7890;"></span>`;
+      winMsg.innerHTML = `挑战成功！答案正是《${gameData.song_name}》<br><span style="font-size:14px;color:#6f7890;">（登录后可获得经验奖励）</span>`;
     }
   }
 
-  // 绑定事件
   submitBtn.addEventListener('click', submit);
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.isComposing) {
