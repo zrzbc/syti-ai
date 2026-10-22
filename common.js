@@ -515,18 +515,13 @@
   document.getElementById('popoverLogoutBtn').addEventListener('click', (e) => {
     e.stopPropagation(); 
     
-    // 1. 清理 localStorage 和 sessionStorage
+    // 最稳妥的退出逻辑：只清理本地缓存，绝不碰 Cookie
     localStorage.removeItem('user');
     sessionStorage.clear();
-    
-    // 2. 清理可能残留的 Cookie (保险起见)
-    document.cookie.split(";").forEach(function(c) { 
-      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-    });
 
     alert('已退出登录');
     
-    // 3. 强制跳转到首页，防止浏览器保留当前页面的登录状态缓存
+    // 强制跳转到首页，防止浏览器保留当前页面的登录状态缓存
     window.location.replace('index.html');
   });
 
