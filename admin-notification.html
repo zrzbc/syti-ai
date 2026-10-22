@@ -16,7 +16,6 @@
   h1 { font-size: 20px; margin: 0 0 6px; }
   p.sub { color: #6f7890; font-size: 13px; margin: 0 0 22px; }
   
-  /* Tab 样式 */
   .tabs { display: flex; gap: 8px; margin-bottom: 24px; }
   .tab { flex: 1; padding: 10px; text-align: center; background: #f7f9ff; border: 1px solid #e8ebf5; border-radius: 12px; cursor: pointer; font-weight: 600; color: #6f7890; transition: .2s; }
   .tab.active { background: linear-gradient(110deg,#4f7cff,#8a5cf6); color: #fff; border-color: transparent; }
@@ -31,7 +30,6 @@
   input:focus, textarea:focus { border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79,124,255,.12); }
   .row { margin-bottom: 16px; }
 
-  /* 工具栏(通知) */
   .toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px; background: #f7f9ff; border: 1px solid #e8ebf5; border-radius: 12px 12px 0 0; border-bottom: none; align-items: center; }
   .toolbar button { width: 34px; height: 34px; border: 1px solid #e8ebf5; background: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; color: #172033; transition: all .15s; }
   .toolbar button:hover { background: #f0f3ff; border-color: #4f7cff; }
@@ -55,7 +53,6 @@
       <div class="tab" data-target="panel-lyrics">猜歌词出题</div>
     </div>
 
-    <!-- 面板 1：发布通知 -->
     <div id="panel-noti" class="panel active">
       <h1>发布新通知</h1>
       <p class="sub">用户下次打开网页时会弹窗显示。</p>
@@ -82,10 +79,9 @@
       <div class="msg" id="msg-noti"></div>
     </div>
 
-    <!-- 面板 2：猜歌词出题 -->
     <div id="panel-lyrics" class="panel">
       <h1>发布猜歌词题目</h1>
-      <p class="sub">系统会自动将文字转换为黑块，并在指定日期 0:00 自动上架。</p>
+      <p class="sub">选择日期后，系统会自动拉取该日期的题目（若有）。保存时会直接覆盖旧题。</p>
 
       <div class="row">
         <label>管理员密码</label>
@@ -93,7 +89,7 @@
       </div>
 
       <div class="row">
-        <label>发布日期（当日 0:00 生效）</label>
+        <label>发布日期（当日 0:00 生效，修改日期可读取历史）</label>
         <input type="date" id="publish-date">
       </div>
 
@@ -104,10 +100,10 @@
 
       <div class="row">
         <label>完整歌词（包含标点，系统只把汉字/字母打码）</label>
-        <textarea id="original-lyrics" placeholder="故事的小黄花&#10;从出生那年就飘着&#10;童年的荡秋千&#10;随记忆一直晃到现在"></textarea>
+        <textarea id="original-lyrics" placeholder="故事的小黄花..."></textarea>
       </div>
 
-      <button class="publish" id="btn-lyrics">生成并发布题目</button>
+      <button class="publish" id="btn-lyrics">保存并发布题目</button>
       <div class="msg" id="msg-lyrics"></div>
     </div>
   </div>
@@ -131,7 +127,6 @@ document.querySelectorAll('.toolbar button[data-cmd]').forEach(btn => {
 document.getElementById('foreColor').addEventListener('input', e => { document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, e.target.value); });
 document.getElementById('backColor').addEventListener('input', e => { document.execCommand('styleWithCSS', false, true); document.execCommand('hiliteColor', false, e.target.value); });
 
-// 提交通知
 document.getElementById('btn-noti').addEventListener('click', async () => {
   const password = document.getElementById('pwd-noti').value;
   const content = editor.innerHTML.trim();
@@ -149,21 +144,56 @@ document.getElementById('btn-noti').addEventListener('click', async () => {
   finally { btn.disabled = false; btn.textContent = '发布通知'; }
 });
 
-// 提交猜歌词
+// --- 猜歌词部分 ---
+const dateInput = document.getElementById('publish-date');
+const songNameInput = document.getElementById('song-name');
+const originalInput = document.getElementById('original-lyrics');
+const msgLyrics = document.getElementById('msg-lyrics');
+
+// 默认设为今天
+const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' });
+dateInput.value = today;
+
+// 日期改变时，去后端拉取该日期的题目（实现查看和编辑）
+dateInput.addEventListener('change', async () => {
+  const date = dateInput.value;
+  if (!date) return;
+  msgLyrics.textContent = '读取中...';
+  msgLyrics.className = 'msg';
+  
+  try {
+    const res = await fetch(`/api/game/get-lyrics?date=${date}`);
+    const json = await res.json();
+    if (json.success && json.data) {
+      songNameInput.value = json.data.song_name;
+      originalInput.value = json.data.original_lyrics;
+      msgLyrics.textContent = '✅ 已加载该日期的题目，修改后可直接覆盖保存';
+      msgLyrics.className = 'msg ok';
+    } else {
+      songNameInput.value = '';
+      originalInput.value = '';
+      msgLyrics.textContent = '该日期暂无题目，可创作新题';
+      msgLyrics.className = 'msg';
+    }
+  } catch (e) {
+    msgLyrics.textContent = '读取数据失败';
+    msgLyrics.className = 'msg err';
+  }
+});
+
 document.getElementById('btn-lyrics').addEventListener('click', async () => {
   const password = document.getElementById('pwd-lyrics').value;
-  const publishDate = document.getElementById('publish-date').value;
-  const songName = document.getElementById('song-name').value.trim();
-  const original = document.getElementById('original-lyrics').value.trim();
-  const msg = document.getElementById('msg-lyrics');
+  const publishDate = dateInput.value;
+  const songName = songNameInput.value.trim();
+  const original = originalInput.value.trim();
   
-  if (!password || !songName || !original || !publishDate) return msg.textContent = '请填写所有字段（含日期）', msg.className = 'msg err';
+  if (!password || !songName || !original || !publishDate) return msgLyrics.textContent = '请填写所有字段（含日期）', msgLyrics.className = 'msg err';
 
-  // 核心：将汉字和字母替换为单字符 '■'，保留换行和标点
+  // 将汉字和字母替换为单字符 '■'
   const masked = original.replace(/[\u4e00-\u9fa5a-zA-Z0-9]/g, '■');
 
   const btn = document.getElementById('btn-lyrics');
-  btn.disabled = true; btn.textContent = '生成中...'; msg.textContent = '';
+  btn.disabled = true; btn.textContent = '保存中...'; msgLyrics.textContent = '';
   
   try {
     const res = await fetch('/api/game/save-lyrics', { 
@@ -173,14 +203,14 @@ document.getElementById('btn-lyrics').addEventListener('click', async () => {
     });
     const data = await res.json();
     if (data.success) { 
-      msg.className = 'msg ok'; 
-      msg.textContent = `成功！题目将在 ${publishDate} 00:00 生效`; 
+      msgLyrics.className = 'msg ok'; 
+      msgLyrics.textContent = `保存成功！题目将在 ${publishDate} 00:00 自动更新生效`; 
     } else { 
-      msg.className = 'msg err'; 
-      msg.textContent = data.error || '失败'; 
+      msgLyrics.className = 'msg err'; 
+      msgLyrics.textContent = data.error || '失败'; 
     }
-  } catch (e) { msg.className = 'msg err'; msg.textContent = '网络错误'; }
-  finally { btn.disabled = false; btn.textContent = '生成并发布题目'; }
+  } catch (e) { msgLyrics.className = 'msg err'; msgLyrics.textContent = '网络错误'; }
+  finally { btn.disabled = false; btn.textContent = '保存并发布题目'; }
 });
 </script>
 </body>
