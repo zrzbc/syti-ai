@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>猜歌词 - 这人针不错</title>
+<style>
+  :root{
+    --blue:#4f7cff; --purple:#8a5cf6; --ink:#172033; --muted:#6f7890;
+    --line:#e8ebf5; --bg:#f7f9ff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:Inter,"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--ink);
+    background: radial-gradient(circle at 10% 5%,rgba(79,124,255,.14),transparent 28%),
+                radial-gradient(circle at 90% 10%,rgba(138,92,246,.13),transparent 30%),
+                var(--bg);
+    line-height:1.7;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    padding:80px 20px 40px;
+  }
+  .game-container {
+    width:min(720px, 100%);
+    background:rgba(255,255,255,.78);
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,.95);
+    box-shadow:0 18px 60px rgba(67,72,120,.10);
+    border-radius:20px;
+    padding:32px;
+  }
+  
+  /* 顶部状态 */
+  .header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; }
+  .title { font-size:22px; font-weight:800; letter-spacing:-.5px; }
+  
+  /* 歌词面板 */
+  .lyrics-box {
+    background:#fff; border:1px solid var(--line); border-radius:16px;
+    padding:24px; font-size:18px; line-height:2.2; letter-spacing:1px;
+    min-height:200px; max-height:40vh; overflow-y:auto;
+    user-select:none;
+  }
+  .lyrics-box::-webkit-scrollbar { width:6px; }
+  .lyrics-box::-webkit-scrollbar-thumb { background:#d5dbea; border-radius:4px; }
+  
+  /* 字符块 */
+  .char-block {
+    display:inline-block; text-align:center; min-width:1.2em;
+    transition: all 0.3s;
+  }
+  .char-masked {
+    background:#172033; color:transparent;
+    border-radius:4px; margin:0 2px; font-weight:bold;
+  }
+  .char-revealed {
+    color:var(--blue); font-weight:bold;
+    animation: pop 0.3s ease-out;
+  }
+  @keyframes pop { 0%{transform:scale(.8);opacity:.5} 100%{transform:scale(1);opacity:1} }
+
+  /* 输入区 */
+  .input-area { margin-top:24px; }
+  .input-row { display:flex; gap:10px; }
+  .input-row input {
+    flex:1; padding:14px 18px; border:2px solid var(--line); border-radius:14px;
+    font-size:16px; outline:none; font-family:inherit; transition:.2s;
+  }
+  .input-row input:focus { border-color:var(--blue); box-shadow:0 0 0 4px rgba(79,124,255,.1); }
+  .input-row button {
+    padding:0 24px; border:none; border-radius:14px; background:linear-gradient(110deg,var(--blue),var(--purple));
+    color:#fff; font-size:16px; font-weight:bold; cursor:pointer; transition:.2s;
+  }
+  .input-row button:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(91,100,230,.3); }
+  
+  /* 错误提示区 */
+  .error-area { margin-top:16px; display:flex; flex-wrap:wrap; gap:8px; min-height:36px; }
+  .error-chip {
+    background:#fff0f3; color:#ef4444; border:1px solid #f0d0d5;
+    padding:4px 12px; border-radius:8px; font-size:14px; font-weight:600;
+    animation: shake 0.4s ease-out;
+  }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+  
+  .win-msg { display:none; text-align:center; color:#22c55e; font-weight:bold; font-size:18px; margin-top:20px; padding:14px; background:#f0fdf4; border-radius:12px; border:1px solid #bbf7d0; }
+</style>
+</head>
+<body>
+
+<div class="game-container">
+  <div class="header">
+    <div class="title">猜歌词</div>
+  </div>
+  
+  <div class="lyrics-box" id="lyricsBox">加载中...</div>
+  
+  <div class="win-msg" id="winMsg">挑战成功！答案正是《<span id="answerName"></span>》</div>
+
+  <div class="input-area" id="inputArea">
+    <div class="input-row">
+      <input type="text" id="guessInput" placeholder="输入歌词关键字或完整歌名..." autocomplete="off" maxlength="20">
+      <button id="submitBtn">确认</button>
+    </div>
+    <div class="error-area" id="errorArea"></div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const lyricsBox = document.getElementById('lyricsBox');
+  const input = document.getElementById('guessInput');
+  const submitBtn = document.getElementById('submitBtn');
+  const errorArea = document.getElementById('errorArea');
+  const winMsg = document.getElementById('winMsg');
+  const answerName = document.getElementById('answerName');
+
+  let gameData = null;
+  let guessedChars = new Set();
+  let isWin = false;
+
+  // 1. 获取题目
+  try {
+    const res = await fetch('/api/game/get-lyrics');
+    const json = await res.json();
+    if (!json.success) {
+      lyricsBox.textContent = '暂时没有题目，等待管理员出题~';
+      return;
+    }
+    gameData = json.data;
+    renderLyrics();
+  } catch (e) {
+    lyricsBox.textContent = '加载失败，请刷新重试';
+  }
+
+  // 2. 渲染带方块的歌词
+  function renderLyrics() {
+    lyricsBox.innerHTML = '';
+    const masked = gameData.masked_lyrics;
+    const original = gameData.original_lyrics;
+    
+    // 遍历打码后的歌词，把汉字和掩码对应起来
+    for (let i = 0; i < masked.length; i++) {
+      const mChar = masked[i];
+      const oChar = original[i];
+      const span = document.createElement('span');
+      
+      if (mChar === '■') {
+        span.className = 'char-block char-masked';
+        span.dataset.char = oChar;
+        // 如果已经猜出来了，就直接显示
+        if (guessedChars.has(oChar)) {
+          revealSpan(span, oChar);
+        } else {
+          span.textContent = '■';
+        }
+      } else if (mChar === '\n') {
+        lyricsBox.appendChild(document.createElement('br'));
+        continue;
+      } else {
+        // 标点符号、空格
+        span.className = 'char-block';
+        span.textContent = mChar === ' ' ? '&nbsp;' : mChar;
+      }
+      lyricsBox.appendChild(span);
+    }
+  }
+
+  function revealSpan(span, char) {
+    span.textContent = char;
+    span.className = 'char-block char-revealed';
+  }
+
+  // 3. 提交逻辑
+  function submit() {
+    if (isWin || !gameData) return;
+    const val = input.value.trim();
+    if (!val) return;
+    
+    // 判断是否等于歌名
+    if (val.toLowerCase() === gameData.song_name.toLowerCase()) {
+      handleWin();
+      return;
+    }
+
+    // 如果不是歌名，判断是否在歌词中
+    let hit = false;
+    const isSingleChar = val.length === 1;
+    
+    // 如果输入了多个字，检查这几个字是否都在歌词里
+    // 为了游戏体验，只要单字命中就算猜中
+    if (isSingleChar) {
+      // 把该字加入已知集合
+      guessedChars.add(val);
+      hit = gameData.original_lyrics.includes(val);
+      
+      if (hit) {
+        // 刷新UI
+        renderLyrics();
+      }
+    } else {
+      // 输入了多个字但不等于歌名，就按单字拆开，只要有一个字在就不算错误
+      const chars = val.split('');
+      let anyHit = false;
+      chars.forEach(c => {
+        if (gameData.original_lyrics.includes(c)) {
+          guessedChars.add(c);
+          anyHit = true;
+        }
+      });
+      if (anyHit) {
+        hit = true;
+        renderLyrics();
+      }
+    }
+
+    // 如果没命中，加入错误区
+    if (!hit) {
+      const chip = document.createElement('div');
+      chip.className = 'error-chip';
+      chip.textContent = val;
+      errorArea.appendChild(chip);
+    }
+    
+    input.value = '';
+    input.focus();
+  }
+
+  function handleWin() {
+    isWin = true;
+    answerName.textContent = gameData.song_name;
+    winMsg.style.display = 'block';
+    document.getElementById('inputArea').style.display = 'none';
+    
+    // 全部显示
+    const spans = lyricsBox.querySelectorAll('.char-masked');
+    spans.forEach(span => {
+      revealSpan(span, span.dataset.char);
+    });
+  }
+
+  // 绑定事件
+  submitBtn.addEventListener('click', submit);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.isComposing) {
+      submit();
+    }
+  });
+});
+</script>
+</body>
+</html>
