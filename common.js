@@ -26,7 +26,7 @@
     .lang-menu button.active{background:#eef2ff;color:#3f63d9;font-weight:600}
 
     /* 头像和悬浮窗 */
-    .user-center{position:relative;display:flex;align-items:center;margin-left:4px;padding-bottom:10px}
+.user-center{position:relative;display:flex;align-items:center;margin-left:4px;padding-bottom:10px;margin-bottom:-10px;}
     .avatar-btn{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#4f7cff,#8a5cf6);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;transition:transform .2s,box-shadow .2s;border:2px solid rgba(255,255,255,.8);overflow:hidden}
     .avatar-btn:hover{transform:scale(1.08);box-shadow:0 6px 16px rgba(79,124,255,.35)}
     .user-popover{position:absolute;top:100%;right:0;width:220px;background:#fff;border:1px solid #e8ebf5;border-radius:16px;box-shadow:0 10px 30px rgba(55,65,110,.15);display:none;z-index:50}
@@ -96,7 +96,7 @@
             <button type="button" data-lang="tw">繁體中文（台灣）</button>
           </div>
         </div>
-        <a href="https://zrzbc.com/faq" class="faq-icon-btn" title="常见问题" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid #e8ebf5;background:#fff;color:#59627a;transition:all .2s;margin:0 4px;text-decoration:none;font-size:18px;font-weight:700;font-family:inherit;">
+<a href="https://zrzbc.com/faq" class="faq-icon-btn" title="常见问题" style="display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid #e8ebf5;background:#fff;color:#59627a;transition:all .2s;margin:0 8px;text-decoration:none;font-size:19px;font-weight:bold;font-family:Arial, sans-serif;">
           ?
         </a>
         <div class="user-center" id="userCenter">
