@@ -7,7 +7,15 @@ export async function onRequestPost(context) {
   if (!songName || !originalLyrics || !maskedLyrics || !publishDate) return Response.json({ error: '参数不完整' }, { status: 400 });
 
   try {
-    // 1. 建表（去掉 UNIQUE 约束，防止旧表冲突）
+    // 1. 智能检查：尝试查询 publish_date，如果报错说明是旧表缺列，直接删表重建
+    try {
+      await env.DB.prepare('SELECT publish_date FROM guess_lyrics LIMIT 1').run();
+    } catch (e) {
+      // 如果报错（比如没有这个列），说明表结构不对，直接销毁旧表
+      await env.DB.prepare('DROP TABLE IF EXISTS guess_lyrics').run();
+    }
+
+    // 2. 建表（此时如果是刚删过的，就会全新创建）
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS guess_lyrics (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -19,7 +27,7 @@ export async function onRequestPost(context) {
       )
     `).run();
 
-    // 2. 检查该日期是否已经有题目
+    // 3. 检查该日期是否已经有题目
     const existing = await env.DB.prepare(
       'SELECT id FROM guess_lyrics WHERE publish_date = ?'
     ).bind(publishDate).first();
@@ -38,7 +46,6 @@ export async function onRequestPost(context) {
 
     return Response.json({ success: true });
   } catch (error) {
-    // 捕获数据库错误并返回给前端，避免直接报 500
     return Response.json({ error: '数据库操作失败: ' + error.message }, { status: 500 });
   }
 }
