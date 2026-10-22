@@ -47,7 +47,7 @@
     flex: 1; /* 左右各占 1/2 */
   }
   
-  /* ★ 右侧操作区特殊处理：固定在视口中，不随左侧长文滚动 */
+  /* 右侧操作区特殊处理：固定在视口中，不随左侧长文滚动 */
   .right-panel {
     position: sticky;
     top: 100px;
@@ -176,7 +176,8 @@
   
 </div>
 
-<script src="common.js?v=5"></script>
+<!-- 引入公共导航栏 -->
+<script src="common.js?v=6"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const lyricsBox = document.getElementById('lyricsBox');
@@ -189,6 +190,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let guessedChars = new Set();
   let isWin = false;
 
+  // 1. 获取题目
   try {
     const res = await fetch('/api/game/get-lyrics');
     const json = await res.json();
@@ -203,6 +205,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     lyricsBox.textContent = '加载失败，请刷新重试';
   }
 
+  // 2. 渲染歌词
   function renderLyrics() {
     lyricsBox.innerHTML = '';
     const masked = gameData.masked_lyrics;
@@ -240,22 +243,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // 3. 提交逻辑
   function submit() {
     if (isWin || !gameData) return;
     const val = input.value.trim();
     if (!val) return;
 
-    // ★ 关键改动：未登录拦截
+    // 未登录拦截
     const user = window.getLocalUser ? window.getLocalUser() : null;
     if (!user || !user.email) {
       alert('请先登录后再进行挑战哦！');
-      // 跳转到主页进行登录，登录成功后自动回跳到猜歌词页面
       window.location.href = 'index.html?redirect=' + encodeURIComponent('guess-lyrics.html');
       return;
     }
     
+    // 判断是否等于歌名
     if (val.toLowerCase() === gameData.song_name.toLowerCase()) {
-      handleWin(user); // 将用户信息传过去
+      handleWin(user);
       return;
     }
 
@@ -292,6 +296,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     input.focus();
   }
 
+  // 4. 挑战成功与奖励发放
   async function handleWin(user) {
     isWin = true;
     winMsg.className = 'win-msg success';
@@ -299,6 +304,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     winMsg.style.display = 'block';
     document.getElementById('inputArea').style.display = 'none';
     
+    // 全部显示
     const spans = lyricsBox.querySelectorAll('.char-masked');
     spans.forEach(span => {
       span.textContent = span.dataset.char;
@@ -306,14 +312,22 @@ document.addEventListener('DOMContentLoaded', async () => {
       span.classList.add('char-revealed');
     });
 
-    // 登录用户专属奖励请求
+    // 请求后端发经验
     try {
       const res = await fetch('/api/game/complete-lyrics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email })
       });
-      const data = await res.json();
+      
+      const textData = await res.text();
+      let data;
+      try {
+        data = JSON.parse(textData);
+      } catch (err) {
+        throw new Error(`后端没有返回 JSON，状态码：${res.status}，请检查 complete-lyrics.js 是否部署！`);
+      }
+
       if (data.success) {
         if (data.rewarded) {
           winMsg.innerHTML = `挑战成功！答案正是《${gameData.song_name}》<br><span style="font-size:15px;color:#ea580c;">经验 +80！</span>`;
@@ -321,10 +335,15 @@ document.addEventListener('DOMContentLoaded', async () => {
           localStorage.setItem('user', JSON.stringify(user));
           if (window.renderGlobalUI) window.renderGlobalUI();
         } else {
-          winMsg.innerHTML = `挑战成功！答案正是《${gameData.song_name}》<br><span style="font-size:14px;color:#6f7890;">（今日奖励已领过）</span>`;
+          winMsg.innerHTML = `挑战成功！答案正是《${gameData.song_name}》<br><span style="font-size:14px;color:#6f7890;">（${data.message || '今日奖励已领过'}）</span>`;
         }
+      } else {
+        winMsg.innerHTML = `挑战成功！答案正是《${gameData.song_name}》<br><span style="font-size:14px;color:#ef4444;">奖励发放失败：${data.error || '未知错误'}</span>`;
       }
-    } catch (e) { console.error('发放奖励失败'); }
+    } catch (e) { 
+      console.error(e); 
+      winMsg.innerHTML = `挑战成功！答案正是《${gameData.song_name}》<br><span style="font-size:14px;color:#ef4444;">网络错误：${e.message}</span>`;
+    }
   }
 
   submitBtn.addEventListener('click', submit);
