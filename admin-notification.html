@@ -27,9 +27,16 @@
   .toolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 10px; background: #f7f9ff; border: 1px solid #e8ebf5; border-radius: 12px 12px 0 0; border-bottom: none; align-items: center; }
   .toolbar button { width: 34px; height: 34px; border: 1px solid #e8ebf5; background: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; color: #172033; transition: all .15s; }
   .toolbar button:hover { background: #f0f3ff; border-color: #4f7cff; }
-  .toolbar .color-wrap { display: flex; align-items: center; gap: 5px; height: 34px; padding: 0 10px; border: 1px solid #e8ebf5; border-radius: 8px; background: #fff; font-size: 12px; color: #6f7890; cursor: pointer; }
+  .toolbar button:active { background: #4f7cff; color: #fff; border-color: #4f7cff; }
+  .toolbar select { height: 34px; padding: 0 8px; border: 1px solid #e8ebf5; border-radius: 8px; background: #fff; font-size: 13px; cursor: pointer; outline: none; color: #172033; font-family: inherit; }
+  .toolbar select:hover { border-color: #4f7cff; }
+  .toolbar .color-wrap { display: flex; align-items: center; gap: 5px; height: 34px; padding: 0 10px; border: 1px solid #e8ebf5; border-radius: 8px; background: #fff; font-size: 12px; color: #6f7890; cursor: pointer; user-select: none; }
+  .toolbar .color-wrap:hover { border-color: #4f7cff; }
   .toolbar .color-wrap input[type="color"] { width: 22px; height: 22px; border: none; padding: 0; background: none; cursor: pointer; }
-  #editor { min-height: 180px; padding: 14px 16px; border: 1px solid #e8ebf5; border-radius: 0 0 12px 12px; font-size: 14px; line-height: 1.7; outline: none; background: #fff; color: #172033; max-height: 420px; overflow-y: auto; }
+  .toolbar .divider { width: 1px; height: 20px; background: #e8ebf5; margin: 0 2px; }
+
+  #editor { min-height: 180px; padding: 14px 16px; border: 1px solid #e8ebf5; border-radius: 0 0 12px 12px; font-size: 14px; line-height: 1.7; outline: none; background: #fff; color: #172033; overflow-y: auto; max-height: 420px; }
+  #editor:focus { border-color: #4f7cff; box-shadow: 0 0 0 3px rgba(79,124,255,.12); }
   #editor:empty::before { content: attr(data-placeholder); color: #b6bcc9; pointer-events: none; }
 
   button.publish { width: 100%; padding: 13px; border: none; border-radius: 13px; background: linear-gradient(110deg,#4f7cff,#8a5cf6); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 18px; transition: transform .2s, box-shadow .2s; }
@@ -59,29 +66,60 @@
 <body>
   <div class="box">
     <h1>发布新通知</h1>
-    <p class="sub">用户下次打开网页时会弹窗显示。每条通知均会保存至下方历史记录中。</p>
+    <p class="sub">用户下次打开网页时会弹窗显示。每次发布的内容都会保存在下方历史记录中。</p>
 
     <div class="row">
       <label>管理员密码</label>
-      <input type="password" id="pwd-noti" placeholder="请输入密码">
+      <input type="password" id="pwd" placeholder="请输入密码">
     </div>
 
     <div class="row">
-      <label>通知内容</label>
+      <label>通知内容（先选中文字，再点样式）</label>
       <div class="toolbar" id="toolbar">
         <button type="button" data-cmd="bold" title="加粗"><b>B</b></button>
         <button type="button" data-cmd="italic" title="斜体"><i>I</i></button>
         <button type="button" data-cmd="underline" title="下划线"><u>U</u></button>
         <button type="button" data-cmd="strikeThrough" title="删除线"><s>S</s></button>
-        <span style="width:1px;height:20px;background:#e8ebf5;margin:0 4px;"></span>
-        <label class="color-wrap">字色<input type="color" id="foreColor" value="#172033"></label>
-        <label class="color-wrap">底色<input type="color" id="backColor" value="#ffffff"></label>
+
+        <span class="divider"></span>
+
+        <select id="fontFamily" title="字体">
+          <option value="">默认字体</option>
+          <option value="Microsoft YaHei">微软雅黑</option>
+          <option value="SimHei">黑体</option>
+          <option value="KaiTi">楷体</option>
+          <option value="SimSun">宋体</option>
+        </select>
+
+        <select id="fontSize" title="字号">
+          <option value="">默认字号</option>
+          <option value="12px">12px 小</option>
+          <option value="14px">14px 正常</option>
+          <option value="16px">16px 中</option>
+          <option value="18px">18px 大</option>
+          <option value="22px">22px 特大</option>
+          <option value="28px">28px 超大</option>
+        </select>
+
+        <label class="color-wrap" title="文字颜色">
+          字色<input type="color" id="foreColor" value="#172033">
+        </label>
+        <label class="color-wrap" title="背景颜色">
+          底色<input type="color" id="backColor" value="#ffffff">
+        </label>
+
+        <span class="divider"></span>
+
+        <button type="button" id="insertLink" title="插入超链接（先选中文字）" style="font-size:12px;width:auto;padding:0 8px;">链接</button>
+        <span class="divider"></span>
+        <button type="button" id="clearBg" title="清除背景色" style="font-size:12px;width:auto;padding:0 8px;">清底</button>
+        <button type="button" id="clearFormat" title="清除所有格式" style="font-size:12px;width:auto;padding:0 8px;">清格式</button>
       </div>
-      <div id="editor" contenteditable="true" data-placeholder="支持多行文本..."></div>
+      <div id="editor" contenteditable="true" data-placeholder="支持多行文本，可选中后设置字体 / 颜色 / 加粗等"></div>
     </div>
 
-    <button class="publish" id="btn-noti">发布通知</button>
-    <div class="msg" id="msg-noti"></div>
+    <button class="publish" id="btn">发布通知</button>
+    <div class="msg" id="msg"></div>
 
     <!-- 历史记录区域 -->
     <div class="history-section">
@@ -96,40 +134,196 @@
   </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+(function () {
   const editor = document.getElementById('editor');
   const foreColorInput = document.getElementById('foreColor');
   const backColorInput = document.getElementById('backColor');
-  const btnNoti = document.getElementById('btn-noti');
-  const msg = document.getElementById('msg-noti');
+  const fontFamilySel = document.getElementById('fontFamily');
+  const fontSizeSel = document.getElementById('fontSize');
   const historyList = document.getElementById('historyList');
 
-  // 读取本地历史记录
+  // ===== 持续保存选区（关键：每次选区变化都保存） =====
+  let savedRange = null;
+  function saveRange() {
+    const sel = window.getSelection();
+    if (sel.rangeCount && editor.contains(sel.anchorNode)) {
+      savedRange = sel.getRangeAt(0).cloneRange();
+    }
+  }
+  document.addEventListener('selectionchange', saveRange);
+  editor.addEventListener('keyup', saveRange);
+  editor.addEventListener('mouseup', saveRange);
+  editor.addEventListener('input', saveRange);
+
+  // ===== 恢复选区 =====
+  function restoreRange() {
+    if (!savedRange) return false;
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+    return true;
+  }
+
+  // ===== 执行 execCommand =====
+  function exec(cmd, val) {
+    editor.focus();
+    restoreRange();
+    document.execCommand('styleWithCSS', false, true);
+    document.execCommand(cmd, false, val || null);
+    saveRange();
+  }
+
+  // ===== 所有工具栏按钮：mousedown 阻止默认行为，避免选区丢失 =====
+  document.querySelectorAll('.toolbar button[data-cmd]').forEach(btn => {
+    btn.addEventListener('mousedown', e => {
+      e.preventDefault();
+      exec(btn.dataset.cmd);
+    });
+  });
+
+  document.getElementById('clearBg').addEventListener('mousedown', e => {
+    e.preventDefault();
+    exec('hiliteColor', 'transparent');
+  });
+
+  document.getElementById('clearFormat').addEventListener('mousedown', e => {
+    e.preventDefault();
+    exec('removeFormat');
+  });
+
+  // ===== 字体 =====
+  fontFamilySel.addEventListener('change', () => {
+    if (!fontFamilySel.value) return;
+    exec('fontName', fontFamilySel.value);
+    fontFamilySel.value = '';
+  });
+
+  // ===== 字号（自定义包裹 span） =====
+  function applyFontSize(px) {
+    editor.focus();
+    if (!restoreRange()) return;
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) return;
+
+    const span = document.createElement('span');
+    span.style.fontSize = px;
+
+    try {
+      range.surroundContents(span);
+    } catch (e) {
+      const frag = range.extractContents();
+      frag.querySelectorAll && frag.querySelectorAll('span').forEach(s => {
+        if (s.style && s.style.fontSize) s.style.fontSize = '';
+      });
+      span.appendChild(frag);
+      range.insertNode(span);
+    }
+
+    sel.removeAllRanges();
+    const newRange = document.createRange();
+    newRange.selectNodeContents(span);
+    sel.addRange(newRange);
+    saveRange();
+  }
+
+  fontSizeSel.addEventListener('change', () => {
+    if (!fontSizeSel.value) return;
+    applyFontSize(fontSizeSel.value);
+    fontSizeSel.value = '';
+  });
+
+  // ===== 文字颜色 =====
+  function applyForeColor(color) {
+    editor.focus();
+    restoreRange();
+    document.execCommand('styleWithCSS', false, true);
+    document.execCommand('foreColor', false, color);
+    saveRange();
+  }
+  foreColorInput.addEventListener('change', () => applyForeColor(foreColorInput.value));
+  foreColorInput.addEventListener('input', () => applyForeColor(foreColorInput.value));
+
+  // ===== 背景色 =====
+  function applyBackColor(color) {
+    editor.focus();
+    restoreRange();
+    document.execCommand('styleWithCSS', false, true);
+    document.execCommand('hiliteColor', false, color);
+    saveRange();
+  }
+  backColorInput.addEventListener('change', () => applyBackColor(backColorInput.value));
+  backColorInput.addEventListener('input', () => applyBackColor(backColorInput.value));
+
+  // ===== 超链接：先选中文字，再输入网址 =====
+  document.getElementById('insertLink').addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    insertLink();
+  });
+
+  function insertLink() {
+    editor.focus();
+    if (!restoreRange()) {
+      alert('请先在编辑区选中要加链接的文字');
+      return;
+    }
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) {
+      alert('请先选中要加链接的文字');
+      return;
+    }
+
+    const anchorNode = range.startContainer;
+    const el = anchorNode.nodeType === 1 ? anchorNode : anchorNode.parentElement;
+    const closestA = el ? el.closest('a') : null;
+    const currentHref = (closestA && editor.contains(closestA)) ? (closestA.getAttribute('href') || '') : '';
+
+    const url = prompt('请输入链接地址（选中的文字将变成超链接）：', currentHref || 'https://');
+    if (url === null) return;
+    const trimmed = url.trim();
+    if (!trimmed) return;
+
+    let finalUrl = trimmed;
+    if (!/^(https?:\/\/|mailto:)/i.test(finalUrl)) {
+      finalUrl = 'https://' + finalUrl;
+    }
+
+    document.execCommand('styleWithCSS', false, true);
+
+    if (closestA && editor.contains(closestA)) {
+      closestA.setAttribute('href', finalUrl);
+      closestA.setAttribute('target', '_blank');
+      closestA.setAttribute('rel', 'noopener noreferrer');
+      closestA.style.color = '#4f7cff';
+      closestA.style.textDecoration = 'underline';
+    } else {
+      document.execCommand('createLink', false, finalUrl);
+      editor.querySelectorAll('a').forEach(a => {
+        if (a.getAttribute('href') === finalUrl && !a.dataset.linkFixed) {
+          a.setAttribute('target', '_blank');
+          a.setAttribute('rel', 'noopener noreferrer');
+          a.style.color = '#4f7cff';
+          a.style.textDecoration = 'underline';
+          a.dataset.linkFixed = '1';
+        }
+      });
+    }
+
+    saveRange();
+    editor.focus();
+  }
+
+  // ==========================================
+  // ===== 历史记录逻辑 =====
+  // ==========================================
   let historyData = [];
   try {
     historyData = JSON.parse(localStorage.getItem('zrzbc_notification_history') || '[]');
   } catch(e) { historyData = []; }
 
-  // === 工具栏逻辑 ===
-  document.querySelectorAll('.toolbar button[data-cmd]').forEach(btn => {
-    btn.addEventListener('mousedown', e => {
-      e.preventDefault();
-      editor.focus();
-      document.execCommand(btn.dataset.cmd, false, null);
-    });
-  });
-  foreColorInput.addEventListener('input', (e) => {
-    editor.focus();
-    document.execCommand('styleWithCSS', false, true);
-    document.execCommand('foreColor', false, e.target.value);
-  });
-  backColorInput.addEventListener('input', (e) => {
-    editor.focus();
-    document.execCommand('styleWithCSS', false, true);
-    document.execCommand('hiliteColor', false, e.target.value);
-  });
-
-  // === 渲染历史记录 ===
   function renderHistory() {
     if (!historyData || historyData.length === 0) {
       historyList.innerHTML = '<div class="empty-history">暂无历史记录</div>';
@@ -158,8 +352,10 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', (e) => {
         const index = e.target.dataset.index;
         editor.innerHTML = historyData[index].content;
-        msg.className = 'msg';
-        msg.textContent = '已载入历史记录，修改后可重新发布';
+        const msgEl = document.getElementById('msg');
+        msgEl.className = 'msg';
+        msgEl.textContent = '已载入历史记录，修改后可重新发布';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     });
 
@@ -175,10 +371,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // 初始化渲染
   renderHistory();
 
-  // === 清空全部历史 ===
   document.getElementById('clearHistoryBtn').addEventListener('click', () => {
     if (!confirm('确定要清空所有历史记录吗？')) return;
     historyData = [];
@@ -186,34 +380,36 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHistory();
   });
 
-  // === 发布通知逻辑 ===
-  btnNoti.addEventListener('click', async () => {
-    const password = document.getElementById('pwd-noti').value;
+  // ==========================================
+  // ===== 发布 =====
+  // ==========================================
+  document.getElementById('btn').addEventListener('click', async () => {
+    const password = document.getElementById('pwd').value;
     const content = editor.innerHTML.trim();
-    
-    if (!password || !editor.innerText.trim()) {
-      msg.textContent = '请填写密码和内容';
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('btn');
+
+    const plain = editor.innerText.trim();
+    if (!password || !plain) {
       msg.className = 'msg err';
+      msg.textContent = '请填写密码和内容';
       return;
     }
-    
-    btnNoti.disabled = true; 
-    btnNoti.textContent = '发布中...'; 
+
+    btn.disabled = true; btn.textContent = '发布中...';
     msg.textContent = '';
-    
     try {
-      const res = await fetch('/api/notification/save', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ password, content }) 
+      const res = await fetch('/api/notification/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, content })
       });
       const data = await res.json();
-      
-      if (data.success) { 
-        msg.className = 'msg ok'; 
-        msg.textContent = '发布成功，已存入历史记录'; 
+      if (data.success) {
+        msg.className = 'msg ok';
+        msg.textContent = '✅ 发布成功！用户下次打开页面就会看到。';
         
-        // 存入本地历史记录
+        // 存入本地历史
         const now = new Date();
         const timeStr = now.toLocaleString('zh-CN', { hour12: false });
         historyData.unshift({
@@ -221,27 +417,24 @@ document.addEventListener('DOMContentLoaded', () => {
           time: timeStr,
           content: content
         });
-        // 只保留最近 20 条记录防止撑爆
         if (historyData.length > 20) historyData.length = 20;
-        
         localStorage.setItem('zrzbc_notification_history', JSON.stringify(historyData));
         renderHistory();
-        
-        // 清空编辑器
-        editor.innerHTML = ''; 
-      } else { 
-        msg.className = 'msg err'; 
-        msg.textContent = data.error || '发布失败'; 
+
+        editor.innerHTML = '';
+        savedRange = null;
+      } else {
+        msg.className = 'msg err';
+        msg.textContent = data.error || '发布失败';
       }
-    } catch (e) { 
-      msg.className = 'msg err'; 
-      msg.textContent = '网络错误'; 
-    } finally { 
-      btnNoti.disabled = false; 
-      btnNoti.textContent = '发布通知'; 
+    } catch (e) {
+      msg.className = 'msg err';
+      msg.textContent = '网络错误';
+    } finally {
+      btn.disabled = false; btn.textContent = '发布通知';
     }
   });
-});
+})();
 </script>
 </body>
 </html>
