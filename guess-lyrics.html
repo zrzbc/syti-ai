@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>猜歌词 - 这人针不错</title>
+<title>猜歌词 - 今日挑战</title>
 <script src="https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js"></script>
 <style>
   :root{
@@ -153,23 +153,23 @@
   <!-- 左侧：歌词区 -->
   <div class="panel left-panel">
     <div class="header">
-      <div class="title">今日猜歌词</div>
+      <div class="title">猜歌词 - 今日挑战</div>
     </div>
     <div class="lyrics-box" id="lyricsBox">加载中...</div>
   </div>
   
   <!-- 右侧：操作区 -->
   <div class="panel right-panel">
-    <div class="title" style="margin-bottom: 20px;">输入与提示</div>
+    <div class="title" style="margin-bottom: 20px;">答题区</div>
     
     <div class="win-msg" id="winMsg"></div>
 
     <div class="input-area" id="inputArea">
       <div class="input-row">
-        <input type="text" id="guessInput" placeholder="输入关键字或歌名..." autocomplete="off" maxlength="20">
+        <input type="text" id="guessInput" placeholder="输入 关键字 或 歌名 ..." autocomplete="off" maxlength="20">
         <button id="submitBtn">确认</button>
       </div>
-      <div style="font-size: 13px; color: var(--muted); margin-top: 4px;">输入猜错的字会显示在下方</div>
+      <div style="font-size: 13px; color: var(--muted); margin-top: 4px;"></div>
       <div class="error-area" id="errorArea"></div>
     </div>
   </div>
