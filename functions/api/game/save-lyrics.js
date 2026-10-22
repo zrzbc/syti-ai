@@ -6,28 +6,39 @@ export async function onRequestPost(context) {
   if (!password || password !== adminPwd) return Response.json({ error: '密码错误' }, { status: 403 });
   if (!songName || !originalLyrics || !maskedLyrics || !publishDate) return Response.json({ error: '参数不完整' }, { status: 400 });
 
-  // 建表：将 publish_date 设为 UNIQUE，方便后面覆盖
-  await env.DB.prepare(`
-    CREATE TABLE IF NOT EXISTS guess_lyrics (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      song_name TEXT NOT NULL,
-      original_lyrics TEXT NOT NULL,
-      masked_lyrics TEXT NOT NULL,
-      publish_date TEXT UNIQUE NOT NULL,
-      created_at INTEGER NOT NULL
-    )
-  `).run();
+  try {
+    // 1. 建表（去掉 UNIQUE 约束，防止旧表冲突）
+    await env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS guess_lyrics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        song_name TEXT NOT NULL,
+        original_lyrics TEXT NOT NULL,
+        masked_lyrics TEXT NOT NULL,
+        publish_date TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    `).run();
 
-  // 插入或更新：如果该日期已有题目，则覆盖
-  await env.DB.prepare(`
-    INSERT INTO guess_lyrics (song_name, original_lyrics, masked_lyrics, publish_date, created_at) 
-    VALUES (?, ?, ?, ?, ?) 
-    ON CONFLICT(publish_date) DO UPDATE SET 
-      song_name = excluded.song_name, 
-      original_lyrics = excluded.original_lyrics, 
-      masked_lyrics = excluded.masked_lyrics,
-      created_at = excluded.created_at
-  `).bind(songName, originalLyrics, maskedLyrics, publishDate, Date.now()).run();
+    // 2. 检查该日期是否已经有题目
+    const existing = await env.DB.prepare(
+      'SELECT id FROM guess_lyrics WHERE publish_date = ?'
+    ).bind(publishDate).first();
 
-  return Response.json({ success: true });
+    if (existing) {
+      // 如果有，执行 UPDATE 覆盖
+      await env.DB.prepare(
+        'UPDATE guess_lyrics SET song_name = ?, original_lyrics = ?, masked_lyrics = ?, created_at = ? WHERE publish_date = ?'
+      ).bind(songName, originalLyrics, maskedLyrics, Date.now(), publishDate).run();
+    } else {
+      // 如果没有，执行 INSERT 插入
+      await env.DB.prepare(
+        'INSERT INTO guess_lyrics (song_name, original_lyrics, masked_lyrics, publish_date, created_at) VALUES (?, ?, ?, ?, ?)'
+      ).bind(songName, originalLyrics, maskedLyrics, publishDate, Date.now()).run();
+    }
+
+    return Response.json({ success: true });
+  } catch (error) {
+    // 捕获数据库错误并返回给前端，避免直接报 500
+    return Response.json({ error: '数据库操作失败: ' + error.message }, { status: 500 });
+  }
 }
