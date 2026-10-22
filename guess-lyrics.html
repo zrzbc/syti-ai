@@ -23,9 +23,11 @@
     line-height:1.7;
     min-height:100vh;
     display:flex;
-    align-items:flex-start; /* ★ 修复：改为顶部对齐，防止内容过长时被截断 */
-    justify-content:center;
-    padding:100px 20px 40px; 
+    flex-direction: column;
+    align-items:center;
+    padding:100px 20px 60px; 
+    overflow-y: auto; /* 允许全局滑动 */
+    -webkit-overflow-scrolling: touch;
   }
   
   .game-container {
@@ -36,23 +38,20 @@
     box-shadow:0 18px 60px rgba(67,72,120,.10);
     border-radius:20px;
     padding:32px;
-    margin: auto 0; /* ★ 修复：配合顶部对齐实现垂直居中，超出时可正常滚动 */
+    margin-top: auto;
+    margin-bottom: auto; /* 垂直居中 */
   }
   
   .header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; }
   .title { font-size:22px; font-weight:800; letter-spacing:-.5px; }
   
+  /* ★ 彻底修复：去掉内部滚动和高度限制，让页面自然撑开 */
   .lyrics-box {
     background:#fff; border:1px solid var(--line); border-radius:16px;
     padding:24px; font-size:18px; line-height:1.8; 
     min-height:200px; 
-    max-height: 60vh; /* ★ 稍微增大高度 */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch; /* ★ 修复：开启 iOS 惯性滑动，解决卡顿 */
     user-select:none; word-break: break-word;
   }
-  .lyrics-box::-webkit-scrollbar { width:6px; }
-  .lyrics-box::-webkit-scrollbar-thumb { background:#d5dbea; border-radius:4px; }
   
   /* 核心排版：统一每个字和方块的格子大小 */
   .char-cell {
