@@ -507,26 +507,27 @@
   });
 
   // 签到 / 退出
-  document.getElementById('popoverSigninBtn').addEventListener('click', (e) => { e.stopPropagation(); window.location.href = 'index.html#signin'; });
-  document.getElementById('popoverLogoutBtn').addEventListener('click', (e) => {
-    e.stopPropagation(); localStorage.removeItem('user'); alert('已退出登录'); window.location.reload();
+  document.getElementById('popoverSigninBtn').addEventListener('click', (e) => { 
+    e.stopPropagation(); 
+    window.location.href = 'index.html#signin'; 
   });
+  
+  document.getElementById('popoverLogoutBtn').addEventListener('click', (e) => {
+    e.stopPropagation(); 
+    
+    // 1. 清理 localStorage 和 sessionStorage
+    localStorage.removeItem('user');
+    sessionStorage.clear();
+    
+    // 2. 清理可能残留的 Cookie (保险起见)
+    document.cookie.split(";").forEach(function(c) { 
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+    });
 
-  // 初始化渲染
-  window.renderGlobalUI();
-
-  // 每次鼠标移入悬浮窗时，静默同步一次数据
-  document.getElementById('userCenter').addEventListener('mouseenter', async () => {
-    const u = window.getLocalUser(); if (!u) return;
-    try {
-      const res = await fetch('/api/auth/me', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: u.email }) });
-      const data = await res.json();
-      if (data.success && data.user) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-        window.renderGlobalUI();
-        if (typeof window.onUserUpdate === 'function') window.onUserUpdate(data.user);
-      }
-    } catch(e) {}
+    alert('已退出登录');
+    
+    // 3. 强制跳转到首页，防止浏览器保留当前页面的登录状态缓存
+    window.location.replace('index.html');
   });
 
   // ================= 5. 语言切换和页面跳转过渡 =================
