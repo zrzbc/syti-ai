@@ -12,7 +12,6 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   
-  /* 强制去除下划线 */
   a { text-decoration: none !important; color: inherit; }
   
   body{
@@ -21,9 +20,14 @@
     background: radial-gradient(circle at 10% 5%,rgba(79,124,255,.14),transparent 28%),
                 radial-gradient(circle at 90% 10%,rgba(138,92,246,.13),transparent 30%),
                 var(--bg);
-    line-height:1.7;min-height:100vh;display:flex;align-items:center;justify-content:center;
-    padding:100px 20px 40px; /* 顶部留出导航栏空间 */
+    line-height:1.7;
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start; /* ★ 修复：改为顶部对齐，防止内容过长时被截断 */
+    justify-content:center;
+    padding:100px 20px 40px; 
   }
+  
   .game-container {
     width:min(720px, 100%);
     background:rgba(255,255,255,.78);
@@ -32,6 +36,7 @@
     box-shadow:0 18px 60px rgba(67,72,120,.10);
     border-radius:20px;
     padding:32px;
+    margin: auto 0; /* ★ 修复：配合顶部对齐实现垂直居中，超出时可正常滚动 */
   }
   
   .header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; }
@@ -40,7 +45,10 @@
   .lyrics-box {
     background:#fff; border:1px solid var(--line); border-radius:16px;
     padding:24px; font-size:18px; line-height:1.8; 
-    min-height:200px; max-height:45vh; overflow-y:auto;
+    min-height:200px; 
+    max-height: 60vh; /* ★ 稍微增大高度 */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* ★ 修复：开启 iOS 惯性滑动，解决卡顿 */
     user-select:none; word-break: break-word;
   }
   .lyrics-box::-webkit-scrollbar { width:6px; }
@@ -49,19 +57,19 @@
   /* 核心排版：统一每个字和方块的格子大小 */
   .char-cell {
     display: inline-block;
-    width: 1.5em;       /* 固定宽度保证上下对齐 */
-    height: 1.5em;      /* 固定高度保证正方形 */
-    line-height: 1.5em; /* 文字垂直居中 */
-    text-align: center; /* 文字水平居中 */
+    width: 1.5em;
+    height: 1.5em;
+    line-height: 1.5em;
+    text-align: center;
     vertical-align: middle;
-    margin: 4px 6px;    /* 控制字与字之间的间隔 */
+    margin: 4px 6px;
     border-radius: 4px;
-    font-size: 18px;    /* 字体大小 */
+    font-size: 18px;
   }
   
-  /* 未猜出的黑块（纯CSS绘制，不是emoji） */
+  /* 未猜出的黑块 */
   .char-masked {
-    background-color: var(--ink); /* 使用深蓝色/黑色背景 */
+    background-color: var(--ink);
   }
   
   /* 猜出的字 */
@@ -72,10 +80,10 @@
   }
   @keyframes pop { 0%{transform:scale(.8);opacity:.5} 100%{transform:scale(1);opacity:1} }
 
-  /* 标点符号（保留原有位置，但不设背景色） */
+  /* 标点符号 */
   .char-punctuation {
     display: inline-block;
-    width: auto;        /* 标点符号宽度自适应 */
+    width: auto;
     min-width: 1em;
     text-align: center;
     vertical-align: middle;
@@ -131,7 +139,6 @@
   </div>
 </div>
 
-<!-- 引入公共导航栏 -->
 <script src="common.js?v=5"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
@@ -145,7 +152,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   let guessedChars = new Set();
   let isWin = false;
 
-  // 1. 获取题目
   try {
     const res = await fetch('/api/game/get-lyrics');
     const json = await res.json();
@@ -160,7 +166,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     lyricsBox.textContent = '加载失败，请刷新重试';
   }
 
-  // 2. 渲染逻辑：严格对齐
   function renderLyrics() {
     lyricsBox.innerHTML = '';
     const masked = gameData.masked_lyrics;
@@ -178,19 +183,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       const span = document.createElement('span');
       
       if (mChar === '■') { 
-        // 需要打码的字符
-        span.className = 'char-cell'; // 统一格子大小
+        span.className = 'char-cell';
         if (guessedChars.has(oChar)) {
           span.textContent = oChar;
           span.classList.add('char-revealed');
         } else {
-          span.classList.add('char-masked'); // CSS绘制的黑方块
+          span.classList.add('char-masked');
           span.dataset.char = oChar;
         }
       } else {
-        // 标点符号和空格
         if (mChar === ' ') {
-          span.className = 'char-cell'; // 空格也占一个格子，保持对齐
+          span.className = 'char-cell';
         } else {
           span.className = 'char-punctuation';
           span.textContent = mChar;
@@ -200,13 +203,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // 3. 提交逻辑
   function submit() {
     if (isWin || !gameData) return;
     const val = input.value.trim();
     if (!val) return;
     
-    // 判断是否等于歌名
     if (val.toLowerCase() === gameData.song_name.toLowerCase()) {
       handleWin();
       return;
@@ -245,7 +246,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     input.focus();
   }
 
-  // 4. 挑战成功
   async function handleWin() {
     isWin = true;
     winMsg.className = 'win-msg success';
@@ -253,7 +253,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     winMsg.style.display = 'block';
     document.getElementById('inputArea').style.display = 'none';
     
-    // 将剩余的黑块全部替换为文字
     const spans = lyricsBox.querySelectorAll('.char-masked');
     spans.forEach(span => {
       span.textContent = span.dataset.char;
@@ -261,7 +260,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       span.classList.add('char-revealed');
     });
 
-    // 请求后端发经验
     const user = window.getLocalUser ? window.getLocalUser() : null;
     if (user && user.email) {
       try {
