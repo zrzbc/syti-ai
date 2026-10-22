@@ -306,6 +306,7 @@
 
   // ================= 4. 绑定公共事件 =================
   const authModal = document.getElementById('authModal');
+  // 关键：挂载到全局，让 shop.html 也能调用
   window.openAuthModal = function() {
     document.getElementById('authFormContainer').style.display = 'block';
     document.getElementById('resetFormContainer').style.display = 'none';
