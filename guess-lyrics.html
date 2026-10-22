@@ -39,35 +39,49 @@
   
   .lyrics-box {
     background:#fff; border:1px solid var(--line); border-radius:16px;
-    padding:24px; font-size:18px; line-height:2.2; 
+    padding:24px; font-size:18px; line-height:1.8; 
     min-height:200px; max-height:45vh; overflow-y:auto;
-    user-select:none;
-    word-break: break-word;
+    user-select:none; word-break: break-word;
   }
   .lyrics-box::-webkit-scrollbar { width:6px; }
   .lyrics-box::-webkit-scrollbar-thumb { background:#d5dbea; border-radius:4px; }
   
-  /* 字符块 */
-  .char-block {
-    display:inline-block; text-align:center;
+  /* 核心排版：统一每个字和方块的格子大小 */
+  .char-cell {
+    display: inline-block;
+    width: 1.5em;       /* 固定宽度保证上下对齐 */
+    height: 1.5em;      /* 固定高度保证正方形 */
+    line-height: 1.5em; /* 文字垂直居中 */
+    text-align: center; /* 文字水平居中 */
     vertical-align: middle;
+    margin: 4px 6px;    /* 控制字与字之间的间隔 */
+    border-radius: 4px;
+    font-size: 18px;    /* 字体大小 */
   }
   
-  /* 未猜出的黑块：放大字号 */
+  /* 未猜出的黑块（纯CSS绘制，不是emoji） */
   .char-masked {
-    color: #000; 
-    font-size: 24px; /* 放大黑块 */
-    margin: 0 10px;  /* 增加左右间距 */
-    vertical-align: middle;
+    background-color: var(--ink); /* 使用深蓝色/黑色背景 */
   }
   
   /* 猜出的字 */
   .char-revealed {
-    color:var(--blue); font-weight:bold;
-    margin: 0 2px;
+    color:var(--blue); 
+    font-weight:bold;
     animation: pop 0.3s ease-out;
   }
   @keyframes pop { 0%{transform:scale(.8);opacity:.5} 100%{transform:scale(1);opacity:1} }
+
+  /* 标点符号（保留原有位置，但不设背景色） */
+  .char-punctuation {
+    display: inline-block;
+    width: auto;        /* 标点符号宽度自适应 */
+    min-width: 1em;
+    text-align: center;
+    vertical-align: middle;
+    margin: 4px 2px;
+    font-size: 18px;
+  }
 
   /* 输入区 */
   .input-area { margin-top:24px; }
@@ -117,8 +131,8 @@
   </div>
 </div>
 
-<!-- 引入公共导航栏，样式和主页完全一致 -->
-<script src="common.js?v=4"></script>
+<!-- 引入公共导航栏 -->
+<script src="common.js?v=5"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
   const lyricsBox = document.getElementById('lyricsBox');
@@ -146,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     lyricsBox.textContent = '加载失败，请刷新重试';
   }
 
-  // 2. 渲染逻辑
+  // 2. 渲染逻辑：严格对齐
   function renderLyrics() {
     lyricsBox.innerHTML = '';
     const masked = gameData.masked_lyrics;
@@ -155,23 +169,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     for (let i = 0; i < masked.length; i++) {
       const mChar = masked[i];
       const oChar = original[i];
+      
+      if (mChar === '\n') {
+        lyricsBox.appendChild(document.createElement('br'));
+        continue;
+      }
+      
       const span = document.createElement('span');
       
       if (mChar === '■') { 
+        // 需要打码的字符
+        span.className = 'char-cell'; // 统一格子大小
         if (guessedChars.has(oChar)) {
           span.textContent = oChar;
-          span.className = 'char-block char-revealed';
+          span.classList.add('char-revealed');
         } else {
-          span.textContent = '◼️';
-          span.className = 'char-block char-masked';
+          span.classList.add('char-masked'); // CSS绘制的黑方块
           span.dataset.char = oChar;
         }
-      } else if (mChar === '\n') {
-        lyricsBox.appendChild(document.createElement('br'));
-        continue;
       } else {
-        span.className = 'char-block';
-        span.textContent = mChar === ' ' ? '\u00A0' : mChar;
+        // 标点符号和空格
+        if (mChar === ' ') {
+          span.className = 'char-cell'; // 空格也占一个格子，保持对齐
+        } else {
+          span.className = 'char-punctuation';
+          span.textContent = mChar;
+        }
       }
       lyricsBox.appendChild(span);
     }
@@ -230,12 +253,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     winMsg.style.display = 'block';
     document.getElementById('inputArea').style.display = 'none';
     
+    // 将剩余的黑块全部替换为文字
     const spans = lyricsBox.querySelectorAll('.char-masked');
     spans.forEach(span => {
       span.textContent = span.dataset.char;
-      span.className = 'char-block char-revealed';
+      span.classList.remove('char-masked');
+      span.classList.add('char-revealed');
     });
 
+    // 请求后端发经验
     const user = window.getLocalUser ? window.getLocalUser() : null;
     if (user && user.email) {
       try {
